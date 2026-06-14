@@ -34,10 +34,12 @@ async def _acompletion(model_spec: ModelSpec, **kwargs):
     Explicit ``kwargs`` win over resolved defaults.
     """
     call_kwargs = {**providers.resolve_call_kwargs(model_spec), **kwargs}
+    # Tolerate callers that prebuild `model` in kwargs (e.g. agent_loop); else inject from the spec.
+    model = call_kwargs.pop("model", None) or model_spec.litellm_model
     if providers.is_featherless(model_spec):
         async with providers.FEATHERLESS_SEMAPHORE:
-            return await litellm.acompletion(model=model_spec.litellm_model, **call_kwargs)
-    return await litellm.acompletion(model=model_spec.litellm_model, **call_kwargs)
+            return await litellm.acompletion(model=model, **call_kwargs)
+    return await litellm.acompletion(model=model, **call_kwargs)
 
 # ── Token counting ──
 try:

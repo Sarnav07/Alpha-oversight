@@ -1,4 +1,4 @@
-# LIFTED FROM trader-arena/arena/agent/loop.py:1 — import path fixed; api_base merge is a Phase-1B TODO.
+# LIFTED FROM trader-arena/arena/agent/loop.py:1 — import path fixed; Phase 1B: LLM calls routed through gateway._acompletion (api_base/key + Featherless semaphore).
 """ReAct Agent Loop — the core harness for Alpha Arena.
 
 Custom implementation inspired by prediction-arena. No framework dependency.
@@ -25,7 +25,7 @@ import litellm
 
 litellm.drop_params = True  # Gracefully ignore unsupported params per provider
 
-from alpha_oversight.reused.gateway import MODELS
+from alpha_oversight.reused.gateway import MODELS, _acompletion
 
 logger = logging.getLogger(__name__)
 
@@ -215,9 +215,9 @@ class AgentLoop:
                     # Final round — request JSON
                     completion_kwargs["response_format"] = {"type": "json_object"}
 
-                # TODO(Phase-1B): completion_kwargs.update(providers.resolve_call_kwargs(self._model_spec))
-                #   + Featherless semaphore wrap (see providers.py).
-                response = await litellm.acompletion(**completion_kwargs)
+                # Phase 1B: route through the gateway choke-point — per-provider
+                # api_base/key + Featherless 4-slot semaphore (see gateway._acompletion).
+                response = await _acompletion(self._model_spec, **completion_kwargs)
             except Exception as e:
                 logger.error(f"[{self._model_key}] LLM call failed at iteration {iteration + 1}: {e}")
                 error_action = AgentAction(
@@ -407,8 +407,8 @@ class AgentLoop:
                 "max_tokens": self._model_spec.max_tokens,
                 "response_format": {"type": "json_object"},
             }
-            # TODO(Phase-1B): final_kwargs.update(providers.resolve_call_kwargs(self._model_spec)) + semaphore.
-            final_response = await litellm.acompletion(**final_kwargs)
+            # Phase 1B: route through the gateway choke-point (api_base/key + Featherless semaphore).
+            final_response = await _acompletion(self._model_spec, **final_kwargs)
             final_text = final_response.choices[0].message.content or ""
             final_parsed = self._extract_json(final_text)
             if final_parsed:
