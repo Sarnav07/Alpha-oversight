@@ -18,20 +18,34 @@ from typing import AsyncIterator
 
 import aiosqlite
 
+from alpha_oversight.contracts.case_contracts import ResolvedInputs
+from alpha_oversight.contracts.order_events import OrderEvent
 from alpha_oversight.contracts.rule_contracts import Verdict
 from alpha_oversight.state.state_machine import Case, CaseState
 
+# ``events`` / ``resolved_inputs`` are the codify sidecars (JSON TEXT) the
+# pipeline attaches at the terminal transition so a later human-confirm can
+# derive + regression-gate a new rule from the same data (design §5 steps 5-7).
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS cases (
-    case_id     TEXT PRIMARY KEY,
-    room_id     TEXT NOT NULL,
-    state       TEXT NOT NULL,
-    features    TEXT NOT NULL DEFAULT '{}',
-    verdict     TEXT,
-    created_at  TEXT NOT NULL,
-    updated_at  TEXT NOT NULL
+    case_id         TEXT PRIMARY KEY,
+    room_id         TEXT NOT NULL,
+    state           TEXT NOT NULL,
+    features        TEXT NOT NULL DEFAULT '{}',
+    verdict         TEXT,
+    events          TEXT NOT NULL DEFAULT '[]',
+    resolved_inputs TEXT,
+    created_at      TEXT NOT NULL,
+    updated_at      TEXT NOT NULL
 )
 """
+
+# Columns added after the original schema — applied to any pre-existing table so
+# an older db on disk gains them (sqlite ALTER ADD COLUMN is cheap + safe).
+_MIGRATIONS: tuple[tuple[str, str], ...] = (
+    ("events", "TEXT NOT NULL DEFAULT '[]'"),
+    ("resolved_inputs", "TEXT"),
+)
 
 
 def _utcnow_iso() -> str:
@@ -40,12 +54,17 @@ def _utcnow_iso() -> str:
 
 def _row_to_case(row: aiosqlite.Row) -> Case:
     verdict_raw = row["verdict"]
+    resolved_raw = row["resolved_inputs"]
     return Case(
         case_id=row["case_id"],
         room_id=row["room_id"],
         state=CaseState(row["state"]),
         features=json.loads(row["features"]),
         verdict=Verdict.model_validate_json(verdict_raw) if verdict_raw else None,
+        events=[OrderEvent.model_validate(e) for e in json.loads(row["events"] or "[]")],
+        resolved_inputs=(
+            ResolvedInputs.model_validate_json(resolved_raw) if resolved_raw else None
+        ),
         created_at=datetime.fromisoformat(row["created_at"]),
         updated_at=datetime.fromisoformat(row["updated_at"]),
     )
@@ -65,19 +84,29 @@ class CaseStore:
             conn.row_factory = aiosqlite.Row
             if not self._ready:
                 await conn.execute(_SCHEMA)
+                await self._migrate(conn)
                 await conn.commit()
                 self._ready = True
             yield conn
+
+    @staticmethod
+    async def _migrate(conn: aiosqlite.Connection) -> None:
+        """Add any post-original columns missing from a pre-existing ``cases`` table."""
+        cur = await conn.execute("PRAGMA table_info(cases)")
+        existing = {row["name"] for row in await cur.fetchall()}
+        for name, decl in _MIGRATIONS:
+            if name not in existing:
+                await conn.execute(f"ALTER TABLE cases ADD COLUMN {name} {decl}")
 
     async def create(self, case_id: str, room_id: str) -> Case:
         """INSERT a fresh OPEN case (case_id == Band room task_id)."""
         now = _utcnow_iso()
         async with self._connect() as conn:
             await conn.execute(
-                "INSERT INTO cases "
-                "(case_id, room_id, state, features, verdict, created_at, updated_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (case_id, room_id, CaseState.OPEN.value, "{}", None, now, now),
+                "INSERT INTO cases (case_id, room_id, state, features, verdict, "
+                "events, resolved_inputs, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (case_id, room_id, CaseState.OPEN.value, "{}", None, "[]", None, now, now),
             )
             await conn.commit()
         return Case(
@@ -86,6 +115,8 @@ class CaseStore:
             state=CaseState.OPEN,
             features={},
             verdict=None,
+            events=[],
+            resolved_inputs=None,
             created_at=datetime.fromisoformat(now),
             updated_at=datetime.fromisoformat(now),
         )
@@ -93,8 +124,8 @@ class CaseStore:
     async def get(self, case_id: str) -> Case | None:
         async with self._connect() as conn:
             cur = await conn.execute(
-                "SELECT case_id, room_id, state, features, verdict, "
-                "created_at, updated_at FROM cases WHERE case_id = ?",
+                "SELECT case_id, room_id, state, features, verdict, events, "
+                "resolved_inputs, created_at, updated_at FROM cases WHERE case_id = ?",
                 (case_id,),
             )
             row = await cur.fetchone()
@@ -107,17 +138,20 @@ class CaseStore:
         *,
         verdict: Verdict | None = None,
         features: dict | None = None,
+        events: "list[OrderEvent] | None" = None,
+        resolved_inputs: "ResolvedInputs | None" = None,
     ) -> Case:
         """Persist ``new_state`` for ``case_id`` and bump ``updated_at``.
 
         Raises ``KeyError`` if the case does not exist. State-machine legality is
         the caller's job (``next_state``); this only writes the chosen state.
 
-        ``verdict`` / ``features`` are optional sidecars the pipeline attaches at
-        the transition that produces them (the engine's verdict on FLAG/ESCALATE,
-        the detector's features on OPEN -> UNDER_REVIEW). Passing ``None`` leaves
-        the stored column untouched, so a later transition can't wipe an earlier
-        verdict.
+        ``verdict`` / ``features`` / ``events`` / ``resolved_inputs`` are optional
+        sidecars the pipeline attaches at the transition that produces them (the
+        engine's verdict + the order events + the debate-resolved inputs on
+        FLAG/ESCALATE, the detector's features on OPEN -> UNDER_REVIEW). Passing
+        ``None`` leaves the stored column untouched, so a later transition can't
+        wipe an earlier sidecar.
         """
         now = _utcnow_iso()
         sets = ["state = ?", "updated_at = ?"]
@@ -128,6 +162,12 @@ class CaseStore:
         if features is not None:
             sets.append("features = ?")
             args.append(json.dumps(features))
+        if events is not None:
+            sets.append("events = ?")
+            args.append(json.dumps([e.model_dump(mode="json") for e in events]))
+        if resolved_inputs is not None:
+            sets.append("resolved_inputs = ?")
+            args.append(resolved_inputs.model_dump_json())
         args.append(case_id)
         async with self._connect() as conn:
             cur = await conn.execute(
@@ -144,8 +184,9 @@ class CaseStore:
     async def list(self) -> list[Case]:
         async with self._connect() as conn:
             cur = await conn.execute(
-                "SELECT case_id, room_id, state, features, verdict, "
-                "created_at, updated_at FROM cases ORDER BY created_at, case_id"
+                "SELECT case_id, room_id, state, features, verdict, events, "
+                "resolved_inputs, created_at, updated_at "
+                "FROM cases ORDER BY created_at, case_id"
             )
             rows = await cur.fetchall()
         return [_row_to_case(row) for row in rows]

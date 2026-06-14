@@ -12,6 +12,8 @@ from enum import Enum
 
 from pydantic import BaseModel
 
+from alpha_oversight.contracts.case_contracts import ResolvedInputs
+from alpha_oversight.contracts.order_events import OrderEvent
 from alpha_oversight.contracts.rule_contracts import Verdict
 
 
@@ -29,6 +31,12 @@ class Case(BaseModel):
     state: CaseState
     features: dict = {}
     verdict: Verdict | None = None
+    # Codify sidecars — the order events the case triaged + the debate-resolved
+    # contested inputs. Persisted at the terminal transition so a later
+    # human-confirm can derive + regression-gate a new rule from the SAME data
+    # (design §5 steps 5-7). Empty/None until the pipeline attaches them.
+    events: list[OrderEvent] = []
+    resolved_inputs: ResolvedInputs | None = None
     created_at: datetime
     updated_at: datetime
 

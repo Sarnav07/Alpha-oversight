@@ -260,9 +260,20 @@ async def run_surveillance(
                 {"packet": esc_out.packet, "recommend": esc_out.recommend})
 
     # ── 9. persist the terminal-for-now state (Beat A: FLAGGED; Beat B: ESCALATED)
+    # Attach the codify sidecars at the SAME transition that produces the verdict:
+    # the order events + the debate-resolved inputs an ESCALATED case needs so a
+    # later human-confirm can derive + regression-gate a new rule (design §5.5-7).
+    # ``features`` is re-persisted with the recruited family so ``codify`` infers
+    # it deterministically (not via a threshold heuristic).
     trigger = "flag" if verdict.result == "FLAG" else "escalate"
+    terminal_features = {**features.model_dump(), "family": family}
     final = await store.transition(
-        case_id, next_state(CaseState.UNDER_REVIEW, trigger), verdict=verdict
+        case_id,
+        next_state(CaseState.UNDER_REVIEW, trigger),
+        verdict=verdict,
+        features=terminal_features,
+        events=events,
+        resolved_inputs=resolved,
     )
     await _emit("pipeline", f"case {case_id} -> {final.state.value}")
     return final
