@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alpha-oversight"
+version = "0.1.0"
+description = "Adversarial trade-surveillance system coordinated through Band (lablab.ai Band of Agents hackathon)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "litellm",
+    "pydantic>=2",
+    "numpy",
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "websockets",
+    "python-dotenv",
+    "aiosqlite",
+    "tiktoken",
+    "structlog",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
+[tool.setuptools]
+package-dir = { "" = "backend" }
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = ["alpha_oversight*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["backend/tests"]
