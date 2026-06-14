@@ -26,9 +26,14 @@ This run = mock Band + mocked LLMs (no live keys). Phases 5–7 deferred.
 - [ ] 3B `memory/` (SQLite scratchpad/journal + prompt sections)
 - [ ] 3C `agents/` base + 8 wrappers + `specialist_registry` — GATE: test_specialist_select + schema'd run() vs FakeGateway
 
-## Phase 4 — Choreography on mock (milestone)  ⬜
-- [ ] `orchestration/{surveillance_pipeline,replay_writer}` + `server/app` + routes
-- [ ] **GATE:** test_choreography_e2e — Beat-A → FLAGGED case + `verify_chain()==True` over the run's ledger
+## Phase 4 — Choreography on mock (milestone)  ✅
+- [x] `orchestration/surveillance_pipeline.py` — `run_surveillance`: bridge→detector→investigator(+recruit @mention)→specialist→Prosecution/Defense (sequential staging, Featherless≤4)→adjudicator→engine.evaluate→escalation; transitions persisted; tee'd to replay
+- [x] `orchestration/briefs.py` — extracted prompt briefs (keeps the orchestrator focused)
+- [x] `orchestration/replay_writer.py` — `ReplayWriter.tee` → `events-<case>.jsonl`; `stream_replay` SSE at original cadence
+- [x] `server/app.py` — `create_app` + lifespan (register_models; seed→registry; wire bus/case_store/registry/handoff/ledger/bridge/replay on app.state)
+- [x] `server/routes_{cases,demo,human,stream}.py` — thin, read app.state
+- [x] `state/case_store.py` — `transition` extended with optional `verdict`/`features` sidecars (additive; prior tests green)
+- [x] **GATE:** `test_choreography_e2e` — Beat-A → FLAGGED + cited rule + `verify_chain()==True` over THIS run's JSONL (+ tamper→False); `test_server_app` drives the app via TestClient. 186 passed.
 
 ## Deferred (next check-ins)
 - [ ] Phase 5 — `rules/codify` + regression gate + `orchestration/rnd_loop` (R&D adversary + 2 oracles)

@@ -100,17 +100,39 @@ class CaseStore:
             row = await cur.fetchone()
         return _row_to_case(row) if row is not None else None
 
-    async def transition(self, case_id: str, new_state: CaseState) -> Case:
+    async def transition(
+        self,
+        case_id: str,
+        new_state: CaseState,
+        *,
+        verdict: Verdict | None = None,
+        features: dict | None = None,
+    ) -> Case:
         """Persist ``new_state`` for ``case_id`` and bump ``updated_at``.
 
         Raises ``KeyError`` if the case does not exist. State-machine legality is
         the caller's job (``next_state``); this only writes the chosen state.
+
+        ``verdict`` / ``features`` are optional sidecars the pipeline attaches at
+        the transition that produces them (the engine's verdict on FLAG/ESCALATE,
+        the detector's features on OPEN -> UNDER_REVIEW). Passing ``None`` leaves
+        the stored column untouched, so a later transition can't wipe an earlier
+        verdict.
         """
         now = _utcnow_iso()
+        sets = ["state = ?", "updated_at = ?"]
+        args: list = [new_state.value, now]
+        if verdict is not None:
+            sets.append("verdict = ?")
+            args.append(verdict.model_dump_json())
+        if features is not None:
+            sets.append("features = ?")
+            args.append(json.dumps(features))
+        args.append(case_id)
         async with self._connect() as conn:
             cur = await conn.execute(
-                "UPDATE cases SET state = ?, updated_at = ? WHERE case_id = ?",
-                (new_state.value, now, case_id),
+                f"UPDATE cases SET {', '.join(sets)} WHERE case_id = ?",
+                tuple(args),
             )
             await conn.commit()
             if cur.rowcount == 0:
