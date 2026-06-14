@@ -43,6 +43,34 @@ TIMEOUTS: dict[CaseState, float] = {
 }
 
 
+# Authoritative transition table (design §2.3). (state, trigger) -> next state.
+# The "timeout" safety valve is added below for every non-terminal state so the
+# table stays the single source of truth and a missing timeout can't slip in.
+_TRANSITIONS: dict[tuple[CaseState, str], CaseState] = {
+    (CaseState.OPEN, "suspicious"): CaseState.UNDER_REVIEW,
+    (CaseState.UNDER_REVIEW, "flag"): CaseState.FLAGGED,        # Beat A: known pattern
+    (CaseState.UNDER_REVIEW, "escalate"): CaseState.ESCALATED,  # Beat B: rules miss
+    (CaseState.FLAGGED, "close"): CaseState.CLOSED,
+    (CaseState.ESCALATED, "confirm"): CaseState.FLAGGED,        # human-confirm -> codify
+    (CaseState.ESCALATED, "reject"): CaseState.CLOSED,          # human dismiss
+}
+
+# CLOSED is terminal: it has no timeout and no outgoing edge.
+for _state, _budget in TIMEOUTS.items():
+    if _budget > 0.0:
+        _TRANSITIONS[(_state, "timeout")] = CaseState.CLOSED
+
+
 def next_state(current: CaseState, trigger: str) -> CaseState:
-    """Return the next state for ``trigger``; raise on illegal. ``"timeout"`` -> CLOSED."""
-    raise NotImplementedError
+    """Return the next state for ``trigger``; raise on illegal. ``"timeout"`` -> CLOSED.
+
+    The transition table is exhaustive: any ``(current, trigger)`` not in it is a
+    coding bug, so we raise ``ValueError`` rather than silently no-op. ``timeout``
+    is legal from every non-terminal state and always lands in CLOSED.
+    """
+    try:
+        return _TRANSITIONS[(current, trigger)]
+    except KeyError:
+        raise ValueError(
+            f"illegal transition: {current.value} --({trigger})-->"
+        ) from None

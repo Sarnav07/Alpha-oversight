@@ -19,5 +19,21 @@ SPECIALISTS: dict[str, dict] = {
 
 
 def select_specialist(features: Features) -> tuple[str, str]:
-    """Return ``(family, handle)`` for the first matching trigger."""
-    raise NotImplementedError
+    """Return ``(family, handle)`` for the first matching trigger.
+
+    Iterates ``SPECIALISTS`` in insertion order (spoofing -> layering ->
+    wash_trade -> marking) and returns the first family whose ``trigger``
+    fires on ``features``. Raises ``ValueError`` if none match — the
+    Investigator must always recruit *some* specialist, so a no-match means the
+    window should not have been opened as a case.
+    """
+    for family, spec in SPECIALISTS.items():
+        if spec["trigger"](features):
+            return family, spec["handle"]
+    raise ValueError(
+        "No specialist trigger fired for features: "
+        f"cancel_to_fill={features.cancel_to_fill}, "
+        f"depth_levels={features.depth_levels}, "
+        f"self_match_ratio={features.self_match_ratio}, "
+        f"eod_print_spike={features.eod_print_spike}"
+    )
