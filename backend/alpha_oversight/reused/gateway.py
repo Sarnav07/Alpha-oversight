@@ -20,8 +20,24 @@ from typing import Any, Callable
 import litellm
 
 from alpha_oversight.contracts.common import ModelSpec
+from alpha_oversight import providers
 
 logger = logging.getLogger(__name__)
+
+
+async def _acompletion(model_spec: ModelSpec, **kwargs):
+    """Single choke point for every litellm call in this module (Phase 1B).
+
+    Merges ``providers.resolve_call_kwargs(model_spec)`` (per-provider api_base +
+    api_key) into the request and wraps Featherless calls in the process-wide
+    ``FEATHERLESS_SEMAPHORE`` (4-slot cap) so no caller can 429 the open tier.
+    Explicit ``kwargs`` win over resolved defaults.
+    """
+    call_kwargs = {**providers.resolve_call_kwargs(model_spec), **kwargs}
+    if providers.is_featherless(model_spec):
+        async with providers.FEATHERLESS_SEMAPHORE:
+            return await litellm.acompletion(model=model_spec.litellm_model, **call_kwargs)
+    return await litellm.acompletion(model=model_spec.litellm_model, **call_kwargs)
 
 # ── Token counting ──
 try:
@@ -205,11 +221,9 @@ class LLMGateway:
             try:
                 start = time.monotonic()
 
-                # TODO(Phase-1B): merge providers.resolve_call_kwargs(model_spec) here
-                #   (api_base + api_key per provider) and wrap Featherless calls in
-                #   `async with providers.FEATHERLESS_SEMAPHORE:`. Today routes via OpenRouter only.
-                response = await litellm.acompletion(
-                    model=model_spec.litellm_model,
+                # Phase 1B: per-provider api_base/key + Featherless semaphore (see _acompletion).
+                response = await _acompletion(
+                    model_spec,
                     messages=messages,
                     max_tokens=model_spec.max_tokens,
                     temperature=model_spec.temperature,
@@ -338,9 +352,8 @@ class LLMGateway:
 
         for round_idx in range(max_rounds + 1):  # +1 for final answer round
             try:
-                # Build completion kwargs
+                # Build completion kwargs (model is injected by _acompletion from the spec)
                 completion_kwargs: dict[str, Any] = {
-                    "model": model_spec.litellm_model,
                     "messages": messages,
                     "max_tokens": model_spec.max_tokens,
                     "temperature": model_spec.temperature,
@@ -354,9 +367,8 @@ class LLMGateway:
                     # Final round — force text response, request JSON
                     completion_kwargs["response_format"] = {"type": "json_object"}
 
-                # TODO(Phase-1B): completion_kwargs.update(providers.resolve_call_kwargs(model_spec))
-                #   + Featherless semaphore wrap (see providers.py).
-                response = await litellm.acompletion(**completion_kwargs)
+                # Phase 1B: per-provider api_base/key + Featherless semaphore (see _acompletion).
+                response = await _acompletion(model_spec, **completion_kwargs)
 
                 usage = response.usage
                 input_tokens = usage.prompt_tokens if usage else 0
@@ -478,9 +490,9 @@ class LLMGateway:
                                 ),
                             },
                         ]
-                        # TODO(Phase-1B): merge providers.resolve_call_kwargs(model_spec) + Featherless semaphore.
-                        forced_resp = await litellm.acompletion(
-                            model=model_spec.litellm_model,
+                        # Phase 1B: per-provider api_base/key + Featherless semaphore (see _acompletion).
+                        forced_resp = await _acompletion(
+                            model_spec,
                             messages=clean_messages,
                             max_tokens=model_spec.max_tokens,
                             temperature=model_spec.temperature,
