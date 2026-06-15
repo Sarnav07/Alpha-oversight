@@ -8,13 +8,14 @@ import {
   useReducedMotion,
   type MotionValue,
 } from "framer-motion";
+import Logomark from "@/components/landing/Logomark";
 
 /**
  * ManifestoSection — the centered "statement" block that follows the
  * <KeyFigures/> stats band (AlphaLedger clone, themed for A&O).
  *
  * A LIGHT section (data-section="light", white bg, hard cut from the band
- * above). A small muted ◢ logomark sits centered at the top; below it, one
+ * above). A small muted brand <Logomark/> sits centered at the top; below it, one
  * large centered statement is revealed WORD-BY-WORD from light-gray
  * (--text-faint) to ink (--text-primary) as the section scrolls through the
  * viewport center.
@@ -31,7 +32,7 @@ import {
  */
 
 const STATEMENT =
-  "Alpha & Oversight reinvents surveillance as an adversarial craft. One desk invents the manipulation the market hasn't seen yet; another detects it, debates it across two model tiers, and proves the catch — every handoff crossing the Band, every verdict sealed in a hash-chained ledger, every novel evasion codified into a rule that can never be un-learned.";
+  "Alpha & Oversight reinvents surveillance as an adversarial craft. One desk invents the manipulation; another detects it, proves the catch, and codifies a new rule live — every handoff crossing the Band, every verdict sealed in an immutable ledger.";
 
 const GRAY = "var(--text-faint)"; // #9a9a9a in the light theme
 const INK = "var(--text-primary)"; // #14161c in the light theme
@@ -88,30 +89,25 @@ export default function ManifestoSection() {
         className="mx-auto flex flex-col items-center px-6 text-center"
         style={{
           maxWidth: 760,
-          paddingTop: "20vh",
+          paddingTop: "clamp(36px, 6vh, 72px)",
           paddingBottom: "20vh",
         }}
       >
-        {/* ◢ logomark — small, muted, centered. A current-color bordered box
-            rotated 45deg, color taken from --text-faint. */}
+        {/* Brand logomark — small, muted, centered above the statement.
+            Color is taken from --text-faint via currentColor. */}
         <span
-          aria-hidden="true"
-          className="mb-12 inline-block"
-          style={{
-            width: 14,
-            height: 14,
-            border: "1.5px solid var(--text-faint)",
-            transform: "rotate(45deg)",
-            borderRadius: 2,
-          }}
-        />
+          className="mb-8 inline-block"
+          style={{ color: "var(--text-faint)" }}
+        >
+          <Logomark size={28} />
+        </span>
 
         {/* The statement. */}
         <p
           className="font-sans"
           style={{
             fontSize: "clamp(26px, 3.4vw, 38px)",
-            fontWeight: 300,
+            fontWeight: 400,
             lineHeight: 1.35,
             letterSpacing: "-0.01em",
           }}

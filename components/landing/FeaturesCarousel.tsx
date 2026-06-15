@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import CommandCenterArt from "./CommandCenterArt";
 import AuditChainArt from "./art/AuditChainArt";
 import ThreatLeaderboardArt from "./art/ThreatLeaderboardArt";
+import Logomark from "@/components/landing/Logomark";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -41,8 +42,128 @@ type Card = {
   title: string;
   body: string;
   art: React.ReactNode;
+  /** When true the device frame shows a centered ▶ play affordance. */
+  play?: boolean;
   cta?: { label: string; href: string };
 };
+
+/**
+ * A circular ▶ play affordance overlaid on the device art (centered). Purely
+ * decorative — mirrors the AlphaLedger feature-card play button.
+ */
+function PlayButton() {
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute left-1/2 top-1/2 z-20 flex items-center justify-center rounded-full backdrop-blur-sm"
+      style={{
+        width: 56,
+        height: 56,
+        transform: "translate(-50%, -50%)",
+        backgroundColor: "rgba(254,254,254,0.14)",
+        border: "1px solid rgba(254,254,254,0.4)",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.45)",
+      }}
+    >
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M5 3.5L14 9L5 14.5V3.5Z" fill="var(--frost)" />
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * LaptopFrame — a reusable angled MacBook-style device frame (bezel + base)
+ * wrapping a card's art region, with an optional ▶ play overlay. The screen is
+ * tilted slightly to read as a real device rising into the card, matching the
+ * AlphaLedger reference. `play` toggles the centered play affordance.
+ */
+function LaptopFrame({
+  children,
+  play = false,
+}: {
+  children: React.ReactNode;
+  play?: boolean;
+}) {
+  return (
+    <div className="relative flex h-full w-full items-center justify-center">
+      <div
+        className="relative"
+        style={{
+          width: "112%",
+          maxWidth: 760,
+          transform: "perspective(1600px) rotateY(-12deg) rotateX(3deg)",
+          transformOrigin: "left center",
+        }}
+      >
+        {/* Lid — bezel + screen */}
+        <div
+          className="relative overflow-hidden"
+          style={{
+            borderRadius: 14,
+            padding: 10,
+            backgroundColor: "#0b0b0c",
+            border: "1px solid var(--border-default)",
+            boxShadow:
+              "0 40px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}
+        >
+          {/* Camera notch */}
+          <span
+            aria-hidden="true"
+            className="absolute left-1/2 top-[5px] z-10 inline-block rounded-full"
+            style={{
+              width: 5,
+              height: 5,
+              transform: "translateX(-50%)",
+              backgroundColor: "rgba(255,255,255,0.18)",
+            }}
+          />
+          <div
+            className="relative overflow-hidden"
+            style={{
+              borderRadius: 7,
+              backgroundColor: "var(--obsidian)",
+              border: "1px solid var(--hairline)",
+              aspectRatio: "16 / 10.2",
+            }}
+          >
+            <div className="absolute inset-0">{children}</div>
+            {play ? <PlayButton /> : null}
+          </div>
+        </div>
+        {/* Base / hinge — a thin slab beneath the lid */}
+        <div
+          aria-hidden="true"
+          className="relative mx-auto"
+          style={{
+            width: "104%",
+            left: "-2%",
+            height: 12,
+            marginTop: 3,
+            borderRadius: "0 0 10px 10px",
+            background:
+              "linear-gradient(180deg, #141416 0%, #0a0a0b 60%, #050505 100%)",
+            border: "1px solid var(--border-subtle)",
+            borderTop: "none",
+            boxShadow: "0 18px 30px rgba(0,0,0,0.5)",
+          }}
+        >
+          {/* hinge indent */}
+          <span
+            className="absolute left-1/2 top-0 inline-block rounded-b"
+            style={{
+              width: "16%",
+              height: 4,
+              transform: "translateX(-50%)",
+              backgroundColor: "#000",
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /** Inline art for card 3 — two dossier mini-cards across the two model tiers. */
 function CrossModelArt() {
@@ -137,6 +258,7 @@ const CARDS: Card[] = [
     title: "Live Trace Analytics",
     body: "Every agent step streams in real time — topology, model badges, verdicts, the blue waiting-on-Band node.",
     art: <CommandCenterArt />,
+    play: true,
     cta: { label: "Enter Live Desk →", href: "/desk" },
   },
   {
@@ -145,6 +267,7 @@ const CARDS: Card[] = [
     title: "Verified & Audited Lineage",
     body: "Every decision sealed in a hash-chained ledger. verify_chain ✓ — tamper-evident, audit-ready.",
     art: <AuditChainArt />,
+    play: true,
   },
   {
     no: "03",
@@ -162,42 +285,67 @@ const CARDS: Card[] = [
   },
 ];
 
-/** A single large dark feature card. */
+/**
+ * A single large dark feature card — AlphaLedger layout: a LEFT text column
+ * (outline icon, title, body, optional CTA pill anchored to the lower-left) and
+ * a RIGHT device-framed art region with an optional ▶ play affordance.
+ *
+ * Cards flagged `play` show their art inside an angled <LaptopFrame/>; the
+ * others present the art in a flat bordered "framed region".
+ */
 function FeatureCard({ card }: { card: Card }) {
+  const framed = card.play ? (
+    <LaptopFrame play>{card.art}</LaptopFrame>
+  ) : (
+    <div
+      className="relative h-full w-full overflow-hidden rounded-[12px] border"
+      style={{
+        borderColor: "var(--hairline)",
+        backgroundColor: "var(--obsidian)",
+        boxShadow: "0 30px 70px rgba(0,0,0,0.45)",
+      }}
+    >
+      <div className="absolute inset-0">{card.art}</div>
+    </div>
+  );
+
   return (
     <article
-      className="feat-card flex h-full shrink-0 flex-col overflow-hidden rounded-[var(--r-card)] border"
+      className="feat-card grid h-full shrink-0 grid-rows-[auto] overflow-hidden rounded-[var(--r-card)] border"
       style={{
-        width: "min(76vw, 980px)",
+        width: "min(60vw, 860px)",
+        gridTemplateColumns: "minmax(0, 0.86fr) minmax(0, 1.14fr)",
         backgroundColor: "var(--bg-card-2)",
         borderColor: "var(--border-subtle)",
         boxShadow: "0 30px 90px rgba(0,0,0,0.45)",
       }}
     >
-      {/* Header band: icon + no + title + body (+ optional CTA) */}
-      <div className="flex flex-col gap-4 p-7 sm:flex-row sm:items-start sm:justify-between sm:p-9">
-        <div className="max-w-[560px]">
-          <div className="flex items-center gap-3">
-            <span
-              aria-hidden="true"
-              className="flex items-center justify-center rounded-[10px] border text-[16px] text-[var(--text-primary)]"
-              style={{
-                width: 38,
-                height: 38,
-                borderColor: "var(--border-default)",
-                backgroundColor: "var(--bg-inset)",
-              }}
-            >
-              {card.icon}
-            </span>
-            <span className="font-mono text-[12px] tracking-[0.18em] text-[var(--text-faint)]">
-              {card.no}
-            </span>
-          </div>
-          <h3
-            className="mt-5 font-sans"
+      {/* LEFT — text column. Icon top-left, title + body, CTA pill lower-left. */}
+      <div className="flex h-full flex-col p-7 sm:p-9">
+        <div>
+          <span
+            aria-hidden="true"
+            className="flex items-center justify-center rounded-[10px] border text-[16px] text-[var(--text-primary)]"
             style={{
-              fontSize: "clamp(22px, 2.4vw, 30px)",
+              width: 40,
+              height: 40,
+              borderColor: "var(--border-default)",
+              backgroundColor: "var(--bg-inset)",
+            }}
+          >
+            {card.icon}
+          </span>
+          <span className="mt-4 block font-mono text-[11px] tracking-[0.18em] text-[var(--text-faint)]">
+            {card.no}
+          </span>
+        </div>
+
+        {/* Title + body anchored toward the lower portion of the column. */}
+        <div className="mt-auto pt-8">
+          <h3
+            className="font-sans"
+            style={{
+              fontSize: "clamp(24px, 2.6vw, 34px)",
               fontWeight: 300,
               letterSpacing: "-0.01em",
               color: "var(--text-primary)",
@@ -206,7 +354,7 @@ function FeatureCard({ card }: { card: Card }) {
             {card.title}
           </h3>
           <p
-            className="mt-3 font-sans"
+            className="mt-3 max-w-[42ch] font-sans"
             style={{
               fontSize: "clamp(13px, 1.4vw, 15px)",
               lineHeight: 1.55,
@@ -215,33 +363,25 @@ function FeatureCard({ card }: { card: Card }) {
           >
             {card.body}
           </p>
-        </div>
 
-        {card.cta ? (
-          <Link
-            href={card.cta.href}
-            className="inline-flex shrink-0 items-center self-start rounded-[var(--r-pill)] border px-4 py-2 font-sans text-[13px] font-medium transition-colors"
-            style={{
-              borderColor: "var(--border-default)",
-              backgroundColor: "var(--frost)",
-              color: "var(--obsidian)",
-            }}
-          >
-            {card.cta.label}
-          </Link>
-        ) : null}
+          {card.cta ? (
+            <Link
+              href={card.cta.href}
+              className="mt-7 inline-flex items-center self-start rounded-[var(--r-pill)] px-5 py-2.5 font-sans text-[13px] font-medium transition-colors hover:opacity-90"
+              style={{
+                backgroundColor: "var(--frost)",
+                color: "var(--obsidian)",
+              }}
+            >
+              {card.cta.label}
+            </Link>
+          ) : null}
+        </div>
       </div>
 
-      {/* Screenshot / art region — fills the remaining height. */}
-      <div
-        className="relative mx-7 mb-7 flex-1 overflow-hidden rounded-[10px] border sm:mx-9 sm:mb-9"
-        style={{
-          borderColor: "var(--hairline)",
-          backgroundColor: "var(--obsidian)",
-          minHeight: 0,
-        }}
-      >
-        <div className="absolute inset-0">{card.art}</div>
+      {/* RIGHT — device-framed art region with the ▶ play affordance. */}
+      <div className="relative flex h-full min-h-0 items-center justify-center overflow-hidden py-7 pr-7 sm:py-9 sm:pr-9">
+        {framed}
       </div>
     </article>
   );
@@ -249,29 +389,23 @@ function FeatureCard({ card }: { card: Card }) {
 
 /** The section-anchor header — shared by both render paths. */
 function FeaturesHeader() {
+  // data-section="light" remaps the monochrome tokens to their light-theme
+  // values, so the eyebrow / heading / hairline / logomark read DARK on the
+  // white section (the cards below stay dark — they sit outside this wrapper).
   return (
-    <div className="px-6 sm:px-10">
+    <div data-section="light" className="px-6 pt-16 sm:px-10">
       <div
-        className="flex items-center justify-between pb-5 pt-8"
-        style={{ borderBottom: "1px solid var(--hairline)" }}
+        className="flex items-center justify-between pt-4"
+        style={{ borderTop: "1px solid var(--hairline)" }}
       >
         <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
           Features
         </span>
-        <span
-          aria-hidden="true"
-          className="inline-block"
-          style={{
-            width: 14,
-            height: 14,
-            border: "1.5px solid var(--text-faint)",
-            transform: "rotate(45deg)",
-            borderRadius: 2,
-            opacity: 0.6,
-          }}
-        />
+        <span aria-hidden="true" style={{ opacity: 0.55 }}>
+          <Logomark size={16} className="text-[var(--text-faint)]" />
+        </span>
       </div>
-      <div className="mt-8 flex items-end justify-between gap-6">
+      <div className="mt-14 flex items-end justify-between gap-6">
         <h2
           className="font-sans"
           style={{
@@ -354,8 +488,8 @@ export default function FeaturesCarousel() {
       <section
         aria-label="Our Features"
         style={{
-          backgroundColor: "var(--bg-page)",
-          color: "var(--text-primary)",
+          backgroundColor: "#ffffff",
+          color: "#14161c",
         }}
       >
         <div className="mx-auto" style={{ maxWidth: "var(--maxw-content)" }}>
@@ -387,15 +521,15 @@ export default function FeaturesCarousel() {
       className="relative"
       style={{
         height: runway != null ? `${runway}px` : "300vh",
-        backgroundColor: "var(--bg-page)",
+        backgroundColor: "#ffffff",
       }}
     >
       {/* Sticky stage — pinned for the duration of the horizontal scroll. */}
       <div
         className="feat-stage sticky top-0 flex h-screen w-full flex-col overflow-hidden"
         style={{
-          backgroundColor: "var(--bg-page)",
-          color: "var(--text-primary)",
+          backgroundColor: "#ffffff",
+          color: "#14161c",
         }}
       >
         <div className="mx-auto w-full" style={{ maxWidth: "var(--maxw-content)" }}>
@@ -406,7 +540,13 @@ export default function FeaturesCarousel() {
         <div className="relative flex-1">
           <div
             ref={trackRef}
-            className="absolute left-0 top-0 flex h-full items-center gap-6 pl-6 pr-[8vw] will-change-transform sm:gap-8 sm:pl-10"
+            className="absolute left-0 top-0 flex h-full items-center gap-6 pr-[8vw] will-change-transform sm:gap-8"
+            style={{
+              // Inset the first card so it aligns with the "Our Features"
+              // heading (the centered max-width container), not the viewport edge.
+              paddingLeft:
+                "max(calc((100vw - var(--maxw-content)) / 2 + 2.5rem), 2.5rem)",
+            }}
           >
             {CARDS.map((card) => (
               <div key={card.no} className="h-[78%] py-2">

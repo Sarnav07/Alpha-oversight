@@ -11,9 +11,10 @@ import { motion, useInView, useReducedMotion } from "framer-motion";
  * light-weight title sits over a row of big MONO count-up figures, each with an
  * uppercase tracked label. A thin hairline-topped eyebrow strip closes it out.
  *
- * Prop-less, self-contained. Numbers count up from 0 when scrolled into view;
- * "4 → 5" is a static stylized figure (not numeric). Respects
- * prefers-reduced-motion by rendering final values immediately.
+ * Three primary figures, evenly spaced to mirror AlphaLedger's reference rhythm
+ * (12k+ / 1.8k+ / 990M+). Prop-less, self-contained. Numbers count up from 0
+ * when scrolled into view. Respects prefers-reduced-motion by rendering final
+ * values immediately.
  */
 
 type Figure = {
@@ -37,7 +38,6 @@ const FIGURES: Figure[] = [
     decimals: 1,
     label: "Analyst-hours saved · wk",
   },
-  { to: null, staticValue: "4 → 5", label: "Rules codified live" },
 ];
 
 const COUNT_MS = 1400;
@@ -96,8 +96,8 @@ function FigureCell({
       <span
         className="font-mono tabular-nums"
         style={{
-          fontSize: "clamp(40px, 6vw, 60px)",
-          fontWeight: 300,
+          fontSize: "clamp(30px, 3.6vw, 46px)",
+          fontWeight: 400,
           lineHeight: 1,
           letterSpacing: "-0.02em",
           color: "var(--text-primary)",
@@ -108,7 +108,7 @@ function FigureCell({
         {display}
       </span>
       <span
-        className="mt-4 font-sans"
+        className="mt-3 font-sans"
         style={{
           fontSize: 11,
           fontWeight: 500,
@@ -140,7 +140,7 @@ export default function KeyFigures() {
       }}
     >
       <div
-        className="mx-auto px-6 py-24 sm:py-32"
+        className="mx-auto px-6 pt-24 pb-10 sm:pt-32 sm:pb-12"
         style={{ maxWidth: "var(--maxw-content)" }}
       >
         {/* Title */}
@@ -165,7 +165,7 @@ export default function KeyFigures() {
           initial={reduce ? false : { opacity: 0, y: 20 }}
           animate={start ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-16 grid grid-cols-2 gap-y-14 gap-x-8 sm:gap-x-12 lg:mt-20 lg:grid-cols-4 lg:gap-x-8"
+          className="mt-12 grid grid-cols-1 gap-y-12 sm:grid-cols-3 sm:gap-x-12 lg:mt-14 lg:gap-x-20"
         >
           {FIGURES.map((figure) => (
             <FigureCell
@@ -177,15 +177,18 @@ export default function KeyFigures() {
           ))}
         </motion.div>
 
-        {/* Eyebrow strip with hairline top border */}
+        {/* Eyebrow strip with hairline top border — left-aligned, tight under
+            the line (matches 11.png "VERIFY YOUR TRACK RECORD. ATTRACT CAPITAL."). */}
         <div
-          className="mt-20 pt-6 text-center lg:mt-24"
+          className="mt-12 pt-1.5 text-left lg:mt-14"
           style={{ borderTop: "1px solid var(--hairline)" }}
         >
           <span
             className="font-mono"
             style={{
               fontSize: 11,
+              lineHeight: 1,
+              display: "inline-block",
               textTransform: "uppercase",
               letterSpacing: "0.18em",
               color: "var(--text-muted)",

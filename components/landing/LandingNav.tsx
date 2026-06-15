@@ -1,20 +1,36 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import Logomark from "@/components/landing/Logomark";
 
 /**
  * LandingNav — AlphaLedger-style floating top navigation for the A&O landing page.
  *
- * Sits fixed at the top, full width, over a transparent background so it can
- * float across the alternating light/dark scrollytelling frames of the hero.
+ * Sits fixed at the top, full width, over a transparent background so it floats
+ * across the alternating light/dark scrollytelling frames of the page.
  *
- * The legibility trick (cloned from AlphaLedger): the primary nav content sits
- * in a `mix-blend-mode: difference` layer so white ink reads as dark over the
- * white hero and as light over the obsidian dashboard frame — no theme-aware
- * JS scroll listener needed. The "Band: connected" pill and the solid CTA
- * button are deliberately kept OUTSIDE the blend layer (difference-blending a
- * filled pill/button produces muddy, illegible chroma), so they render with
- * fixed, self-contained contrast instead.
+ * LEGIBILITY — deterministic scroll-spy (NOT mix-blend-mode).
+ * ----------------------------------------------------------
+ * The prior implementation relied on `mix-blend-mode: difference`. That is only
+ * correct when the blended ink is PURE #fff with no isolating/opaque ancestor;
+ * here the brand+links sit inside positioned/opacity-bearing flex layers, so the
+ * blend silently produced invisible output over the white hero (see es.png).
+ *
+ * Instead we read the GROUND TRUTH: each frame we sample the actually-rendered
+ * pixel behind the nav's centre with `document.elementsFromPoint`, walk up to the
+ * first element with a non-transparent background, and compute its perceptual
+ * luminance. Luminance < 0.5 ⇒ dark frame ⇒ paint the brand/links WHITE; else
+ * paint them INK (var(--text-primary)). This is robust because:
+ *   • It works even while GSAP tweens the hero stage colour white→obsidian
+ *     mid-scroll (no scroll delta), because we also poll on rAF, not just scroll.
+ *   • It needs no agreement from sibling sections about their theme attrs.
+ *   • Default state is INK (the page opens white at the top), so the brand is
+ *     visible on first paint before any listener fires — no flash of invisible text.
+ *
+ * The "Band: connected" pill and the solid dark CTA already carry their own
+ * self-contained contrast and are left untouched by the theme flip.
  *
  * Self-contained, prop-less, default export.
  */
@@ -26,59 +42,138 @@ const LINKS: ReadonlyArray<{ label: string; href: string; isRoute?: boolean }> =
   { label: "Audit", href: "#audit" },
 ];
 
-export default function LandingNav() {
-  return (
-    <header className="fixed inset-x-0 top-0 z-50 w-full">
-      <nav className="mx-auto flex h-16 max-w-[var(--maxw-content)] items-center justify-between px-6 sm:px-10 lg:px-14">
-        {/* ── blend layer: brand + links auto-invert over light/dark frames ── */}
-        <div
-          className="flex flex-1 items-center justify-between"
-          style={{ mixBlendMode: "difference" }}
-        >
-          {/* brand */}
-          <Link
-            href="/"
-            aria-label="Alpha &amp; Oversight — home"
-            className="group flex items-center gap-2.5 text-white"
-          >
-            {/* ◢ logomark: a small square with an open top, rotated 45° */}
-            <span
-              aria-hidden="true"
-              className="inline-block h-3.5 w-3.5 rotate-45 rounded-tl-[3px] border-[1.5px] border-current border-b-0 border-r-0 transition-transform duration-300 ease-out group-hover:rotate-[135deg]"
-            />
-            <span className="font-sans text-[13px] font-semibold uppercase tracking-[0.16em] text-white">
-              Alpha &amp; Oversight
-            </span>
-          </Link>
+/** Parse an rgb()/rgba() computed-style string → perceptual luminance, or null if transparent. */
+function luminanceOf(color: string): number | null {
+  const m = color.match(/rgba?\(([^)]+)\)/);
+  if (!m) return null;
+  const parts = m[1].split(",").map((p) => parseFloat(p.trim()));
+  const [r, g, b] = parts;
+  const a = parts.length >= 4 ? parts[3] : 1;
+  if (!a) return null; // fully transparent → not the painted background
+  // Relative luminance (sRGB-weighted), good enough for a light/dark decision.
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+}
 
-          {/* center / right links */}
-          <ul className="hidden items-center gap-7 md:flex">
-            {LINKS.map((link) =>
-              link.isRoute ? (
+export default function LandingNav() {
+  // true ⇒ frame behind the nav is dark ⇒ paint brand/links white.
+  const [onDark, setOnDark] = useState(false);
+
+  useEffect(() => {
+    let raf = 0;
+    let last = -1; // -1 unknown, 0 light, 1 dark — avoids redundant setState churn.
+
+    const sample = () => {
+      raf = 0;
+      // Sample at the nav's vertical mid-line, slightly inset from the left edge
+      // where the brand actually sits.
+      const y = 32;
+      const x = Math.min(80, window.innerWidth / 2);
+      const stack = document.elementsFromPoint(x, y);
+
+      let lum: number | null = null;
+      for (const el of stack) {
+        if (el instanceof HTMLElement && el.closest("header[data-landing-nav]")) {
+          continue; // skip the nav itself
+        }
+        const bg = getComputedStyle(el).backgroundColor;
+        const l = luminanceOf(bg);
+        if (l !== null) {
+          lum = l;
+          break; // first opaque background wins (it's what the eye sees)
+        }
+      }
+
+      // If nothing opaque was found (e.g. between sections), assume light page bg.
+      const dark = lum !== null && lum < 0.5;
+      const next = dark ? 1 : 0;
+      if (next !== last) {
+        last = next;
+        setOnDark(dark);
+      }
+    };
+
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(sample);
+    };
+
+    // rAF poll loop: catches GSAP background tweens that don't emit scroll events.
+    let pollRaf = 0;
+    const poll = () => {
+      schedule();
+      pollRaf = requestAnimationFrame(poll);
+    };
+
+    sample();
+    pollRaf = requestAnimationFrame(poll);
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      if (pollRaf) cancelAnimationFrame(pollRaf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, []);
+
+  // Ink on light frames (default), white on dark frames.
+  // NOTE: this fixed header is NOT inside a [data-section="light"] wrapper, so
+  // var(--text-primary)/--text-body resolve to the ROOT (dark-theme) values —
+  // i.e. near-white — which made the brand invisible + links faint over the
+  // white hero. Use EXPLICIT dark hex on light frames instead.
+  const inkColor = onDark ? "#ffffff" : "#14161c";
+  const linkColor = onDark ? "rgba(255,255,255,0.82)" : "#52525b";
+  const linkHover = onDark ? "#ffffff" : "#14161c";
+
+  return (
+    <header data-landing-nav className="fixed inset-x-0 top-0 z-50 w-full">
+      <nav className="relative flex h-[72px] w-full items-center justify-between px-6 sm:px-10 lg:px-16">
+        {/* brand: shared Logomark + editorial uppercase wordmark */}
+        <Link
+          href="/"
+          aria-label="Alpha &amp; Oversight — home"
+          className="group inline-flex items-center gap-2.5"
+          style={{ color: inkColor, transition: "color 200ms ease" }}
+        >
+          <Logomark size={22} className="transition-opacity duration-300 group-hover:opacity-80" />
+          <span className="font-sans text-[13px] font-semibold uppercase tracking-[0.16em]">
+            Alpha &amp; Oversight
+          </span>
+        </Link>
+
+        {/* centered nav links, absolutely centered in the bar */}
+        <div className="pointer-events-none absolute inset-x-0 hidden justify-center md:flex">
+          <ul className="pointer-events-auto flex items-center gap-8">
+            {LINKS.map((link) => {
+              const inner = (
+                <span
+                  className="font-sans text-[12.5px] tracking-wide"
+                  style={{ color: linkColor, transition: "color 200ms ease" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = linkHover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = linkColor;
+                  }}
+                >
+                  {link.label}
+                </span>
+              );
+              return (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="font-sans text-[12px] tracking-wide text-white/70 transition-colors duration-200 hover:text-white"
-                  >
-                    {link.label}
-                  </Link>
+                  {link.isRoute ? (
+                    <Link href={link.href}>{inner}</Link>
+                  ) : (
+                    <a href={link.href}>{inner}</a>
+                  )}
                 </li>
-              ) : (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    className="font-sans text-[12px] tracking-wide text-white/70 transition-colors duration-200 hover:text-white"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ),
-            )}
+              );
+            })}
           </ul>
         </div>
 
-        {/* ── outside the blend layer: fixed-contrast status pill + CTA ── */}
-        <div className="ml-7 flex items-center gap-3">
+        {/* fixed-contrast status pill + CTA (own self-contained contrast) */}
+        <div className="flex items-center gap-3">
           {/* Band: connected status pill */}
           <span className="hidden items-center gap-1.5 rounded-[var(--r-pill)] border border-white/15 bg-black/25 px-3 py-1.5 backdrop-blur-sm sm:inline-flex">
             <span
@@ -94,10 +189,10 @@ export default function LandingNav() {
             </span>
           </span>
 
-          {/* Launch Desk CTA */}
+          {/* Launch Desk CTA — dark pill, fixed contrast */}
           <Link
             href="/desk"
-            className="group inline-flex items-center gap-1.5 rounded-[var(--r-pill)] bg-white px-4 py-2 font-sans text-[12px] font-medium tracking-wide text-[var(--obsidian)] shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_2px_10px_rgba(0,0,0,0.35)] transition-all duration-200 hover:bg-white/90"
+            className="group inline-flex items-center gap-1.5 rounded-[var(--r-pill)] border border-white/12 bg-[var(--obsidian)] px-4 py-2 font-sans text-[12px] font-medium tracking-wide text-white shadow-[0_1px_0_rgba(255,255,255,0.08)_inset,0_2px_10px_rgba(0,0,0,0.35)] transition-all duration-200 hover:border-white/20 hover:bg-[#0c0c0c]"
           >
             Launch Desk
             <span
