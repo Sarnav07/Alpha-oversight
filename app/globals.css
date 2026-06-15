@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+/* ============================================================
+   ALPHA & OVERSIGHT — DESIGN TOKENS
+   Backbone: AlphaLedger monochrome. Accents are SEMANTIC ONLY.
+   See FRONTEND_BUILD_PLAN.md §1 / §1b.
+   ============================================================ */
+:root {
+  /* core monochrome (AlphaLedger verbatim) */
+  --obsidian: #020202;
+  --frost: #fefefe;
+  --charcoal: #2b2b2b;
+  --gunmetal: #494949;
+  --slate: #636363;
+  --ash: #7f7f7f;
+
+  /* surfaces (dark-first) */
+  --bg-page: #020202;
+  --bg-section-alt: #070707;
+  --bg-nav: #060606;
+  --bg-card: #0f1011;
+  --bg-card-2: #16181c;
+  --bg-card-hover: #1b1e23;
+  --bg-inset: #0a0b0d;
+
+  /* borders / hairlines */
+  --border-subtle: #2a2a2a;
+  --border-default: #3a3a3a;
+  --border-strong: #4a4a4a;
+  --hairline: #1c1d1f;
+
+  /* type colors */
+  --text-primary: #fefefe;
+  --text-body: #c7ccd1;
+  --text-muted: #888888;
+  --text-faint: #5f5f5f;
+  --text-on-light: #14161c;
+
+  /* semantic accents — the ONLY chroma */
+  --band-blue: #3b82f6;
+  --band-blue-glow: #3b82f655;
+  --band-blue-dim: #1e3a5f;
+  --desk-rnd: #6b7280; /* graphite — tone-only (D3) */
+  --desk-surv: #9aa6c4; /* light slate — tone-only (D3) */
+  --verdict-pass: #34d399;
+  --verdict-flag: #ef4444;
+  --verdict-escalate: #f59e0b;
+  --verdict-complete: #10b981;
+  --status-idle: #4a4f57;
+  --tier-frontier: #c9a227;
+  --tier-open: #6b7280;
+
+  /* radii / spacing */
+  --r-card: 14px;
+  --r-pill: 9999px;
+  --r-chip: 6px;
+  --maxw-content: 1280px;
+
+  /* motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 180ms;
+  --dur-reveal: 600ms;
+  --dur-count: 1400ms;
+}
+
+/* Hard LIGHT-section inversion (AlphaLedger signature — §1b) */
+[data-section="light"] {
+  --bg-page: #ffffff;
+  --bg-card: #fbfbfb;
+  --bg-card-2: #f4f4f4;
+  --text-primary: #14161c;
+  --text-body: #3a3a3a;
+  --text-muted: #646464;
+  --text-faint: #9a9a9a;
+  --border-default: #e7e7e7;
+  --border-subtle: #ececec;
+  --hairline: #e7e7e7;
+}
+
+/* expose a core token subset to Tailwind utilities (bg-obsidian, text-frost, ...) */
+@theme inline {
+  --color-obsidian: var(--obsidian);
+  --color-frost: var(--frost);
+  --color-page: var(--bg-page);
+  --color-card: var(--bg-card);
+  --color-card-2: var(--bg-card-2);
+  --color-ink: var(--text-primary);
+  --color-body: var(--text-body);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+  --color-band: var(--band-blue);
+  --color-flag: var(--verdict-flag);
+  --color-pass: var(--verdict-pass);
+  --color-escalate: var(--verdict-escalate);
+  --color-rnd: var(--desk-rnd);
+  --color-surv: var(--desk-surv);
+  --color-frontier: var(--tier-frontier);
+  --color-open: var(--tier-open);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), "Aktiv Grotesk", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- signature keyframes (FRONTEND_BUILD_PLAN.md §8) ---- */
+@keyframes band-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px var(--band-blue), 0 0 0 var(--band-blue-glow);
+  }
+  50% {
+    box-shadow: 0 0 0 1px var(--band-blue), 0 0 22px var(--band-blue-glow);
+  }
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes codify-flash {
+  0% {
+    border-color: var(--verdict-escalate);
+    box-shadow: 0 0 18px #f59e0b44;
+  }
+  100% {
+    border-color: var(--border-subtle);
+    box-shadow: none;
+  }
+}
+
+.anim-band-pulse {
+  animation: band-pulse 1.6s var(--ease-out) infinite;
+}
+.anim-fade-up {
+  animation: fade-up var(--dur-reveal) var(--ease-out) both;
+}
+.anim-codify {
+  animation: codify-flash 1.2s var(--ease-out) 0.4s both;
+}
+
+/* accessibility — respect reduced motion (ui-ux-pro-max priority #7) */
+@media (prefers-reduced-motion: reduce) {
+  .anim-band-pulse,
+  .anim-fade-up,
+  .anim-codify {
+    animation: none !important;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
