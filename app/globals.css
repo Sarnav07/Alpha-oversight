@@ -139,6 +139,23 @@ body {
   }
 }
 
+/* ---- landing-only keyframes/helpers (HeroScroll) ---- */
+@keyframes scroll-cue {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+.anim-scroll-cue {
+  animation: scroll-cue 1.6s var(--ease-out) infinite;
+}
+
 .anim-band-pulse {
   animation: band-pulse 1.6s var(--ease-out) infinite;
 }
@@ -153,7 +170,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .anim-band-pulse,
   .anim-fade-up,
-  .anim-codify {
+  .anim-codify,
+  .anim-scroll-cue {
     animation: none !important;
   }
   * {
