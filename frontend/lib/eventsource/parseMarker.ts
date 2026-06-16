@@ -33,6 +33,10 @@ export interface Marker {
   finalState?: CaseState;
   /** the recruited specialist's family, e.g. "layering" (from `recruited X (layering)`). */
   family?: string;
+  /** the case id parsed from `opened case <id>` / `case <id> -> <state>` markers.
+   *  Live `/stream` frames carry NO `case_id` field (backend `ActivityEvent` omits
+   *  it — see surveillance_pipeline.py); the id lives only inside `content`. */
+  caseId?: string;
   /** parsed `features={...}` python-repr dict (suspicious frame). Numbers, bools, strings. */
   features?: Record<string, number | boolean | string>;
 }
@@ -72,8 +76,10 @@ export function parseMarker(e: ActivityEvent): Marker {
   const c = raw.toLowerCase();
   const m: Marker = {};
 
-  // opened case <case_id> — pipeline open (no stage, but anchors the case id elsewhere).
-  // (case id attribution lives in model.deriveCase via e.case_id; nothing to set here.)
+  // opened case <case_id>  → bind the case id. Backend SSE frames have no case_id
+  // field, so this marker (and the terminal one below) is the ONLY source of it.
+  const opened = raw.match(/opened case\s+(\S+)/i);
+  if (opened) m.caseId = opened[1].replace(/[.,;]+$/, "");
 
   // suspicious -> UNDER_REVIEW; features={...}  → anomaly stage + parsed features.
   if (/suspicious\s*->\s*under_review/.test(c)) {
@@ -112,10 +118,11 @@ export function parseMarker(e: ActivityEvent): Marker {
   }
 
   // case <case_id> -> <FINAL_STATE>  → terminal transition (CLOSED | FLAGGED | ESCALATED …).
-  const fin = raw.match(/case\s+\S+\s*->\s*([A-Z_]+)/);
-  if (fin && FINAL_STATES.has(fin[1])) {
-    m.finalState = fin[1] as CaseState;
-    if (fin[1] === "ESCALATED") {
+  const fin = raw.match(/case\s+(\S+)\s*->\s*([A-Z_]+)/);
+  if (fin && FINAL_STATES.has(fin[2])) {
+    m.caseId = fin[1].replace(/[.,;]+$/, "");
+    m.finalState = fin[2] as CaseState;
+    if (fin[2] === "ESCALATED") {
       m.stage = "escalate";
       m.eventType = "escalation";
     }

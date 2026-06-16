@@ -64,8 +64,11 @@ function sniffFamily(content: string | null): string | null {
 function deriveCase(events: ActivityEvent[]): CaseView {
   const view: CaseView = { id: null, state: null, verdict: null, family: null };
   for (const e of events) {
-    if (e.case_id) view.id = e.case_id;
     const m = parseMarker(e);
+    // case id: live SSE frames carry no case_id field — fall back to the id the
+    // pipeline prints in `opened case <id>` / `case <id> -> <state>` markers.
+    const cid = e.case_id ?? m.caseId;
+    if (cid) view.id = cid;
     // family: prefer the verdict rule family, else sniff specialist/adversary text.
     const fam = sniffFamily(e.content);
     if (fam) view.family = fam;

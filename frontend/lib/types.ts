@@ -112,7 +112,7 @@ export interface LedgerEntry {
   kind: BandKind;
   from: string;
   to: string;
-  direction: "sent" | "received";
+  direction: "sent" | "recv";
   sha256: string;
   band_message_id: string | null;
   /** duplicate of band_message_id (the ledger writes both). */
