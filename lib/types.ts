@@ -28,10 +28,10 @@ export interface ActivityEvent {
   replay_ts?: string;
 }
 
-/** state_machine.py — verdict lifecycle PASS → FLAGGED → ESCALATED (+ CLOSED). */
+/** state_machine.py CaseState — exact backend enum (5 values; CLOSED terminal). */
 export type CaseState =
   | "OPEN"
-  | "INVESTIGATING"
+  | "UNDER_REVIEW"
   | "FLAGGED"
   | "ESCALATED"
   | "CLOSED";
@@ -68,7 +68,8 @@ export interface Case {
 }
 
 export type RuleFamily = "spoofing" | "layering" | "wash_trade" | "marking";
-export type RuleStatus = "active" | "shadow" | "retired";
+/** rule_contracts.py Rule.status — default "ACTIVE" at boot. */
+export type RuleStatus = "ACTIVE" | "SHADOW" | "RETIRED";
 
 export interface Rule {
   id: string;

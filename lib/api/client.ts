@@ -27,10 +27,10 @@ async function post<T>(path: string): Promise<T> {
 
 // ---- mock REST fixtures (Q3/Q9 gaps mocked until backend ready) ----
 const MOCK_RULES: Rule[] = [
-  { id: "SPOOF-001", family: "spoofing", params: { min_cancel_ratio: 0.8 }, provenance: "seed", status: "active" },
-  { id: "LAYER-002", family: "layering", params: { window_ms: 100, min_depth_levels: 3 }, provenance: "seed", status: "active" },
-  { id: "WASH-003", family: "wash_trade", params: { min_self_match_ratio: 0.5 }, provenance: "seed", status: "active" },
-  { id: "MARK-004", family: "marking", params: { min_print_move_bps: 100.0 }, provenance: "seed", status: "active" },
+  { id: "SPOOF-001", family: "spoofing", params: { min_cancel_ratio: 0.8 }, provenance: "seed", status: "ACTIVE" },
+  { id: "LAYER-002", family: "layering", params: { window_ms: 100, min_depth_levels: 3 }, provenance: "seed", status: "ACTIVE" },
+  { id: "WASH-003", family: "wash_trade", params: { min_self_match_ratio: 0.5 }, provenance: "seed", status: "ACTIVE" },
+  { id: "MARK-004", family: "marking", params: { min_print_move_bps: 100.0 }, provenance: "seed", status: "ACTIVE" },
 ];
 
 const MOCK_STATS: Stats = {

@@ -1,154 +1,75 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTraceStore } from "@/lib/store/useTraceStore";
-import { parseMarker } from "@/lib/eventsource/parseMarker";
-import { DATA_MODE } from "@/lib/config";
-import type { ActivityEvent, ConnectionState } from "@/lib/types";
+import { useDeskModel } from "@/lib/desk/model";
+import { useDeskController, getAuditView } from "@/lib/desk/controller";
+import DeskHeader from "@/components/desk/DeskHeader";
+import StatsBar from "@/components/desk/StatsBar";
+import { TopologyGraph } from "@/components/desk/topology/TopologyGraph";
+import HITLControls from "@/components/desk/HITLControls";
+import DossierCards from "@/components/desk/DossierCards";
+import VerdictTimeline from "@/components/desk/VerdictTimeline";
+import RuleRegistryPanel from "@/components/desk/RuleRegistryPanel";
+import AuditDrawer from "@/components/desk/AuditDrawer";
 
 /**
- * FOUNDATION PROOF — minimal Command Center (now the live desk at /desk).
- * Connects the EventSource adapter → Zustand store → renders the live feed.
- * Real components (StatsBar, TopologyGraph, RuleRegistry, VerdictTimeline) land
- * next per FRONTEND_BUILD_PLAN.md §9. This proves the swap-proof data loop works.
+ * /desk — the live Command Center (FRONTEND_BUILD_PLAN §9, Phase 6).
+ *
+ * Composition only. All state flows: fixtures → controller.play → useTraceStore
+ * → useDeskModel → components. The controller (NOT store.connect) drives mock
+ * playback, so we auto-run Beat B once on mount for an out-of-box demo (novel
+ * evasion → PASS → ESCALATED, awaiting the human Confirm that codifies rule 4→5).
+ * DemoControls in the header re-trigger Beat A / Beat B / Reset.
+ *
+ * Swap to live: NEXT_PUBLIC_DATA_MODE=live points the controller/adapter at the
+ * FastAPI /stream — zero component changes (the contract.ts seam holds).
  */
 export default function DeskPage() {
-  const events = useTraceStore((s) => s.events);
-  const connection = useTraceStore((s) => s.connection);
-  const connect = useTraceStore((s) => s.connect);
-  const disconnect = useTraceStore((s) => s.disconnect);
-  const reset = useTraceStore((s) => s.reset);
+  const model = useDeskModel();
+  const controller = useDeskController();
+  const setConnection = useTraceStore((s) => s.setConnection);
+  const [auditOpen, setAuditOpen] = useState(false);
+  const booted = useRef(false);
 
   useEffect(() => {
-    reset();
-    connect();
-    return () => disconnect();
-  }, [connect, disconnect, reset]);
+    if (booted.current) return;
+    booted.current = true;
+    setConnection("connected");
+    controller.runBeatB();
+    return () => controller.resetDesk();
+    // run once on mount; controller/setConnection are stable refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <main className="min-h-screen bg-page text-frost">
-      {/* nav */}
-      <nav className="flex items-center justify-between px-8 py-4 border-b border-[var(--hairline)]">
-        <div className="flex items-center gap-2 font-semibold tracking-wide">
-          <span className="inline-block w-3.5 h-3.5 border-2 border-current border-b-0 rounded-t-[9px]" />
-          ALPHA &amp; OVERSIGHT
-          <span className="font-mono text-[10px] text-faint ml-2">LIVE DESK</span>
-        </div>
-        <ConnectionStatus state={connection} />
-      </nav>
+    <main className="flex min-h-screen flex-col bg-page text-frost">
+      <DeskHeader onOpenAudit={() => setAuditOpen(true)} />
+      <StatsBar />
 
-      <div className="px-8 py-6 max-w-[var(--maxw-content)] mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-muted">
-            Foundation proof · data mode: {DATA_MODE}
-          </p>
-          <p className="font-mono text-[11px] text-faint">
-            events: {events.length}
-          </p>
-        </div>
-
-        {/* live activity feed */}
+      <div className="grid flex-1 grid-cols-1 gap-4 px-6 py-5 lg:grid-cols-[minmax(0,1.9fr)_minmax(340px,1fr)]">
+        {/* centerpiece */}
         <section
-          className="rounded-[14px] border border-[var(--border-subtle)] bg-card p-4"
-          aria-label="Live activity feed"
+          aria-label="Surveillance pipeline topology"
+          className="min-h-[560px]"
         >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] uppercase tracking-[0.18em] text-muted">
-              Live activity feed
-            </span>
-            <span className="font-mono text-[10px] text-faint">prepend ▲</span>
-          </div>
-
-          {events.length === 0 ? (
-            <p className="text-muted text-sm py-6 text-center">
-              {connection === "connecting"
-                ? "connecting to stream…"
-                : "waiting for first frame…"}
-            </p>
-          ) : (
-            <ul className="flex flex-col">
-              {[...events].reverse().map((e, i) => (
-                <FeedRow key={`${e.agent_name}-${e.created_at}-${i}`} e={e} />
-              ))}
-            </ul>
-          )}
+          <TopologyGraph />
         </section>
 
-        <p className="font-mono text-[10px] text-faint mt-4">
-          ✓ adapter → store → render loop is live. Set NEXT_PUBLIC_DATA_MODE=live
-          to stream from the FastAPI backend (zero component changes).
-        </p>
+        {/* right rail — HITL surfaces only when the case is ESCALATED */}
+        <aside className="flex min-w-0 flex-col gap-4 lg:max-h-[calc(100vh-180px)] lg:overflow-y-auto">
+          <HITLControls />
+          <DossierCards />
+          <VerdictTimeline />
+          <RuleRegistryPanel />
+        </aside>
       </div>
-    </main>
-  );
-}
 
-function FeedRow({ e }: { e: ActivityEvent }) {
-  const m = parseMarker(e);
-  const isWaiting = m.stage === "waiting_on_band";
-  const isFlag = m.result === "FLAG";
-  const deskColor =
-    e.desk === "rnd" ? "var(--desk-rnd)" : "var(--desk-surv)";
-
-  return (
-    <li className="anim-fade-up border-b border-[var(--hairline)] last:border-0 py-2.5">
-      <div className="flex items-center gap-2 text-sm">
-        <span style={{ color: deskColor }}>◢ {e.agent_name}</span>
-        <ModelBadge modelId={e.model_id} />
-        <span className="font-mono text-[10px] text-faint ml-auto">
-          {e.created_at.slice(11, 19)}
-        </span>
-      </div>
-      <p
-        className="font-mono text-[11px] mt-1"
-        style={{
-          color: isWaiting
-            ? "#cfe0ff"
-            : isFlag
-              ? "#ffb4b4"
-              : "var(--text-body)",
-        }}
-      >
-        {isWaiting ? "▓ waiting on Band ▓ — " : ""}
-        {e.content}
-      </p>
-    </li>
-  );
-}
-
-function ModelBadge({ modelId }: { modelId: string }) {
-  const frontier = modelId.includes("frontier");
-  return (
-    <span
-      className="font-mono text-[9px] px-1.5 py-0.5 rounded-[4px] border"
-      style={{
-        color: frontier ? "var(--tier-frontier)" : "var(--tier-open)",
-        borderColor: frontier ? "#5a4d22" : "var(--border-default)",
-        background: frontier ? "#3a3320" : "#1a1c20",
-      }}
-    >
-      ▸ {frontier ? "frontier" : "open"}
-    </span>
-  );
-}
-
-function ConnectionStatus({ state }: { state: ConnectionState }) {
-  const map: Record<ConnectionState, { c: string; label: string }> = {
-    idle: { c: "var(--status-idle)", label: "idle" },
-    connecting: { c: "var(--verdict-escalate)", label: "connecting" },
-    connected: { c: "var(--verdict-complete)", label: "Band: connected" },
-    reconnecting: { c: "var(--verdict-escalate)", label: "reconnecting" },
-    replay: { c: "var(--verdict-escalate)", label: "replay" },
-    error: { c: "var(--verdict-flag)", label: "error" },
-  };
-  const s = map[state];
-  return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] px-3 py-1 text-[11px]">
-      <span
-        className="w-[7px] h-[7px] rounded-full"
-        style={{ background: s.c }}
+      <AuditDrawer
+        open={auditOpen}
+        onClose={() => setAuditOpen(false)}
+        audit={getAuditView(model.case.id)}
       />
-      {s.label}
-    </span>
+    </main>
   );
 }

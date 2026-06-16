@@ -1,6 +1,19 @@
 import { DATA_MODE, API_BASE } from "../config";
 import type { ActivityEvent, ConnectionState } from "../types";
-import { fixtureEventsC0187 } from "../fixtures/events-C-0187";
+import { fixtureBeatA } from "../fixtures/beat-a";
+import { fixtureBeatB } from "../fixtures/beat-b";
+
+/**
+ * Mock fixture registry — select a recorded case by its case id (the ?replay=
+ * param). Defaults to Beat B (the headline 400ms-evasion escalation demo).
+ */
+const FIXTURES: Record<string, ActivityEvent[]> = {
+  "C-0187": fixtureBeatB,
+  "C-0191": fixtureBeatA,
+};
+function fixtureFor(replay?: string): ActivityEvent[] {
+  return (replay && FIXTURES[replay]) || fixtureBeatB;
+}
 
 /**
  * The swap-proof seam (FRONTEND_BUILD_PLAN.md §7).
@@ -34,9 +47,10 @@ class MockAdapter implements EventSourceAdapter {
     const step = this.opts.stepMs ?? 900;
     h.onState("connecting");
     // simulate a connect handshake then stream frames
+    const frames = fixtureFor(this.opts.replay);
     const open = setTimeout(() => {
       h.onState(replay ? "replay" : "connected");
-      fixtureEventsC0187.forEach((e, i) => {
+      frames.forEach((e, i) => {
         const t = setTimeout(() => h.onEvent(e), i * step);
         this.timers.push(t);
       });
