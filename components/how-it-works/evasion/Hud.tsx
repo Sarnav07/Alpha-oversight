@@ -124,7 +124,7 @@ export function HudStatic() {
         />
       </div>
       <div className="space-y-2.5">
-        <Row label="cancel_to_fill" value="0.94" tone="var(--verdict-escalate)" />
+        <Row label="cancel_to_fill" value="0.94" tone="var(--verdict-flag)" />
         <Row label="depth_levels" value="5" />
         <Row label="window_ms" value="450ms" />
         <Row label="verdict" value="FLAG ✓" tone="var(--verdict-flag)" />

@@ -103,7 +103,7 @@ export const GAUGE = {
   top: 132, // y at ratio 1.0
   bottom: 452, // y at ratio 0.0
   width: 56,
-  threshold: 0.7, // @spoof-spec / layering concern line
+  threshold: 0.8, // FINRA-5210 spoofing seed rule: cancel ≥ 80% within the window
 } as const;
 
 /** Map a ratio (0..1) → needle y on the gauge. */

@@ -171,7 +171,7 @@ export default function CommandCenterArt() {
           { v: "7", k: "Flagged", c: "var(--verdict-flag)" },
           { v: "2", k: "Escalated", c: "var(--verdict-escalate)" },
           { v: "4 ▸ 5", k: "Active rules", c: "var(--text-primary)" },
-          { v: "72%", k: "FP blocked", c: "var(--verdict-complete)" },
+          { v: "✓", k: "verify_chain", c: "var(--verdict-complete)" },
         ].map((t) => (
           <div key={t.k} className="bg-[var(--bg-page)] px-3 py-1.5">
             <div
@@ -391,8 +391,8 @@ export default function CommandCenterArt() {
                 >
                   adversary
                 </span>
-                <Pill color="var(--tier-frontier)" className="shrink-0">
-                  frontier
+                <Pill color="var(--tier-open)" className="shrink-0">
+                  open
                 </Pill>
                 <span className="min-w-0 flex-1 truncate font-sans text-[8.5px] text-[var(--text-muted)]">
                   emitted layering scenario

@@ -30,13 +30,13 @@ type Figure = {
 };
 
 const FIGURES: Figure[] = [
-  { to: 847, suffix: "", decimals: 0, label: "Alerts triaged" },
-  { to: 72, suffix: "%", decimals: 0, label: "False positives blocked" },
+  { to: 8, suffix: "", decimals: 0, label: "Agents · two desks" },
+  { to: 4, suffix: "", decimals: 0, label: "Seed rules · codifying live" },
   {
-    to: 41.2,
-    suffix: "h",
-    decimals: 1,
-    label: "Analyst-hours saved · wk",
+    to: 100,
+    suffix: "%",
+    decimals: 0,
+    label: "Verdicts deterministic, not LLM",
   },
 ];
 

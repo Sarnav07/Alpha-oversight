@@ -321,7 +321,7 @@ const CARDS: Card[] = [
     no: "04",
     icon: <CodifyIc />,
     title: "The Codify Engine",
-    body: "A confirmed evasion becomes a deterministic rule in < 3s — regression-gated.",
+    body: "A confirmed evasion becomes a deterministic rule on human confirm — regression-gated.",
     // full-bleed centred leaderboard panel (10-correct) — its own title, four
     // corner metrics, the dead-centred ShieldEmblem and a caption.
     art: <ThreatLeaderboardArt />,

@@ -51,6 +51,8 @@ const DESKS: Desk[] = [
 type Detector = {
   family: string; // lowercase RuleFamily key (exact)
   title: string;
+  source: string; // regulation the seed rule derives from
+  catches: string; // plain-English: what manipulation this is
   seed: string; // seed rule id
   metric: string; // the headline cited-metric key
   threshold: string;
@@ -61,6 +63,9 @@ const DETECTORS: Detector[] = [
   {
     family: "spoofing",
     title: "Spoofing",
+    source: "FINRA 5210",
+    catches:
+      "Posting orders you never intend to fill to fake demand, then pulling them — cancel ≥ 80% of posted orders inside the window.",
     seed: "FINRA-5210-spoofing",
     metric: "cancel_ratio",
     threshold: "≥ 0.8",
@@ -70,6 +75,9 @@ const DETECTORS: Detector[] = [
   {
     family: "layering",
     title: "Layering",
+    source: "FINRA 5210",
+    catches:
+      "Stacking orders across three or more price levels to fake book depth, then cancelling once the market moves your way.",
     seed: "FINRA-5210-layering",
     metric: "depth_levels",
     threshold: "≥ 3",
@@ -79,6 +87,9 @@ const DETECTORS: Detector[] = [
   {
     family: "wash_trade",
     title: "Wash trade",
+    source: "SEC 10b-5",
+    catches:
+      "Trading with yourself to manufacture fake volume — more than half of the filled quantity self-matched.",
     seed: "SEC-10b-5-wash",
     metric: "self_match_ratio",
     threshold: "> 0.5",
@@ -88,6 +99,9 @@ const DETECTORS: Detector[] = [
   {
     family: "marking",
     title: "Marking the close",
+    source: "SEC 10b-5",
+    catches:
+      "Pushing the closing print to mark your own book — moving the end-of-day price by 100 bps or more.",
     seed: "SEC-10b-5-marking",
     metric: "eod_print_move_bps",
     threshold: "≥ 100.0",
@@ -110,12 +124,12 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function StorySections() {
+export function TwoDesks() {
   return (
     <div
       style={{ backgroundColor: "var(--bg-page)", color: "var(--text-primary)" }}
     >
-      {/* ---- (a) Two desks ---------------------------------------------- */}
+      {/* ---- Two desks · one wall --------------------------------------- */}
       <section
         aria-label="Two desks, one wall"
         className="mx-auto px-6 pt-28 pb-20 sm:pt-36"
@@ -215,11 +229,24 @@ export function StorySections() {
           </p>
         </Reveal>
       </section>
+    </div>
+  );
+}
 
-      {/* ---- (b) Four detectors ----------------------------------------- */}
+/**
+ * FourDetectors — the rulebook's four seed families (report §06): spoofing &
+ * layering (FINRA 5210), wash trade & marking-the-close (SEC 10b-5), each with
+ * its plain-English description + cited-metric threshold.
+ */
+export function FourDetectors() {
+  return (
+    <div
+      style={{ backgroundColor: "var(--bg-page)", color: "var(--text-primary)" }}
+    >
+      {/* ---- Four detectors --------------------------------------------- */}
       <section
         aria-labelledby="hiw-detectors-title"
-        className="mx-auto px-6 pb-20"
+        className="mx-auto px-6 pt-8 pb-20"
         style={{ maxWidth: "var(--maxw-content)" }}
       >
         <Reveal>
@@ -267,9 +294,17 @@ export function StorySections() {
                     className="font-mono"
                     style={{ fontSize: 11, color: "var(--text-faint)" }}
                   >
-                    {d.family}
+                    {d.source}
                   </code>
                 </div>
+
+                {/* plain-English: what this manipulation is */}
+                <p
+                  className="mt-3 font-sans"
+                  style={{ fontSize: 13.5, lineHeight: 1.55, color: "var(--text-body)" }}
+                >
+                  {d.catches}
+                </p>
 
                 {/* headline rule: metric ≥ threshold */}
                 <div
@@ -318,54 +353,63 @@ export function StorySections() {
         </div>
       </section>
 
-      {/* ---- (c) Deterministic by design -------------------------------- */}
-      <section
-        aria-labelledby="hiw-determinism-title"
-        className="mx-auto px-6 pb-32"
-        style={{ maxWidth: "var(--maxw-content)" }}
-      >
-        <Reveal>
-          <div
-            className="mx-auto flex max-w-3xl flex-col items-center p-10 text-center sm:p-14"
+    </div>
+  );
+}
+
+/**
+ * DeterministicClose — "The models debate; the rule engine decides." Pulled out
+ * of StorySections so it can sit AFTER the EvasionStory as the page's closing
+ * thesis (the report's §06 boundary: LLMs argue, code decides).
+ */
+export function DeterministicClose() {
+  return (
+    <section
+      aria-labelledby="hiw-determinism-title"
+      className="mx-auto px-6 pt-8 pb-32"
+      style={{ maxWidth: "var(--maxw-content)", backgroundColor: "var(--bg-page)" }}
+    >
+      <Reveal>
+        <div
+          className="mx-auto flex max-w-3xl flex-col items-center p-10 text-center sm:p-14"
+          style={{
+            borderRadius: "var(--r-card)",
+            border: "1px solid var(--hairline)",
+            backgroundColor: "var(--bg-card)",
+          }}
+        >
+          <SectionEyebrow>Deterministic by design</SectionEyebrow>
+          <h2
+            id="hiw-determinism-title"
+            className="mt-5 font-sans"
             style={{
-              borderRadius: "var(--r-card)",
-              border: "1px solid var(--hairline)",
-              backgroundColor: "var(--bg-card)",
+              fontSize: "clamp(24px, 3.4vw, 36px)",
+              fontWeight: 300,
+              letterSpacing: "-0.015em",
+              lineHeight: 1.12,
             }}
           >
-            <SectionEyebrow>Deterministic by design</SectionEyebrow>
-            <h2
-              id="hiw-determinism-title"
-              className="mt-5 font-sans"
-              style={{
-                fontSize: "clamp(24px, 3.4vw, 36px)",
-                fontWeight: 300,
-                letterSpacing: "-0.015em",
-                lineHeight: 1.12,
-              }}
-            >
-              <span style={{ color: "var(--text-primary)" }}>
-                The models debate.{" "}
-              </span>
-              <span style={{ color: "var(--text-muted)" }}>
-                The rule engine decides.
-              </span>
-            </h2>
-            <p
-              className="mt-6 max-w-xl font-sans"
-              style={{ fontSize: 15, lineHeight: 1.65, color: "var(--text-body)" }}
-            >
-              Prosecution and Defense argue the case, but their argument is
-              load-bearing only through one resolved input — the detection
-              window. The verdict itself is rendered by a deterministic rule
-              engine that flags on the first active rule that trips.
-              <span style={{ color: "var(--text-primary)" }}>
-                {" "}No LLM ever overrules it.
-              </span>
-            </p>
-          </div>
-        </Reveal>
-      </section>
-    </div>
+            <span style={{ color: "var(--text-primary)" }}>
+              The models debate.{" "}
+            </span>
+            <span style={{ color: "var(--text-muted)" }}>
+              The rule engine decides.
+            </span>
+          </h2>
+          <p
+            className="mt-6 max-w-xl font-sans"
+            style={{ fontSize: 15, lineHeight: 1.65, color: "var(--text-body)" }}
+          >
+            Prosecution and Defense argue the case, but their argument is
+            load-bearing only through the contested inputs they resolve. The
+            verdict itself is rendered by a deterministic rule engine that flags
+            on the first active rule that trips.
+            <span style={{ color: "var(--text-primary)" }}>
+              {" "}No LLM ever overrules it.
+            </span>
+          </p>
+        </div>
+      </Reveal>
+    </section>
   );
 }

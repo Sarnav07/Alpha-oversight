@@ -35,7 +35,7 @@ const CARDS: Card[] = [
   },
   {
     no: "02",
-    title: ["A frontier desk that", "contests every anomaly"],
+    title: ["A surveillance desk that", "contests every anomaly"],
     steps: ["Ingest & scan the tape", "Score every anomaly", "Contest it in a dossier", "Verdict — flag or escalate"],
     Art: DetectRing,
     artClass: "right-[-28px] top-1/2 h-[260px] w-[260px] -translate-y-1/2",

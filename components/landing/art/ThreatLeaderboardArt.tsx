@@ -76,7 +76,7 @@ export default function ThreatLeaderboardArt() {
       <div className="grid min-h-0 flex-1 grid-cols-[1fr_auto_1fr] items-center gap-[clamp(10px,3vw,44px)] py-[clamp(14px,3vh,32px)]">
         {/* left column — TL + BL */}
         <div className="flex flex-col justify-between gap-[clamp(22px,5vh,52px)]">
-          <Metric value="197" label="Tests passing" align="left" />
+          <Metric value="82" label="Tests passing" align="left" />
           <Metric
             value={
               <span>
@@ -101,14 +101,14 @@ export default function ThreatLeaderboardArt() {
         {/* right column — TR + BR */}
         <div className="flex flex-col justify-between gap-[clamp(22px,5vh,52px)]">
           <Metric value="0" label="Regressions" align="right" />
-          <Metric value="< 3s" label="Codify time" align="right" />
+          <Metric value="+50ms" label="Window slack" align="right" />
         </div>
       </div>
 
       {/* ── body line (centred, below) ───────────────────────────────────── */}
       <p className="mx-auto max-w-[42ch] text-center font-sans text-[clamp(11px,1.4vw,14px)] leading-snug text-[var(--text-body)]">
-        A confirmed evasion becomes a deterministic rule in under three seconds —
-        and the regression gate proves it breaks nothing.
+        A confirmed evasion becomes a deterministic rule on human confirm — and
+        the regression gate proves it breaks nothing.
       </p>
     </div>
   );

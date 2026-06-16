@@ -8,60 +8,13 @@ import { useDeskModel } from "@/lib/desk/model";
  * StatsBar — the horizontal tile row at the head of the /desk Command Center.
  *
  * Stays DARK to match the command-center backbone (no data-section="light"
- * wrapper). Mixes LIVE tiles folded from `model.stats` with HARD-CODED narrative
- * tiles (Q3 — `/stats` returns counts only; FP%/analyst-hrs/alerts are scripted).
+ * wrapper). Every tile is folded from real `model.stats` (GET /stats — case
+ * counts by state + active-rule count); nothing is scripted.
  *
- * Numbers are font-mono with an rAF count-up on mount; uppercase tracked eyebrow
- * labels in `--text-muted`. The Active Rules tile rolls 4→5 the instant
- * `model.codified` flips. Respects prefers-reduced-motion (final values, no roll).
+ * Numbers are font-mono; uppercase tracked eyebrow labels in `--text-muted`. The
+ * Active Rules tile rolls 4→5 the instant `model.codified` flips. Respects
+ * prefers-reduced-motion (final values, no roll).
  */
-
-const COUNT_MS = 1400;
-const EASE_OUT = (t: number) => 1 - Math.pow(1 - t, 3);
-
-/** Single count-up number cell driven by rAF. */
-function CountUp({
-  to,
-  decimals = 0,
-  prefix = "",
-  suffix = "",
-  reduce,
-}: {
-  to: number;
-  decimals?: number;
-  prefix?: string;
-  suffix?: string;
-  reduce: boolean;
-}) {
-  const [value, setValue] = useState(reduce ? to : 0);
-  const rafRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (reduce) {
-      setValue(to);
-      return;
-    }
-    const t0 = performance.now();
-    const tick = (now: number) => {
-      const p = Math.min((now - t0) / COUNT_MS, 1);
-      setValue(to * EASE_OUT(p));
-      if (p < 1) rafRef.current = requestAnimationFrame(tick);
-      else setValue(to);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    };
-  }, [to, reduce]);
-
-  return (
-    <span>
-      {prefix}
-      {value.toFixed(decimals)}
-      {suffix}
-    </span>
-  );
-}
 
 /** Active Rules tile — rolls 4→5 when codified flips. */
 function ActiveRulesNumber({
@@ -133,16 +86,16 @@ export default function StatsBar() {
       render: () => <span>{model.stats.escalated}</span>,
     },
     {
-      label: "Alerts triaged",
-      render: (r) => <CountUp to={847} reduce={r} />,
+      label: "Total cases",
+      render: () => <span>{model.stats.total_cases}</span>,
     },
     {
-      label: "False positives blocked",
-      render: (r) => <CountUp to={72} suffix="%" reduce={r} />,
+      label: "Under review",
+      render: () => <span>{model.stats.by_state["UNDER_REVIEW"] ?? 0}</span>,
     },
     {
-      label: "Analyst-hours saved",
-      render: (r) => <CountUp to={41.2} decimals={1} suffix="h" reduce={r} />,
+      label: "Closed",
+      render: () => <span>{model.stats.by_state["CLOSED"] ?? 0}</span>,
     },
   ];
 

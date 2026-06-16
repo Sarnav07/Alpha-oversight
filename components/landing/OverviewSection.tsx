@@ -31,11 +31,11 @@ type Tone = "rnd" | "surv" | "codify" | "human";
 type Role = { id: string; name: string; role: string; hopN: string; hop: string; tone: Tone; tier: string; feedback?: boolean; wall?: boolean };
 const ROLES: Role[] = [
   { id: "adversary", name: "adversary", role: "invents the evasion", hopN: "01", hop: "sanitized flow", tone: "rnd", tier: "open-weight", wall: true },
-  { id: "anomaly_detector", name: "anomaly_detector", role: "scans the tape", hopN: "02", hop: "anomaly · score", tone: "surv", tier: "frontier" },
-  { id: "investigator", name: "investigator", role: "opens the case", hopN: "03", hop: "recruit · family", tone: "surv", tier: "frontier" },
-  { id: "specialist", name: "specialist", role: "builds evidence", hopN: "04", hop: "evidence", tone: "surv", tier: "frontier" },
-  { id: "debate", name: "prosecution ⚔ defense", role: "adversarial debate", hopN: "05", hop: "argued case", tone: "surv", tier: "frontier" },
-  { id: "adjudicator", name: "adjudicator", role: "rules vs the rulebook", hopN: "06", hop: "verdict", tone: "surv", tier: "frontier" },
+  { id: "anomaly_detector", name: "anomaly_detector", role: "scans the tape", hopN: "02", hop: "anomaly · score", tone: "surv", tier: "open" },
+  { id: "investigator", name: "investigator", role: "opens the case", hopN: "03", hop: "recruit · family", tone: "surv", tier: "open" },
+  { id: "specialist", name: "specialist", role: "builds evidence", hopN: "04", hop: "evidence", tone: "surv", tier: "open" },
+  { id: "debate", name: "prosecution ⚔ defense", role: "adversarial debate", hopN: "05", hop: "argued case", tone: "surv", tier: "frontier ⚔ open" },
+  { id: "adjudicator", name: "adjudicator", role: "resolves the debate", hopN: "06", hop: "resolved_inputs", tone: "surv", tier: "open" },
   { id: "escalation_manager", name: "escalation_mgr", role: "escalates the novel", hopN: "07", hop: "escalation packet", tone: "surv", tier: "frontier" },
   { id: "human", name: "human", role: "confirms the catch", hopN: "08", hop: "confirm", tone: "human", tier: "in-the-loop" },
   { id: "rule_engine", name: "rule_engine", role: "codifies · 4 → 5", hopN: "09", hop: "new rule 4→5", tone: "codify", tier: "deterministic", feedback: true },
@@ -56,7 +56,7 @@ const HOPS = [
 
 const LEGEND: { label: string; tone: string }[] = [
   { label: "R&D · open-weight", tone: "var(--desk-rnd)" },
-  { label: "Surveillance · frontier", tone: "var(--desk-surv)" },
+  { label: "Surveillance · open + frontier", tone: "var(--desk-surv)" },
   { label: "Band · coordination + audit", tone: "var(--band-blue)" },
   { label: "Rule engine · deterministic", tone: "var(--verdict-escalate)" },
 ];

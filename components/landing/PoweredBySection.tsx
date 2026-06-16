@@ -142,8 +142,9 @@ function Headline() {
         className="mt-6 font-sans"
         style={{ fontSize: "clamp(14px, 1.5vw, 17px)", lineHeight: 1.5, color: "var(--text-body)" }}
       >
-        Frontier referees, open-weight adversaries, and a deterministic rule
-        engine — coordinated across the Band, every handoff hash-chained.
+        Frontier and open-weight referees, an open-weight adversary, and a
+        deterministic rule engine — coordinated across the Band, every handoff
+        hash-chained.
       </p>
     </div>
   );

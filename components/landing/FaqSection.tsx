@@ -19,7 +19,7 @@ const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
 const FAQS: { q: string; a: string }[] = [
   {
     q: "How does Alpha & Oversight work?",
-    a: "An open-weight Adversary red-teams the tape, a frontier Surveillance desk catches the evasion and contests a verdict, and each catch is codified into a live rule — every handoff crossing the Band.",
+    a: "An open-weight Adversary red-teams the tape, a Surveillance desk catches the evasion and contests a verdict, and each catch is codified into a live rule — every handoff crossing the Band.",
   },
   {
     q: "Is the audit trail tamper-evident?",
@@ -31,7 +31,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "How are verdicts verified?",
-    a: "Adversary and defense contest each case in a dossier, an adjudicator rules against the live rulebook, and the outcome is sealed with a hash you can replay independently.",
+    a: "Prosecution and defense contest each case in a dossier, an adjudicator resolves the debate, and a deterministic rule engine — not any LLM — renders the PASS/FLAG verdict against the live rulebook, sealed with a hash you can replay independently.",
   },
   {
     q: "Can I connect my own feeds?",

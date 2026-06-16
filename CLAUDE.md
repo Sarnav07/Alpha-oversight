@@ -11,6 +11,44 @@ rules and the imported `AGENTS.md` Next.js rule apply on top.
 > conventions differ from training data. Consult `node_modules/next/dist/docs/`
 > before writing framework code. Heed deprecation notices.
 
+## System facts — SOURCE OF TRUTH: `band_agents/frontend-design/Report_band_agents.pdf`
+Every on-screen claim MUST match these (the report was generated from the real
+backend+frontend source). Earlier drift — "14 agents", "all Surveillance =
+frontier", fabricated `847 alerts / 72% FP / <3s` stats — was hallucination.
+- **8 LLM agents + 1 deterministic rule engine.** The rule engine is NOT an
+  agent — it is plain code and the *sole* PASS/FLAG authority.
+- **Two desks, one Chinese wall.** R&D = 1 agent (**Adversary**). Surveillance =
+  7 (**Anomaly Detector, Investigator, Specialist, Prosecution, Defense,
+  Adjudicator, Escalation Manager**).
+- **Model tiers (2) — mixed, not by desk.** FRONTIER = **Prosecution**
+  (`claude-sonnet-4-6`) + **Escalation Manager** (`gpt-5-mini`). OPEN = everyone
+  else (Qwen3-Next-80B; Defense = Qwen3.6-35B). ⚠️ Never call the whole
+  Surveillance desk "frontier."
+- **Band = transport-of-record** (NOT a notification). 5 kinds:
+  `HANDOFF · EVIDENCE · VERDICT · ESCALATION · RULE_CODIFIED`. The
+  Prosecution⚔Defense debate runs **locally**, not over Band.
+- **Chinese wall = `SanitizedBridge`:** only raw order events cross R&D→Surv;
+  reasoning + model identity stripped. The rulebook is the only thing flowing
+  back (read-only to R&D).
+- **LLMs argue; code decides.** Agents only set contested inputs (time window,
+  bona-fide orders, intent); the engine renders PASS/FLAG. No LLM overrules it.
+- **4 seed rules:** layering + spoofing (FINRA 5210), wash + marking (SEC 10b-5).
+  Thresholds: spoofing `cancel_ratio ≥ 0.8` · layering `depth_levels ≥ 3` · wash
+  `self_match_ratio > 0.5` · marking `eod_print_move_bps ≥ 100`.
+- **Beat A** = known trick → engine FLAGs → `FLAGGED`. **Beat B** = novel evasion
+  → engine PASS → `ESCALATED` → human confirms → derive + regression-gate +
+  codify (rules **4 → 5**, emit `RULE_CODIFIED`) → `FLAGGED`.
+- **5 case states:** OPEN · UNDER_REVIEW · FLAGGED · ESCALATED · CLOSED (every
+  non-final state times out → CLOSED, so a case never hangs).
+- **Audit:** hash-chained ledger; each leaf = one Band message (sha256 +
+  `band_message_id`); `verify_chain()` recomputes live.
+- **Endpoints:** `/stream` (SSE) · `/cases` · `/cases/{id}` · `/cases/{id}/audit`
+  · `/rules` · `/stats` · `POST /cases/{id}/confirm|reject` ·
+  `POST /demo/beat-a|beat-b|rnd`.
+- **NEVER fabricate** alert counts, FP %, analyst-hours, latency SLAs, or test
+  counts as marketing. Stats come from `model.stats` (`/stats`) or are
+  system-true facts (8 agents, 4 seed rules, 100% deterministic verdicts).
+
 ## Stack
 - **Next.js 16.2.9** (App Router) · **React 19.2.4** · **TypeScript** ·
   **Tailwind v4** (CSS-first `@theme`, tokens in `app/globals.css`).
@@ -44,9 +82,10 @@ This is the established loop — use it before claiming any UI work is done:
 ## Design language (match the AlphaLedger reference EXACTLY)
 Monochrome backbone; **accents are semantic ONLY** (see `app/globals.css`
 "DESIGN TOKENS"). Reference assets the user compares against live at
-`band_agents/frontend-design/` (numbered PNGs, `*-fucked.png` = my hallucinated
-version, `.mov` walkthroughs) + `band_agents/FRONTEND_SPEC.md` and
-`FRONTEND_BUILD_PLAN.md` in the sibling backend repo.
+`band_agents/frontend-design/` (numbered PNGs — `*-correct.png` = the AlphaLedger
+target, `*-fucked.png` = my hallucinated version — `.mov` walkthroughs, and
+**`Report_band_agents.pdf`** = the authoritative product spec) + the sibling
+backend repo's `FRONTEND_SPEC.md` / `FRONTEND_BUILD_PLAN.md`.
 - Obsidian `#020202` / frost `#fefefe`; hard light↔dark section cuts; eyebrow
   labels; two-tone headings (ink + faint gray); the angular AlphaLedger
   `Logomark`.
@@ -57,23 +96,35 @@ version, `.mov` walkthroughs) + `band_agents/FRONTEND_SPEC.md` and
   theme. A **fixed/position element NOT nested inside `data-section="light"`
   resolves tokens to ROOT (dark) values** — this caused the invisible navbar.
   Use explicit hex (`#14161c`) on light frames, or the deterministic scroll-spy
-  in `LandingNav.tsx`.
+  in `LandingNav.tsx`. **Inverse case:** a *dark* panel nested inside a
+  `data-section="light"` page (e.g. the how-it-works story stage) inherits the
+  light inks → frost text renders near-black. Fix: tag it `data-section="dark"`
+  (a reset block now exists in `globals.css` mirroring the root dark tokens).
 
-## Layout (`app/` + `components/landing/`)
-- `app/page.tsx` — landing composition: `<Preloader/>` then `<main>` with
+## Layout (`app/` + `components/`)
+- `app/page.tsx` — landing composition (current order): `<Preloader/>` then
   `<HeroScroll/> <KeyFigures/> <ManifestoSection/> <FeaturesCarousel/>
-  <UnlockSection/>`.
-- `app/desk/page.tsx` — the live trace viewer (Phase 6 target).
-- `components/landing/` — `Preloader` (black splash, once/session) ·
-  `HeroScroll` (GSAP pinned device-zoom, "dive into screen") · `LandingNav`
-  (deterministic luminance scroll-spy, not mix-blend) · `KeyFigures` (count-up
-  stats) · `ManifestoSection` (word-by-word scroll fill) · `FeaturesCarousel`
-  (pinned horizontal, white bg) · `UnlockSection` (closing CTA, shield emblem) ·
-  `Logomark` (shared SVG mark) · `art/` (dashboard art components).
-- `lib/` — `api/client`, `eventsource/` (SSE adapter + marker parser), `store/`
-  (zustand trace store), `fixtures/`, `config`, `types`. These wire to the
-  backend contracts: `/stream` SSE (desk) · `/cases` · `/cases/{id}/audit` ·
-  `/rules` · `/stats`.
+  <UnlockSection/> <OverviewSection/> <AuditChainSection/> <PoweredBySection/>
+  <WhySection/> <MoreAboutSection/> <FaqSection/> <StayAheadSection/>
+  <ContactSection/> <SiteFooter/>`.
+- `app/how-it-works/page.tsx` — the "The Evasion" scroll-story. `EvasionStory`
+  is a **split layout** (narrative-left / live-graph-right, pinned scrub through
+  6 beats; `data-section="dark"` stage); copy/numbers track the report PDF
+  (manipulation line `τ 0.80`, 100→450ms window, rules 4→5). `StorySections`
+  carries the two-desks + seed-rule + rule-engine sections.
+- `app/desk/page.tsx` — the live Command Center (SSE trace viewer). ⚠️ **Slated
+  for a full redesign** — the current look is rejected; do NOT over-invest in its
+  visuals, it will be replaced. The data layer (`lib/desk/`) is fine to build on.
+- `components/landing/` — `Preloader` · `HeroScroll` · `LandingNav`
+  (deterministic luminance scroll-spy) · `KeyFigures` (system-fact count-ups) ·
+  `ManifestoSection` · `FeaturesCarousel` (pinned, landscape cards, laptop bleed)
+  · `UnlockSection` + shared `ShieldEmblem` (centred frosted badge) ·
+  `OverviewSection` (Band nonagon) · `AuditChainSection` (hash-chain staircase) ·
+  `PoweredBySection` (why-different panel) · `Logomark` · `art/`.
+- `components/desk/` (Command Center) + `components/how-it-works/` (+ `evasion/`).
+- `lib/` — `api/client`, `eventsource/` (SSE adapter + marker parser),
+  `desk/` (model/nodes/contract), `fixtures/`, `config`, `types`. Wire to the
+  backend contracts in **System facts** above.
 
 ## Conventions / hard-won lessons
 - **Match the reference pixel-for-pixel** (size, spacing, alignment, color,

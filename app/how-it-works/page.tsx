@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import { HowItWorksHeader } from "@/components/how-it-works/HowItWorksHeader";
 import { HowItWorksHero } from "@/components/how-it-works/HowItWorksHero";
+import { AgentRoster } from "@/components/how-it-works/AgentRoster";
+import { PipelineFlow } from "@/components/how-it-works/PipelineFlow";
 import { EvasionStory } from "@/components/how-it-works/EvasionStory";
-import { StorySections } from "@/components/how-it-works/StorySections";
+import {
+  TwoDesks,
+  FourDetectors,
+  DeterministicClose,
+} from "@/components/how-it-works/StorySections";
 import { ClosingCTA } from "@/components/how-it-works/ClosingCTA";
 
 /**
@@ -33,8 +39,12 @@ export default function HowItWorksPage() {
       <HowItWorksHeader />
       <main>
         <HowItWorksHero />
+        <PipelineFlow />
+        <TwoDesks />
+        <AgentRoster />
         <EvasionStory />
-        <StorySections />
+        <FourDetectors />
+        <DeterministicClose />
         <ClosingCTA />
       </main>
     </div>
