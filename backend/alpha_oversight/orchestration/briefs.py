@@ -13,13 +13,43 @@ from alpha_oversight.contracts.order_events import OrderEvent
 from alpha_oversight.contracts.rule_contracts import Verdict
 
 
-def flow_brief(events: list[OrderEvent]) -> str:
+def flow_brief(events: list[OrderEvent], features: "Features | None" = None) -> str:
+    """Triage brief for the AnomalyDetector.
+
+    Includes the deterministically-computed features (authoritative) AND a compact
+    per-order table so the LLM judges ``suspicious`` over real numbers instead of
+    guessing from a bare event count. ``features`` is computed when not supplied.
+    """
+    from alpha_oversight.rules.features import compute_features
+
+    f = features if features is not None else compute_features(events)
     n = len(events)
     actions = sorted({ev.action.value for ev in events})
     symbols = sorted({ev.order.symbol for ev in events})
+
+    rows = []
+    for ev in events[:24]:
+        o = ev.order
+        px = getattr(o, "limit_price", None)
+        rows.append(
+            f"  {ev.action.value:6} {o.side.value:4} qty={o.quantity} "
+            f"px={px} trader={ev.trader_id}"
+        )
+    if len(events) > 24:
+        rows.append(f"  … (+{len(events) - 24} more)")
+    table = "\n".join(rows)
+
     return (
         f"Triage this order-flow window: {n} events ({', '.join(actions)}) on "
-        f"{', '.join(symbols)}. Report suspicious + the four Features."
+        f"{', '.join(symbols)}.\n"
+        "Deterministically computed features (authoritative — report these "
+        "verbatim): "
+        f"cancel_to_fill={f.cancel_to_fill:.2f}, depth_levels={f.depth_levels}, "
+        f"self_match_ratio={f.self_match_ratio:.2f}, "
+        f"eod_print_spike={str(f.eod_print_spike).lower()}.\n"
+        f"Order events:\n{table}\n"
+        "Decide `suspicious` (true if any feature is clearly abnormal) and report "
+        "the four Features exactly as given above."
     )
 
 

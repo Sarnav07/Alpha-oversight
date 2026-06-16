@@ -43,6 +43,9 @@ class Settings(BaseModel):
     band_surv_api_key: str = ""
     band_surv_agent_id: str = ""
     band_surv_room: str = ""
+    # The ONE room both desks + the human share (cross-desk @mentions route here).
+    # Defaults to the R&D room, which is the shared room in this deployment.
+    band_shared_room: str = ""
     band_api_base: str = "https://app.band.ai/api/v1"
     band_ws_url: str = "wss://app.band.ai/api/v1/socket/websocket"
     band_human_peer: str = ""
@@ -76,6 +79,10 @@ class Settings(BaseModel):
             band_surv_api_key=os.environ.get("BAND_SURV_API_KEY", ""),
             band_surv_agent_id=os.environ.get("BAND_SURV_AGENT_ID", ""),
             band_surv_room=os.environ.get("BAND_SURV_ROOM", ""),
+            band_shared_room=(
+                os.environ.get("BAND_SHARED_ROOM", "")
+                or os.environ.get("BAND_RND_ROOM", "")
+            ),
             band_api_base=os.environ.get("BAND_API_BASE", "https://app.band.ai/api/v1"),
             band_ws_url=os.environ.get(
                 "BAND_WS_URL", "wss://app.band.ai/api/v1/socket/websocket"

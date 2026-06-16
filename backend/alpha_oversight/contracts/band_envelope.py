@@ -39,10 +39,15 @@ class Envelope(BaseModel):
 
     @classmethod
     def parse_mention(cls, content: str) -> "Envelope":
-        """Strip a leading ``@handle`` token, then ``json.loads`` the remainder."""
+        """Recover the envelope from a Band message body.
+
+        The body is ``"@<mention> " + <json>``. Real Band rewrites the mention to
+        the recipient's *display name* (which can contain spaces), so we don't
+        split on whitespace — the envelope JSON always begins at the first ``{``,
+        so we parse from there. Falls back to the whole string if no brace.
+        """
         stripped = content.strip()
-        if stripped.startswith("@"):
-            # Drop the leading "@handle " mention token.
-            parts = stripped.split(None, 1)
-            stripped = parts[1] if len(parts) == 2 else ""
+        brace = stripped.find("{")
+        if brace != -1:
+            stripped = stripped[brace:]
         return cls.model_validate(json.loads(stripped))

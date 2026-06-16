@@ -22,6 +22,7 @@ is load-bearing only through ``ResolvedInputs.window_ms`` (design §6.3).
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Mapping
 
@@ -45,6 +46,7 @@ from alpha_oversight.orchestration import briefs
 from alpha_oversight.reused.events import ActivityEvent
 from alpha_oversight.reused.tool_registry import ToolDefinition, ToolRegistry, ToolResult
 from alpha_oversight.rules import engine
+from alpha_oversight.rules.features import compute_features, is_abnormal
 from alpha_oversight.state.state_machine import Case, CaseState, next_state
 
 if TYPE_CHECKING:
@@ -58,6 +60,13 @@ if TYPE_CHECKING:
 
 # Logical role -> model key. The pipeline accepts an override map; these defaults
 # are the keys ``providers.register_models()`` installs from env.
+# Plumbing roles (triage/investigate/specialist/adjudicate) run on a big *open*
+# Featherless model (``open-triage`` = Qwen3-Next-80B-A3B-Instruct: 80B total /
+# 3B-active MoE — large enough for reliable structured JSON, non-thinking so it
+# stays fast across the four sequential calls). The visible adversarial contrast
+# is frontier Prosecution (``claude-sonnet-4-6``) vs open Defense
+# (``Qwen3.6-35B-A3B``); Escalation synthesises the human packet on ``gpt-5-mini``.
+# Override any role via the `models` arg.
 _DEFAULT_MODELS: dict[str, str] = {
     "anomaly": "open-triage",
     "investigator": "open-triage",
@@ -108,10 +117,16 @@ def _recruit_registry() -> ToolRegistry:
     reg = ToolRegistry()
 
     async def _list_peers(_args: dict) -> ToolResult:
-        return ToolResult(success=True, data=[s["handle"] for s in SPECIALISTS.values()])
+        # ToolResult.data is a STRING (the loop slices it as text) — emit JSON.
+        return ToolResult(
+            success=True,
+            data=json.dumps([s["handle"] for s in SPECIALISTS.values()]),
+        )
 
     async def _add_participant(args: dict) -> ToolResult:
-        return ToolResult(success=True, data={"added": args.get("handle", "")})
+        return ToolResult(
+            success=True, data=json.dumps({"added": args.get("handle", "")})
+        )
 
     reg.register(
         ToolDefinition(
@@ -148,17 +163,20 @@ async def run_surveillance(
     replay: "ReplayWriter | None" = None,
     models: Mapping[str, str] | None = None,
     surveillance_room: str = "case-e2e",
+    case_id: str | None = None,
     max_rounds: int = 1,
 ) -> "Case":
     """Run one surveillance case end to end; return the final persisted ``Case``.
 
     The case ends ``FLAGGED`` (engine fired), ``ESCALATED`` (rules missed, sent to
-    a human), or ``CLOSED`` (detector saw nothing). ``case_id == surveillance_room
-    == Band room task_id``. ``bridge``/``replay`` are optional so the orchestrator
-    can run without the Chinese-wall crossing or replay tee in a smoke test.
+    a human), or ``CLOSED`` (detector saw nothing). ``case_id`` defaults to
+    ``surveillance_room`` (the Band room's task_id); on real Band, pass a distinct
+    ``case_id`` so many cases can share the one persistent shared room.
+    ``bridge``/``replay`` are optional so the orchestrator can run without the
+    Chinese-wall crossing or replay tee in a smoke test.
     """
     cfg = {**_DEFAULT_MODELS, **(dict(models) if models else {})}
-    case_id = surveillance_room
+    case_id = case_id or surveillance_room
     tee_bus = _ReplayTeeBus(bus, replay, case_id)
 
     async def _emit(agent: str, content: str) -> None:
@@ -187,10 +205,15 @@ async def run_surveillance(
     detector = AnomalyDetector(cfg["anomaly"], ToolRegistry(), tee_bus, ledger)
 
     # ── 2. AnomalyDetector triages the window ────────────────────────────────
-    brief = briefs.flow_brief(events)
+    # Features are COMPUTED deterministically from the flow (never hallucinated):
+    # they drive specialist selection + codify, so they must be real. The detector
+    # LLM still judges `suspicious` over those real numbers (shown in the brief).
+    features = compute_features(events)
+    brief = briefs.flow_brief(events, features)
     smell: AnomalyOut = await detector.run(brief, AnomalyOut)
-    features = smell.features
-    if not smell.suspicious:
+    # Gate on the LLM's call OR a deterministic triage floor, so a weak triage
+    # model can't suppress a clearly abnormal window (bounded — still closes clean).
+    if not (smell.suspicious or is_abnormal(features)):
         # Nothing to chase: close the case (bounded — no wedge).
         closed = await store.transition(
             case_id, next_state(CaseState.OPEN, "timeout"),

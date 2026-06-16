@@ -11,7 +11,17 @@ from __future__ import annotations
 import asyncio
 import os
 
+import litellm
+
 from alpha_oversight.contracts.common import ModelSpec
+
+# Reasoning models (e.g. gpt-5-mini) reject temperature != 1 and a few other
+# params. Let litellm silently drop any param a provider doesn't support,
+# process-wide, so the single ``ModelSpec.temperature`` default can never 400 the
+# escalation role on camera. (agent_loop also sets this; we re-assert it here in
+# the foundational routing module so the guarantee is import-order-independent —
+# structured_completion imports providers, not agent_loop.)
+litellm.drop_params = True
 
 PROVIDERS: dict[str, dict] = {
     "aimlapi": {
@@ -101,6 +111,11 @@ def register_models() -> None:
             display_name=key,
             provider=provider,
             litellm_model=f"{prefix}/{raw_id}",
+            # Reasoning models (gpt-5-mini) count their hidden reasoning against
+            # max_completion_tokens; 4096 can truncate a packet to empty. Give
+            # every demo role headroom — it is a ceiling, not a target (models
+            # stop at EOS), so non-reasoning roles pay nothing for it.
+            max_tokens=8192,
             api_base=api_base,
             key_env=key_env,
         )
