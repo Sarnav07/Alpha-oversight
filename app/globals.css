@@ -108,6 +108,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ---- responsive guards (D2 mobile fallbacks) ----
+   The landing + how-it-works GSAP pins and 3D device frames can momentarily
+   paint past the viewport edge on narrow screens (transient pin/refresh
+   states); clamp the page so a stray child can never produce a horizontal
+   scrollbar. Per-element native scrollers (FeaturesCarousel swipe track,
+   AuditChain ladder) opt back in with their own `overflow-x-auto`.
+   `overflow-x: clip` (not `hidden`) so it does NOT establish a scroll container
+   — that would break the GSAP/`position: sticky` pins. */
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 /* ---- signature keyframes (FRONTEND_BUILD_PLAN.md §8) ---- */
 @keyframes band-pulse {
   0%,

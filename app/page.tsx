@@ -6,6 +6,8 @@ import KeyFigures from "@/components/landing/KeyFigures";
 import ManifestoSection from "@/components/landing/ManifestoSection";
 import FeaturesCarousel from "@/components/landing/FeaturesCarousel";
 import UnlockSection from "@/components/landing/UnlockSection";
+import OverviewSection from "@/components/landing/OverviewSection";
+import AuditChainSection from "@/components/landing/AuditChainSection";
 
 /**
  * Public landing page — first-scroll experience.
@@ -23,9 +25,11 @@ export default function LandingPage() {
       <Preloader />
       <main>
         <HeroScroll />
+        <OverviewSection />
         <KeyFigures />
         <ManifestoSection />
         <FeaturesCarousel />
+        <AuditChainSection />
         <UnlockSection />
       </main>
     </>

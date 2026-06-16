@@ -37,7 +37,7 @@ import Logomark from "@/components/landing/Logomark";
 
 const LINKS: ReadonlyArray<{ label: string; href: string; isRoute?: boolean }> = [
   { label: "Overview", href: "#overview" },
-  { label: "How it works", href: "#how-it-works" },
+  { label: "How it works", href: "/how-it-works", isRoute: true },
   { label: "Live Desk", href: "/desk", isRoute: true },
   { label: "Audit", href: "#audit" },
 ];
@@ -57,6 +57,8 @@ function luminanceOf(color: string): number | null {
 export default function LandingNav() {
   // true ⇒ frame behind the nav is dark ⇒ paint brand/links white.
   const [onDark, setOnDark] = useState(false);
+  // mobile slide-down menu (md and below — the centered link row is hidden there)
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     let raf = 0;
@@ -115,6 +117,24 @@ export default function LandingNav() {
       window.removeEventListener("resize", schedule);
     };
   }, []);
+
+  // Close the mobile menu when the viewport grows past md (the desktop link row
+  // takes over) and lock body scroll while the sheet is open.
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const onChange = () => mq.matches && setMenuOpen(false);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [menuOpen]);
 
   // Ink on light frames (default), white on dark frames.
   // NOTE: this fixed header is NOT inside a [data-section="light"] wrapper, so
@@ -202,8 +222,77 @@ export default function LandingNav() {
               →
             </span>
           </Link>
+
+          {/* Hamburger — only below md, where the centered link row is hidden. */}
+          <button
+            type="button"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((o) => !o)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] border md:hidden"
+            style={{
+              borderColor: onDark ? "rgba(255,255,255,0.18)" : "#e2e2e6",
+              color: inkColor,
+              transition: "color 200ms ease, border-color 200ms ease",
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+              {menuOpen ? (
+                <path
+                  d="M4 4 L14 14 M14 4 L4 14"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              ) : (
+                <path
+                  d="M3 5 H15 M3 9 H15 M3 13 H15"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              )}
+            </svg>
+          </button>
         </div>
       </nav>
+
+      {/* Mobile menu sheet — full-width dark panel under the bar (md and below).
+          Self-contained dark contrast so it reads over any frame; not nested in
+          a [data-section="light"] wrap, so explicit colors are used. */}
+      {menuOpen && (
+        <div
+          className="absolute inset-x-0 top-[72px] border-t md:hidden"
+          style={{
+            backgroundColor: "rgba(2,2,2,0.97)",
+            borderColor: "rgba(255,255,255,0.10)",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <ul className="flex flex-col px-6 py-3">
+            {LINKS.map((link) => {
+              const inner = (
+                <span className="block py-3 font-sans text-[15px] tracking-wide text-white/85">
+                  {link.label}
+                </span>
+              );
+              return (
+                <li
+                  key={link.href}
+                  className="border-b border-white/8 last:border-b-0"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.isRoute ? (
+                    <Link href={link.href}>{inner}</Link>
+                  ) : (
+                    <a href={link.href}>{inner}</a>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
     </header>
   );
 }

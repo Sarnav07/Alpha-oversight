@@ -8,6 +8,7 @@ import CommandCenterArt from "./CommandCenterArt";
 import AuditChainArt from "./art/AuditChainArt";
 import ThreatLeaderboardArt from "./art/ThreatLeaderboardArt";
 import Logomark from "@/components/landing/Logomark";
+import { useIsMobile } from "./useIsMobile";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -311,17 +312,18 @@ function FeatureCard({ card }: { card: Card }) {
 
   return (
     <article
-      className="feat-card grid h-full shrink-0 grid-rows-[auto] overflow-hidden rounded-[var(--r-card)] border"
+      className="feat-card flex h-full shrink-0 flex-col overflow-hidden rounded-[var(--r-card)] border md:grid md:grid-rows-[auto] md:[grid-template-columns:minmax(0,0.86fr)_minmax(0,1.14fr)]"
       style={{
-        width: "min(60vw, 860px)",
-        gridTemplateColumns: "minmax(0, 0.86fr) minmax(0, 1.14fr)",
+        // Mobile (native swipe): a near-full-width card. md+ (pinned track):
+        // the original 60vw cinematic width.
+        width: "min(86vw, 860px)",
         backgroundColor: "var(--bg-card-2)",
         borderColor: "var(--border-subtle)",
         boxShadow: "0 30px 90px rgba(0,0,0,0.45)",
       }}
     >
       {/* LEFT — text column. Icon top-left, title + body, CTA pill lower-left. */}
-      <div className="flex h-full flex-col p-7 sm:p-9">
+      <div className="flex flex-col p-7 sm:p-9 md:h-full">
         <div>
           <span
             aria-hidden="true"
@@ -379,8 +381,10 @@ function FeatureCard({ card }: { card: Card }) {
         </div>
       </div>
 
-      {/* RIGHT — device-framed art region with the ▶ play affordance. */}
-      <div className="relative flex h-full min-h-0 items-center justify-center overflow-hidden py-7 pr-7 sm:py-9 sm:pr-9">
+      {/* RIGHT — device-framed art region with the ▶ play affordance. On mobile
+          (stacked) it gets an explicit min height so the device frame reads;
+          md+ it fills the grid cell. */}
+      <div className="relative flex min-h-[220px] items-center justify-center overflow-hidden px-7 pb-7 sm:px-9 sm:pb-9 md:h-full md:min-h-0 md:px-0 md:py-9 md:pr-9">
         {framed}
       </div>
     </article>
@@ -430,6 +434,8 @@ export default function FeaturesCarousel() {
   const trackRef = useRef<HTMLDivElement | null>(null);
   // null = undecided (SSR/first paint), true/false once measured on the client
   const [reduced, setReduced] = useState<boolean | null>(null);
+  // Below md the pinned horizontal scroll becomes a native swipe stack.
+  const isMobile = useIsMobile();
   // Runway height needed so vertical scroll ≈ horizontal track travel.
   const [runway, setRunway] = useState<number | null>(null);
 
@@ -437,8 +443,9 @@ export default function FeaturesCarousel() {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReduced(mq.matches);
 
-    // Reduced motion: do not build the pinned timeline at all.
-    if (mq.matches) return;
+    // Reduced motion OR a small viewport: do not build the pinned timeline at
+    // all (the native horizontal scroller renders instead).
+    if (mq.matches || window.matchMedia("(max-width: 767px)").matches) return;
 
     const ctx = gsap.context((self) => {
       const q = self.selector!;
@@ -480,10 +487,11 @@ export default function FeaturesCarousel() {
     }, rootRef);
 
     return () => ctx.revert();
-  }, []);
+    // Re-run when the mobile boundary is crossed so the pin builds/tears down.
+  }, [isMobile]);
 
-  // ── Reduced-motion / no-pin static fallback ─────────────────────────────
-  if (reduced === true) {
+  // ── No-pin fallback (reduced-motion OR mobile) ──────────────────────────
+  if (reduced === true || isMobile === true) {
     return (
       <section
         aria-label="Our Features"
@@ -495,15 +503,20 @@ export default function FeaturesCarousel() {
         <div className="mx-auto" style={{ maxWidth: "var(--maxw-content)" }}>
           <FeaturesHeader />
         </div>
-        {/* Native horizontal scroller — same cards, no pinning. */}
+        {/* Native horizontal scroller — same cards, no pinning. Cards auto-size
+            their height on mobile (stacked content) and take the cinematic tall
+            frame from sm+ (side-by-side grid). */}
         <div
           className="flex gap-6 overflow-x-auto px-6 pb-16 pt-12 sm:px-10"
-          style={{ scrollSnapType: "x mandatory" }}
+          style={{
+            scrollSnapType: "x mandatory",
+            WebkitOverflowScrolling: "touch",
+          }}
         >
           {CARDS.map((card) => (
             <div
               key={card.no}
-              className="h-[68vh] min-h-[520px]"
+              className="sm:h-[68vh] sm:min-h-[520px]"
               style={{ scrollSnapAlign: "start" }}
             >
               <FeatureCard card={card} />

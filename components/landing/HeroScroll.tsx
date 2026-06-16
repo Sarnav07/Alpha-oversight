@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import LandingNav from "./LandingNav";
 import CommandCenterArt from "./CommandCenterArt";
 import Logomark from "@/components/landing/Logomark";
+import { useIsMobile } from "./useIsMobile";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -34,13 +35,17 @@ export default function HeroScroll() {
   const rootRef = useRef<HTMLDivElement | null>(null);
   // null = undecided (SSR/first paint), true/false once measured on the client
   const [reduced, setReduced] = useState<boolean | null>(null);
+  // Below the md breakpoint the pin + 3D device-zoom scroll-jack and overflow,
+  // so we take the same static path as reduced-motion.
+  const isMobile = useIsMobile();
 
   useLayoutEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReduced(mq.matches);
 
-    // Reduced motion: do not build the pinned timeline at all.
-    if (mq.matches) return;
+    // Reduced motion OR a small viewport: do not build the pinned timeline at
+    // all (the static stacked hero renders instead).
+    if (mq.matches || window.matchMedia("(max-width: 767px)").matches) return;
 
     const ctx = gsap.context((self) => {
       const q = self.selector!;
@@ -126,10 +131,12 @@ export default function HeroScroll() {
     }, rootRef);
 
     return () => ctx.revert();
-  }, []);
+    // Re-run when the mobile boundary is crossed so the pin builds/tears down
+    // to match the active render path.
+  }, [isMobile]);
 
-  // ── Reduced-motion static fallback ──────────────────────────────────────
-  if (reduced === true) {
+  // ── Static fallback (reduced-motion OR mobile) ──────────────────────────
+  if (reduced === true || isMobile === true) {
     return (
       <>
         <LandingNav />
@@ -330,13 +337,17 @@ function HeroCopy() {
           letterSpacing: "-0.012em",
           lineHeight: 1.04,
           // Sized so the longest variant ("Your adversarial Adversary.") stays on
-          // ONE line at desktop widths; shrinks on narrow viewports.
-          fontSize: "clamp(30px, 5.4vw, 72px)",
+          // ONE line at desktop widths; shrinks on narrow viewports. Wrapping is
+          // allowed (the headline breaks before the rotating word on phones); the
+          // pinned-hero CSS reinstates nowrap above the sm breakpoint.
+          fontSize: "clamp(26px, 5.4vw, 72px)",
           color: "var(--text-primary)",
-          whiteSpace: "nowrap",
         }}
       >
-        Your adversarial <RotatingWord />
+        Your adversarial{" "}
+        <span className="whitespace-nowrap">
+          <RotatingWord />
+        </span>
       </h1>
       <p
         className="mx-auto mt-6 max-w-xl font-sans"
