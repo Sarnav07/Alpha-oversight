@@ -64,21 +64,24 @@ function BentoCard({ card, index, start, reduce }: { card: Card; index: number; 
       initial={reduce ? false : { opacity: 0, y: 26 }}
       animate={start ? { opacity: 1, y: 0 } : reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 26 }}
       transition={{ duration: 0.6, delay: 0.08 + index * 0.1, ease: EASE }}
-      whileHover={reduce ? undefined : { y: -4 }}
-      className="group relative flex min-h-[300px] flex-col overflow-hidden rounded-[20px] p-7 sm:min-h-[330px] sm:p-9"
-      style={{
-        backgroundColor: "var(--bg-inset)",
-        border: "1px solid var(--hairline)",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
-      }}
+      whileHover={reduce ? undefined : { y: -6 }}
+      className="group relative flex min-h-[300px] flex-col overflow-hidden rounded-[20px] p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-shadow duration-300 hover:shadow-[0_26px_70px_-12px_rgba(0,0,0,0.6)] sm:min-h-[330px] sm:p-9"
+      style={{ backgroundColor: "var(--bg-inset)" }}
     >
-      {/* faint radial lift on hover */}
+      {/* border ring — brightens on hover */}
+      <div className="pointer-events-none absolute inset-0 rounded-[20px] border border-[#1c1d1f] transition-colors duration-300 group-hover:border-white/20" />
+      {/* radial glow on hover */}
       <div
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-        style={{ background: "radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,0.045), transparent 60%)" }}
+        style={{ background: "radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,0.08), transparent 62%)" }}
       />
-      {/* visual layer */}
-      <div className={`pointer-events-none absolute ${card.artClass} transition-transform duration-700 group-hover:scale-[1.03]`}>
+      {/* top accent line on hover */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)" }}
+      />
+      {/* animated visual layer (full-bleed background; brightens + scales on hover) */}
+      <div className={`pointer-events-none absolute ${card.artClass} opacity-80 transition-[transform,opacity] duration-500 group-hover:scale-[1.05] group-hover:opacity-100`}>
         <Art start={start} reduce={reduce} />
       </div>
 

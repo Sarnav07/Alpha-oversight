@@ -519,6 +519,7 @@ function InvestigatorMarker({ bandOn }: { bandOn: MotionValue<number> }) {
       <motion.circle
         cx={ix}
         cy={iy}
+        r={20}
         fill="none"
         stroke="var(--band-blue)"
         strokeWidth={1.5}

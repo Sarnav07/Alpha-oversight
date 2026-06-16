@@ -3,7 +3,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import ComputeBoardArt from "./art/ComputeBoardArt";
 import { useIsMobile } from "./useIsMobile";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -19,11 +18,11 @@ gsap.registerPlugin(ScrollTrigger);
  *   hold   — the composed state holds, then scrolls on to <UnlockSection/>.
  *
  * Reduced-motion OR mobile (<768px): the pin/scrub is skipped entirely and a
- * static stacked layout (headline, then board with labels shown) renders instead
- * — the same gate HeroScroll uses.
+ * static stacked layout (headline, then the panel with its rows shown) renders
+ * instead — the same gate HeroScroll uses.
  *
- * The visual is a BESPOKE monochrome compute board (ComputeBoardArt) — we can't
- * use AlphaLedger's Nvidia photo. Prop-less, self-contained, default export.
+ * The right column is a "why we're different" panel (DifferencePanel) stating the
+ * A&O differentiators. Prop-less, self-contained, default export.
  */
 export default function PoweredBySection() {
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -93,7 +92,7 @@ export default function PoweredBySection() {
       <section className="relative w-full overflow-hidden bg-[var(--obsidian)] px-6 py-24">
         <div className="mx-auto flex max-w-[var(--maxw-content)] flex-col items-start gap-12">
           <Headline />
-          <BoardWithLabels />
+          <DifferencePanel />
         </div>
       </section>
     );
@@ -109,8 +108,8 @@ export default function PoweredBySection() {
             <Headline />
           </div>
 
-          {/* right — board + overlaid callout cards */}
-          <BoardWithLabels boardClass="pb-board" labelClass="pb-label" />
+          {/* right — the "why we're different" panel (slides in; rows stagger) */}
+          <DifferencePanel boardClass="pb-board" labelClass="pb-label" />
         </div>
       </div>
     </div>
@@ -150,39 +149,38 @@ function Headline() {
   );
 }
 
-type LabelDef = { t: string; s: string; tone: string; pos: string };
+type Diff = { t: string; lead: string; detail: string; tone: string };
 
-/** the four floating callout cards (their resting positions over the board). */
-const LABELS: LabelDef[] = [
-  { t: "Adversarial R&D", s: "open-weight models", tone: "var(--tier-open)", pos: "top-[4%] left-[6%]" },
-  { t: "Surveillance Desk", s: "frontier models", tone: "var(--tier-frontier)", pos: "top-[20%] right-[3%]" },
-  { t: "Hash-chained Audit", s: "tamper-evident ledger", tone: "var(--verdict-complete)", pos: "bottom-[22%] left-[2%]" },
-  { t: "Band Coordination", s: "cross-desk handoffs", tone: "var(--desk-surv)", pos: "bottom-[5%] right-[7%]" },
+/** the four differentiators — "X, not Y" framing answers "why us, not them". */
+const DIFFS: Diff[] = [
+  {
+    t: "Adversarial by design",
+    lead: "Proactive, not reactive",
+    detail: "An open-weight red-team invents the next evasion before the market does — Surveillance trains on tomorrow's attack.",
+    tone: "var(--tier-open)",
+  },
+  {
+    t: "Deterministic verdicts",
+    lead: "Explainable, not a black box",
+    detail: "A rule engine makes the PASS / FLAG call — not an opaque model. Every verdict is reproducible.",
+    tone: "var(--tier-frontier)",
+  },
+  {
+    t: "Provable by construction",
+    lead: "Tamper-evident, not “trust us”",
+    detail: "Every handoff and verdict is hash-chained into a replayable, audit-ready ledger.",
+    tone: "var(--verdict-complete)",
+  },
+  {
+    t: "Coordinated, not wrapped",
+    lead: "A real system, not a wrapper",
+    detail: "Nine roles hand off real evidence across a Chinese wall over Band — visible end to end.",
+    tone: "var(--desk-surv)",
+  },
 ];
 
-function CalloutCard({ def, className }: { def: LabelDef; className?: string }) {
-  return (
-    <div
-      className={`absolute ${def.pos} ${className ?? ""} w-[min(220px,46%)] rounded-[14px] border p-3 backdrop-blur-md`}
-      style={{
-        background: "rgba(10,11,13,0.72)",
-        borderColor: "rgba(255,255,255,0.12)",
-        boxShadow: "0 18px 50px rgba(0,0,0,0.45)",
-      }}
-    >
-      <div className="flex items-center gap-2">
-        <span className="h-[7px] w-[7px] rounded-full" style={{ background: def.tone }} />
-        <span className="font-sans text-[13px] font-medium text-[var(--frost)]">{def.t}</span>
-      </div>
-      <span className="mt-1 block font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
-        {def.s}
-      </span>
-    </div>
-  );
-}
-
-/** The compute board with the four callout cards overlaid (both render paths). */
-function BoardWithLabels({
+/** The "why we're different" panel (replaces both render paths' right column). */
+function DifferencePanel({
   boardClass,
   labelClass,
 }: {
@@ -190,13 +188,66 @@ function BoardWithLabels({
   labelClass?: string;
 }) {
   return (
-    <div className={`relative w-full ${boardClass ?? ""}`}>
-      <div className="aspect-[700/452] w-full">
-        <ComputeBoardArt />
+    <div
+      className={`relative w-full overflow-hidden rounded-[20px] border ${boardClass ?? ""}`}
+      style={{
+        borderColor: "rgba(255,255,255,0.10)",
+        background: "linear-gradient(180deg, #14161c 0%, #0a0b0d 100%)",
+        boxShadow: "0 30px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+      }}
+    >
+      {/* soft top glow */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: "radial-gradient(120% 75% at 82% 0%, rgba(255,255,255,0.055), transparent 60%)" }}
+      />
+
+      <div className="relative p-6 sm:p-8">
+        {/* header */}
+        <div className="flex items-center justify-between gap-3">
+          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--text-faint)]">
+            Why we&apos;re different
+          </span>
+          <span
+            className="shrink-0 rounded-full border px-2.5 py-1 font-mono text-[10px] text-[var(--text-muted)]"
+            style={{ borderColor: "rgba(255,255,255,0.12)" }}
+          >
+            8 agents · 2 tiers
+          </span>
+        </div>
+
+        <p
+          className="mt-4 font-sans"
+          style={{ fontSize: "clamp(19px, 2vw, 25px)", fontWeight: 420, lineHeight: 1.18, color: "var(--frost)" }}
+        >
+          Not another ML black box.
+        </p>
+
+        {/* differentiator rows */}
+        <ul className="mt-5 flex flex-col">
+          {DIFFS.map((d, i) => (
+            <li
+              key={d.t}
+              className={`${labelClass ?? ""} flex gap-3 py-3.5`}
+              style={{ borderTop: i ? "1px solid var(--hairline)" : "none" }}
+            >
+              <span
+                className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ background: d.tone, boxShadow: `0 0 8px ${d.tone}` }}
+              />
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span className="font-sans text-[14px] font-medium text-[var(--frost)]">{d.t}</span>
+                  <span className="font-mono text-[10.5px]" style={{ color: d.tone }}>
+                    {d.lead}
+                  </span>
+                </div>
+                <p className="mt-1 font-sans text-[12.5px] leading-snug text-[var(--text-muted)]">{d.detail}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
-      {LABELS.map((def) => (
-        <CalloutCard key={def.t} def={def} className={labelClass} />
-      ))}
     </div>
   );
 }

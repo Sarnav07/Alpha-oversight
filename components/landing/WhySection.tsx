@@ -29,7 +29,7 @@ type Stat = {
   to: number;
   prefix?: string;
   suffix?: string;
-  Chart: (p: { start: boolean; reduce: boolean }) => React.ReactElement;
+  Chart: (p: { start: boolean; reduce: boolean; active: boolean }) => React.ReactElement;
 };
 
 const STATS: Stat[] = [
@@ -68,36 +68,52 @@ function StatColumn({
   index,
   start,
   reduce,
+  active,
+  grow,
+  onEnter,
+  onLeave,
 }: {
   stat: Stat;
   index: number;
   start: boolean;
   reduce: boolean;
+  active: boolean;
+  grow: number;
+  onEnter: () => void;
+  onLeave: () => void;
 }) {
   const v = useCountUp(stat.to, start, reduce);
   const { Chart } = stat;
   return (
     <motion.div
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
       initial={reduce ? false : { opacity: 0, y: 18 }}
       animate={start ? { opacity: 1, y: 0 } : reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
       transition={{ duration: 0.6, delay: 0.1 + index * 0.12, ease: EASE }}
-      className="flex flex-col px-0 sm:px-6 first:pl-0 sm:[&:not(:first-child)]:border-l"
-      style={{ borderColor: "rgba(255,255,255,0.08)" }}
+      className="flex min-w-0 flex-col px-0 sm:px-6 sm:[&:not(:first-child)]:border-l"
+      style={{
+        borderColor: "rgba(255,255,255,0.08)",
+        // hover redistributes the row to 50:25:25 (grow 2 vs 1).
+        flexGrow: grow,
+        flexBasis: 0,
+        transition: "flex-grow 0.5s cubic-bezier(0.16,1,0.3,1)",
+      }}
     >
       <span
-        className="font-sans"
-        style={{ fontSize: 14, lineHeight: 1.3, color: "var(--text-primary)", opacity: 0.86 }}
+        className="font-sans transition-opacity duration-300"
+        style={{ fontSize: 14, lineHeight: 1.3, color: "var(--text-primary)", opacity: active ? 1 : 0.82 }}
       >
         {stat.label}
       </span>
       <span
-        className="mt-4 font-mono tabular-nums"
+        className="mt-4 font-mono tabular-nums transition-colors duration-300"
         style={{
           fontSize: "clamp(26px, 3vw, 40px)",
           fontWeight: 400,
           lineHeight: 1,
           letterSpacing: "-0.02em",
-          color: "var(--text-faint)",
+          color: active ? "var(--frost)" : "var(--text-faint)",
         }}
       >
         {stat.prefix ?? ""}
@@ -105,7 +121,7 @@ function StatColumn({
         {stat.suffix ?? ""}
       </span>
       <div className="mt-7">
-        <Chart start={start} reduce={reduce} />
+        <Chart start={start} reduce={reduce} active={active} />
       </div>
     </motion.div>
   );
@@ -116,6 +132,8 @@ export default function WhySection() {
   const ref = useRef<HTMLElement | null>(null);
   const inView = useInView(ref, { once: true, amount: 0.25 });
   const start = reduce || inView;
+  // hovered column expands to 50% (the other two share 25% each).
+  const [hovered, setHovered] = useState<number | null>(null);
 
   return (
     <section
@@ -176,10 +194,20 @@ export default function WhySection() {
             </motion.div>
           </div>
 
-          {/* right — three stat columns */}
-          <div className="grid grid-cols-1 gap-12 sm:grid-cols-3 sm:gap-0">
+          {/* right — three stat columns; hover one → 50:25:25 */}
+          <div className="flex flex-col gap-12 sm:flex-row sm:gap-0">
             {STATS.map((s, i) => (
-              <StatColumn key={s.label} stat={s} index={i} start={start} reduce={reduce} />
+              <StatColumn
+                key={s.label}
+                stat={s}
+                index={i}
+                start={start}
+                reduce={reduce}
+                active={hovered === i}
+                grow={hovered === null ? 1 : hovered === i ? 2 : 1}
+                onEnter={() => setHovered(i)}
+                onLeave={() => setHovered(null)}
+              />
             ))}
           </div>
         </div>

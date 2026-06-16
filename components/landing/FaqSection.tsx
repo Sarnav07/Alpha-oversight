@@ -164,11 +164,11 @@ export default function FaqSection() {
               Everything you need to know about the desk, the Band, and how a verdict gets made.
             </p>
             <Link
-              href="/desk"
+              href="/how-it-works"
               className="mt-8 inline-flex items-center gap-2 font-sans text-[14px] font-medium transition-transform hover:-translate-y-0.5"
               style={{ backgroundColor: "var(--obsidian)", color: "var(--frost)", borderRadius: "var(--r-pill)", padding: "11px 22px" }}
             >
-              Launch Desk
+              See how it works
               <span aria-hidden="true">→</span>
             </Link>
           </div>

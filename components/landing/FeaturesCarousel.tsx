@@ -39,14 +39,54 @@ gsap.registerPlugin(ScrollTrigger);
 
 type Card = {
   no: string;
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   body: string;
   art: React.ReactNode;
-  /** When true the device frame shows a centered ▶ play affordance. */
-  play?: boolean;
   cta?: { label: string; href: string };
+  /** When true the art fills the whole card (self-contained panel, e.g. the
+   *  centred-badge leaderboard) instead of the text-left / laptop-right layout. */
+  full?: boolean;
 };
+
+/* ── bare line icons (no bordered box) — match the 9-correct top-left mark ── */
+const il = {
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+function TraceIc() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 24 24" {...il}>
+      <path d="M3 13h3l2.5-7 4 14 2.5-7H21" />
+    </svg>
+  );
+}
+function AuditIc() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 24 24" {...il}>
+      <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" />
+      <path d="M9 11.5l2 2 4-4.5" />
+    </svg>
+  );
+}
+function ContestIc() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 24 24" {...il}>
+      <path d="M14.5 4h5v5M19.5 4 12 11.5M9.5 20h-5v-5M4.5 20 12 12.5" />
+    </svg>
+  );
+}
+function CodifyIc() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 24 24" {...il}>
+      <path d="M12 2l8.5 5v10L12 22 3.5 17V7z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
+  );
+}
 
 /**
  * A circular ▶ play affordance overlaid on the device art (centered). Purely
@@ -255,112 +295,106 @@ function DossierCard({
 const CARDS: Card[] = [
   {
     no: "01",
-    icon: "◈",
+    icon: <TraceIc />,
     title: "Live Trace Analytics",
     body: "Every agent step streams in real time — topology, model badges, verdicts, the blue waiting-on-Band node.",
     art: <CommandCenterArt />,
-    play: true,
-    cta: { label: "Enter Live Desk →", href: "/desk" },
+    cta: { label: "Open the Live Desk", href: "/desk" },
   },
   {
     no: "02",
-    icon: "❖",
+    icon: <AuditIc />,
     title: "Verified & Audited Lineage",
     body: "Every decision sealed in a hash-chained ledger. verify_chain ✓ — tamper-evident, audit-ready.",
     art: <AuditChainArt />,
-    play: true,
+    cta: { label: "Verify a chain", href: "/desk" },
   },
   {
     no: "03",
-    icon: "⚔",
+    icon: <ContestIc />,
     title: "Cross-Model Contest",
     body: "Prosecution (frontier) ⚔ Defense (open) argue the same evidence across two model tiers.",
     art: <CrossModelArt />,
+    cta: { label: "Watch the debate", href: "/desk" },
   },
   {
     no: "04",
-    icon: "⬡",
+    icon: <CodifyIc />,
     title: "The Codify Engine",
     body: "A confirmed evasion becomes a deterministic rule in < 3s — regression-gated.",
+    // full-bleed centred leaderboard panel (10-correct) — its own title, four
+    // corner metrics, the dead-centred ShieldEmblem and a caption.
     art: <ThreatLeaderboardArt />,
+    full: true,
   },
 ];
 
 /**
- * A single large dark feature card — AlphaLedger layout: a LEFT text column
- * (outline icon, title, body, optional CTA pill anchored to the lower-left) and
- * a RIGHT device-framed art region with an optional ▶ play affordance.
+ * A single wide, landscape feature card — matches the 9-correct AlphaLedger
+ * layout: a deep-black gradient panel; a BARE line icon top-left; the title,
+ * body and a frosted translucent CTA pill anchored to the LOWER-left; and an
+ * angled <LaptopFrame/> on the right that BLEEDS off the card's right edge (the
+ * card clips it with overflow-hidden), with a centered ▶ play affordance.
  *
- * Cards flagged `play` show their art inside an angled <LaptopFrame/>; the
- * others present the art in a flat bordered "framed region".
+ * Below md the card stacks: text block, then the laptop beneath it.
  */
 function FeatureCard({ card }: { card: Card }) {
-  const framed = card.play ? (
-    <LaptopFrame play>{card.art}</LaptopFrame>
-  ) : (
-    <div
-      className="relative h-full w-full overflow-hidden rounded-[12px] border"
-      style={{
-        borderColor: "var(--hairline)",
-        backgroundColor: "var(--obsidian)",
-        boxShadow: "0 30px 70px rgba(0,0,0,0.45)",
-      }}
-    >
-      <div className="absolute inset-0">{card.art}</div>
-    </div>
-  );
+  // Full-bleed variant (the centred-badge leaderboard): the self-contained art
+  // panel IS the card, so its ShieldEmblem sits dead-centre (10-correct).
+  if (card.full) {
+    return (
+      <div className="feat-card relative w-[86vw] md:w-[min(60vw,707px)] shrink-0 overflow-hidden rounded-[var(--r-card)] md:h-[clamp(360px,54vh,540px)]">
+        {card.art}
+      </div>
+    );
+  }
 
   return (
     <article
-      className="feat-card flex h-full shrink-0 flex-col overflow-hidden rounded-[var(--r-card)] border md:grid md:grid-rows-[auto] md:[grid-template-columns:minmax(0,0.86fr)_minmax(0,1.14fr)]"
+      className="feat-card relative flex w-[86vw] md:w-[min(60vw,707px)] shrink-0 flex-col overflow-hidden rounded-[var(--r-card)] border md:grid md:h-[clamp(360px,54vh,540px)] md:[grid-template-columns:42%_58%]"
       style={{
-        // Mobile (native swipe): a near-full-width card. md+ (pinned track):
-        // the original 60vw cinematic width.
-        width: "min(86vw, 860px)",
-        backgroundColor: "var(--bg-card-2)",
+        background:
+          "linear-gradient(100deg, #060708 0%, #0a0b0e 46%, #0f1218 100%)",
         borderColor: "var(--border-subtle)",
-        boxShadow: "0 30px 90px rgba(0,0,0,0.45)",
+        boxShadow: "0 40px 110px rgba(0,0,0,0.55)",
       }}
     >
-      {/* LEFT — text column. Icon top-left, title + body, CTA pill lower-left. */}
-      <div className="flex flex-col p-7 sm:p-9 md:h-full">
-        <div>
-          <span
-            aria-hidden="true"
-            className="flex items-center justify-center rounded-[10px] border text-[16px] text-[var(--text-primary)]"
-            style={{
-              width: 40,
-              height: 40,
-              borderColor: "var(--border-default)",
-              backgroundColor: "var(--bg-inset)",
-            }}
-          >
-            {card.icon}
-          </span>
-          <span className="mt-4 block font-mono text-[11px] tracking-[0.18em] text-[var(--text-faint)]">
-            {card.no}
-          </span>
-        </div>
+      {/* cool screen-glow bleeding from the laptop on the right */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(58% 80% at 80% 50%, rgba(120,140,180,0.12), transparent 68%)",
+        }}
+      />
 
-        {/* Title + body anchored toward the lower portion of the column. */}
-        <div className="mt-auto pt-8">
+      {/* LEFT — text column. Bare icon top-left; title + body + frosted pill
+          anchored to the lower-left. */}
+      <div className="relative z-10 flex flex-col p-8 sm:p-10 md:h-full">
+        <span aria-hidden="true" className="text-[var(--text-primary)]">
+          {card.icon}
+        </span>
+
+        <div className="mt-auto pt-10">
           <h3
             className="font-sans"
             style={{
-              fontSize: "clamp(24px, 2.6vw, 34px)",
+              fontSize: "clamp(26px, 2.8vw, 38px)",
               fontWeight: 300,
-              letterSpacing: "-0.01em",
+              letterSpacing: "-0.015em",
+              lineHeight: 1.04,
               color: "var(--text-primary)",
             }}
           >
             {card.title}
           </h3>
           <p
-            className="mt-3 max-w-[42ch] font-sans"
+            className="mt-3.5 max-w-[34ch] font-sans"
             style={{
               fontSize: "clamp(13px, 1.4vw, 15px)",
               lineHeight: 1.55,
-              color: "var(--text-body)",
+              color: "var(--text-muted)",
             }}
           >
             {card.body}
@@ -369,23 +403,33 @@ function FeatureCard({ card }: { card: Card }) {
           {card.cta ? (
             <Link
               href={card.cta.href}
-              className="mt-7 inline-flex items-center self-start rounded-[var(--r-pill)] px-5 py-2.5 font-sans text-[13px] font-medium transition-colors hover:opacity-90"
+              className="mt-7 inline-flex items-center gap-2 self-start rounded-[var(--r-pill)] px-5 py-2.5 font-sans text-[13px] font-medium transition-transform hover:-translate-y-0.5"
               style={{
-                backgroundColor: "var(--frost)",
-                color: "var(--obsidian)",
+                backgroundColor: "rgba(255,255,255,0.10)",
+                border: "1px solid rgba(255,255,255,0.24)",
+                color: "var(--frost)",
+                backdropFilter: "blur(4px)",
               }}
             >
               {card.cta.label}
+              <span aria-hidden="true">→</span>
             </Link>
           ) : null}
         </div>
       </div>
 
-      {/* RIGHT — device-framed art region with the ▶ play affordance. On mobile
-          (stacked) it gets an explicit min height so the device frame reads;
-          md+ it fills the grid cell. */}
-      <div className="relative flex min-h-[220px] items-center justify-center overflow-hidden px-7 pb-7 sm:px-9 sm:pb-9 md:h-full md:min-h-0 md:px-0 md:py-9 md:pr-9">
-        {framed}
+      {/* RIGHT (md+) — laptop bleeding off the right edge, clipped by the card. */}
+      <div className="relative hidden md:block">
+        <div
+          className="absolute top-1/2 left-[7%] w-[132%] -translate-y-1/2"
+        >
+          <LaptopFrame play>{card.art}</LaptopFrame>
+        </div>
+      </div>
+
+      {/* Laptop (mobile stacked) — normal sizing beneath the text. */}
+      <div className="relative z-10 px-8 pb-9 md:hidden">
+        <LaptopFrame play>{card.art}</LaptopFrame>
       </div>
     </article>
   );
@@ -514,11 +558,7 @@ export default function FeaturesCarousel() {
           }}
         >
           {CARDS.map((card) => (
-            <div
-              key={card.no}
-              className="sm:h-[68vh] sm:min-h-[520px]"
-              style={{ scrollSnapAlign: "start" }}
-            >
+            <div key={card.no} style={{ scrollSnapAlign: "start" }}>
               <FeatureCard card={card} />
             </div>
           ))}
@@ -562,7 +602,7 @@ export default function FeaturesCarousel() {
             }}
           >
             {CARDS.map((card) => (
-              <div key={card.no} className="h-[78%] py-2">
+              <div key={card.no}>
                 <FeatureCard card={card} />
               </div>
             ))}

@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "framer-motion";
-import Logomark from "@/components/landing/Logomark";
+import ShieldEmblem from "@/components/landing/ShieldEmblem";
 
 /**
  * UnlockSection — the closing "Unlock the Full Power" CTA band (AlphaLedger
@@ -101,57 +101,14 @@ const CAPS: Cap[] = [
   },
 ];
 
-/** The A&O shield emblem — rounded body with a pointed bottom, diagonal hatch,
- *  the brand label and the logomark. Drawn as SVG so the outline survives the
- *  notched bottom. */
+/** The A&O shield emblem — the shared frosted badge, centred and spanning both
+ *  card rows (matching the AlphaLedger "Unlock the Full Power" centre badge). */
 function Emblem() {
-  const SHIELD =
-    "M16 2 H184 A14 14 0 0 1 198 16 V150 A14 14 0 0 1 184 164 H118 L100 198 L82 164 H16 A14 14 0 0 1 2 150 V16 A14 14 0 0 1 16 2 Z";
   return (
-    <div className="relative mx-auto h-full w-[clamp(170px,18vw,212px)] self-center">
-      <svg
-        viewBox="0 0 200 200"
-        className="h-auto w-full"
-        preserveAspectRatio="xMidYMid meet"
-      >
-        <defs>
-          <pattern
-            id="ao-hatch"
-            width="13"
-            height="13"
-            patternUnits="userSpaceOnUse"
-            patternTransform="rotate(0)"
-          >
-            <path
-              d="M-2 8 L8 -2 M2 14 L14 2"
-              stroke="var(--border-strong)"
-              strokeWidth="1"
-              opacity="0.5"
-            />
-          </pattern>
-          <linearGradient id="ao-face" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#161719" />
-            <stop offset="1" stopColor="#0a0b0c" />
-          </linearGradient>
-        </defs>
-        <path d={SHIELD} fill="url(#ao-face)" />
-        <path d={SHIELD} fill="url(#ao-hatch)" />
-        <path
-          d={SHIELD}
-          fill="none"
-          stroke="var(--border-default)"
-          strokeWidth="1.25"
-        />
-      </svg>
-      {/* brand label — top-left */}
-      <span className="absolute left-[14%] top-[13%] font-sans text-[12px] tracking-[0.02em] text-[var(--text-body)]">
-        Alpha&nbsp;&amp;&nbsp;Oversight
-      </span>
-      {/* logomark — lower-centre, above the point */}
-      <span className="absolute bottom-[24%] left-1/2 -translate-x-1/2 text-[var(--frost)]">
-        <Logomark size={34} />
-      </span>
-    </div>
+    <ShieldEmblem
+      className="mx-auto h-full w-full max-w-[300px] self-stretch"
+      logoSize={42}
+    />
   );
 }
 
@@ -270,7 +227,7 @@ export default function UnlockSection() {
         </motion.h2>
 
         {/* card grid + central emblem */}
-        <div className="mt-16 grid grid-cols-1 gap-4 sm:mt-20 sm:grid-cols-[1fr_minmax(170px,212px)_1fr] sm:grid-rows-2 sm:gap-5">
+        <div className="mt-16 grid grid-cols-1 gap-4 sm:mt-20 sm:grid-cols-[1fr_minmax(230px,290px)_1fr] sm:grid-rows-2 sm:gap-5">
           {/* emblem — centre column, spans both rows */}
           <motion.div
             {...rise(1)}

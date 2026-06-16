@@ -100,12 +100,6 @@ export default function SiteFooter() {
                   <path d="M18.9 2H22l-7.3 8.34L23 22h-6.56l-5.14-6.72L5.4 22H2.3l7.8-8.92L1.6 2h6.72l4.65 6.15L18.9 2Zm-1.15 18h1.7L7.3 3.9H5.5L17.75 20Z" />
                 </svg>
               </SocialCircle>
-              <SocialCircle label="Email" href="mailto:hello@alpha-oversight.ai">
-                <svg width="16" height="16" viewBox="0 0 24 24" {...ICON}>
-                  <rect x="3" y="5" width="18" height="14" rx="2.5" />
-                  <path d="M4 7l8 6 8-6" />
-                </svg>
-              </SocialCircle>
             </div>
           </div>
 
@@ -146,15 +140,7 @@ export default function SiteFooter() {
           <span className="font-sans text-[12.5px]" style={{ color: "var(--text-muted)" }}>
             © All rights reserved. 2026 Alpha &amp; Oversight
           </span>
-          <a
-            href="mailto:hello@alpha-oversight.ai"
-            className="font-sans text-[12.5px] transition-colors hover:opacity-70"
-            style={{ color: "var(--text-muted)" }}
-          >
-            hello@alpha-oversight.ai
-          </a>
           <div className="flex items-center gap-5 font-sans text-[12.5px]" style={{ color: "var(--text-muted)" }}>
-            <Link href="/how-it-works" className="transition-colors hover:opacity-70">Help Center</Link>
             <Link href="/terms" className="transition-colors hover:opacity-70">Terms of Service</Link>
             <Link href="/privacy" className="transition-colors hover:opacity-70">Privacy Policy</Link>
           </div>

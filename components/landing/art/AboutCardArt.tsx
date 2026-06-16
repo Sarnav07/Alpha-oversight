@@ -4,27 +4,26 @@ import { motion } from "framer-motion";
 
 /**
  * AboutCardArt — the four bespoke monochrome visuals for <MoreAboutSection/>'s
- * bento cards (A&O analog of AlphaLedger's "Features" grid glyphs):
- *   RadarSearch  · 01 Adversarial R&D       — radar rings sweeping a search lens
- *   DetectRing   · 02 Surveillance Desk      — a segmented agent ring + center stat
- *   AuditShield  · 03 Tamper-evident Audit   — hatch field, shield, hash-block chip
- *   BandScan     · 04 Cross-desk Band        — concentric scan arcs + desk nodes
+ * bento cards. Each now carries a CONTINUOUS, subtle background animation (so the
+ * cards feel alive like the AlphaLedger reference):
+ *   RadarSearch  · 01 Adversarial R&D     — radar rings + a slowly SWEEPING wedge
+ *   DetectRing   · 02 Surveillance Desk    — a segmented agent ring that ROTATES
+ *   AuditShield  · 03 Tamper-evident Audit — a diagonal hatch field that DRIFTS
+ *   BandScan     · 04 Cross-desk Band      — concentric arcs that PULSE outward
  *
- * House rules: monochrome (white/gray on near-black); the ONLY accent is the
- * semantic --verdict-complete dot on the audit chip. NEVER --band-blue.
- * Deterministic (no Math.random) so SSR == client. Each takes `start` (the card
- * has entered view) + `reduce` (prefers-reduced-motion → final state, no motion).
+ * Monochrome (white/gray); the only accent is --verdict-complete on the audit
+ * chip. Deterministic (no Math.random) → SSR == client. `start` reveals on view;
+ * `reduce` (prefers-reduced-motion) renders the final state with NO looping.
  */
 
 const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
 const MONO = "var(--font-mono)";
+const LINEAR = "linear" as const;
 
-/** polar point on a circle (angle in degrees, 0° = +x, clockwise in svg) */
 function polar(cx: number, cy: number, r: number, deg: number) {
   const a = (deg * Math.PI) / 180;
   return [cx + r * Math.cos(a), cy + r * Math.sin(a)] as const;
 }
-/** arc path from a0→a1 degrees at radius r */
 function arc(cx: number, cy: number, r: number, a0: number, a1: number) {
   const [x0, y0] = polar(cx, cy, r, a0);
   const [x1, y1] = polar(cx, cy, r, a1);
@@ -40,7 +39,7 @@ function Svg({ vb, children, className }: { vb: string; children: React.ReactNod
   );
 }
 
-/* ── 01 · radar + search lens ──────────────────────────────────────────────── */
+/* ── 01 · radar rings + sweeping wedge ─────────────────────────────────────── */
 export function RadarSearch({ start, reduce }: { start: boolean; reduce: boolean }) {
   const cx = 250;
   const cy = 150;
@@ -49,19 +48,22 @@ export function RadarSearch({ start, reduce }: { start: boolean; reduce: boolean
     animate: start ? { opacity: 1, scale: 1 } : reduce ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.85 },
     transition: { duration: 0.7, delay: reduce ? 0 : d, ease: EASE },
   });
+  const [sx0, sy0] = polar(cx, cy, 150, -34);
+  const [sx1, sy1] = polar(cx, cy, 150, 6);
   return (
     <Svg vb="0 0 360 300">
       {[150, 108, 66].map((r, i) => (
         <motion.circle key={r} cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1" style={{ transformBox: "fill-box", transformOrigin: "center" }} {...show(0.05 * i)} />
       ))}
-      {/* sweep wedge */}
-      <motion.path
-        d={`M${cx} ${cy} L${polar(cx, cy, 150, -60)[0].toFixed(1)} ${polar(cx, cy, 150, -60)[1].toFixed(1)} A150 150 0 0 1 ${polar(cx, cy, 150, -18)[0].toFixed(1)} ${polar(cx, cy, 150, -18)[1].toFixed(1)} Z`}
-        fill="rgba(255,255,255,0.05)"
-        initial={reduce ? false : { opacity: 0 }}
-        animate={start ? { opacity: 1 } : { opacity: reduce ? 1 : 0 }}
-        transition={{ duration: 0.8, delay: 0.25, ease: EASE }}
-      />
+      {/* continuously sweeping wedge */}
+      <motion.g
+        style={{ transformBox: "view-box", transformOrigin: `${cx}px ${cy}px` }}
+        animate={reduce ? undefined : { rotate: 360 }}
+        transition={{ duration: 7, repeat: Infinity, ease: LINEAR }}
+      >
+        <path d={`M${cx} ${cy} L${sx0.toFixed(1)} ${sy0.toFixed(1)} A150 150 0 0 1 ${sx1.toFixed(1)} ${sy1.toFixed(1)} Z`} fill="rgba(255,255,255,0.06)" />
+        <line x1={cx} y1={cy} x2={sx1.toFixed(1)} y2={sy1.toFixed(1)} stroke="rgba(255,255,255,0.28)" strokeWidth="1.2" />
+      </motion.g>
       {/* floating glyph chips */}
       {[
         { x: 196, y: 70, g: "M-4 3 L-1 -1 L1 1 L4 -3" },
@@ -83,59 +85,63 @@ export function RadarSearch({ start, reduce }: { start: boolean; reduce: boolean
   );
 }
 
-/* ── 02 · segmented agent ring + center stat ───────────────────────────────── */
+/* ── 02 · rotating segmented agent ring + center stat ──────────────────────── */
 const NODES = [-90, -30, 30, 90, 150, 210];
 export function DetectRing({ start, reduce }: { start: boolean; reduce: boolean }) {
   const cx = 130;
   const cy = 130;
   const R = 92;
-  const gap = 13; // degrees of gap around each node
+  const gap = 13;
   return (
     <Svg vb="0 0 260 260">
-      {/* faint outer + inner guides */}
       <circle cx={cx} cy={cy} r={R + 16} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-      {/* segmented ring (between consecutive nodes) */}
-      {NODES.map((a, i) => {
-        const next = NODES[(i + 1) % NODES.length] + (i === NODES.length - 1 ? 360 : 0);
-        return (
-          <motion.path
-            key={i}
-            d={arc(cx, cy, R, a + gap, next - gap)}
-            fill="none"
-            stroke="var(--frost)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            style={{ opacity: 0.5 }}
-            initial={reduce ? false : { pathLength: 0 }}
-            animate={start ? { pathLength: 1 } : { pathLength: reduce ? 1 : 0 }}
-            transition={{ duration: 0.7, delay: reduce ? 0 : 0.1 + i * 0.07, ease: EASE }}
-          />
-        );
-      })}
-      {/* agent nodes */}
-      {NODES.map((a, i) => {
-        const [nx, ny] = polar(cx, cy, R, a);
-        return (
-          <motion.g
-            key={`n${i}`}
-            initial={reduce ? false : { opacity: 0, scale: 0.5 }}
-            animate={start ? { opacity: 1, scale: 1 } : { opacity: reduce ? 1 : 0, scale: reduce ? 1 : 0.5 }}
-            transition={{ duration: 0.4, delay: reduce ? 0 : 0.3 + i * 0.07, ease: EASE }}
-            style={{ transformBox: "fill-box", transformOrigin: "center" }}
-          >
-            <circle cx={nx} cy={ny} r="13" fill="rgba(12,13,16,0.95)" stroke="rgba(255,255,255,0.18)" />
-            <circle cx={nx} cy={ny} r="3" style={{ fill: "var(--text-muted)" }} />
-          </motion.g>
-        );
-      })}
-      {/* center stat */}
+      {/* the segments + nodes rotate slowly as one group */}
+      <motion.g
+        style={{ transformBox: "view-box", transformOrigin: `${cx}px ${cy}px` }}
+        animate={reduce ? undefined : { rotate: 360 }}
+        transition={{ duration: 40, repeat: Infinity, ease: LINEAR }}
+      >
+        {NODES.map((a, i) => {
+          const next = NODES[(i + 1) % NODES.length] + (i === NODES.length - 1 ? 360 : 0);
+          return (
+            <motion.path
+              key={i}
+              d={arc(cx, cy, R, a + gap, next - gap)}
+              fill="none"
+              stroke="var(--frost)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              style={{ opacity: 0.5 }}
+              initial={reduce ? false : { pathLength: 0 }}
+              animate={start ? { pathLength: 1 } : { pathLength: reduce ? 1 : 0 }}
+              transition={{ duration: 0.7, delay: reduce ? 0 : 0.1 + i * 0.07, ease: EASE }}
+            />
+          );
+        })}
+        {NODES.map((a, i) => {
+          const [nx, ny] = polar(cx, cy, R, a);
+          return (
+            <motion.g
+              key={`n${i}`}
+              initial={reduce ? false : { opacity: 0, scale: 0.5 }}
+              animate={start ? { opacity: 1, scale: 1 } : { opacity: reduce ? 1 : 0, scale: reduce ? 1 : 0.5 }}
+              transition={{ duration: 0.4, delay: reduce ? 0 : 0.3 + i * 0.07, ease: EASE }}
+              style={{ transformBox: "fill-box", transformOrigin: "center" }}
+            >
+              <circle cx={nx} cy={ny} r="13" fill="rgba(12,13,16,0.95)" stroke="rgba(255,255,255,0.18)" />
+              <circle cx={nx} cy={ny} r="3" style={{ fill: "var(--text-muted)" }} />
+            </motion.g>
+          );
+        })}
+      </motion.g>
+      {/* center stat — stays upright */}
       <motion.g
         initial={reduce ? false : { opacity: 0 }}
         animate={start ? { opacity: 1 } : { opacity: reduce ? 1 : 0 }}
         transition={{ duration: 0.6, delay: reduce ? 0 : 0.5, ease: EASE }}
       >
-        <text x={cx} y={cy - 2} textAnchor="middle" fontSize="30" style={{ fill: "var(--frost)", fontFamily: MONO }} letterSpacing="-1">
-          14
+        <text x={cx} y={cy - 2} textAnchor="middle" fontSize="34" style={{ fill: "var(--frost)", fontFamily: MONO }} letterSpacing="-1">
+          8
         </text>
         <text x={cx} y={cy + 18} textAnchor="middle" fontSize="9.5" letterSpacing="0.5" style={{ fill: "var(--text-muted)", fontFamily: MONO }}>
           agents · 2 tiers
@@ -145,26 +151,24 @@ export function DetectRing({ start, reduce }: { start: boolean; reduce: boolean 
   );
 }
 
-/* ── 03 · hatch field + shield + hash-block chip ───────────────────────────── */
+/* ── 03 · drifting diagonal hatch + hash-block chip ────────────────────────── */
 export function AuditShield({ start, reduce }: { start: boolean; reduce: boolean }) {
-  // deterministic diagonal hatch strokes
   const hatch: { x: number; y: number }[] = [];
-  for (let r = 0; r < 4; r++) for (let c = 0; c < 7; c++) hatch.push({ x: 40 + c * 46, y: 36 + r * 52 });
+  for (let r = 0; r < 5; r++) for (let c = -1; c < 8; c++) hatch.push({ x: 40 + c * 46, y: 20 + r * 52 });
   return (
     <Svg vb="0 0 360 300">
-      {/* hatch */}
-      {hatch.map((h, i) => (
-        <motion.line
-          key={i}
-          x1={h.x} y1={h.y} x2={h.x + 14} y2={h.y - 20}
-          stroke="rgba(255,255,255,0.08)"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          initial={reduce ? false : { opacity: 0 }}
-          animate={start ? { opacity: 1 } : { opacity: reduce ? 1 : 0 }}
-          transition={{ duration: 0.5, delay: reduce ? 0 : (i % 7) * 0.03 + Math.floor(i / 7) * 0.05, ease: EASE }}
-        />
-      ))}
+      {/* the whole hatch field drifts right by one column-period, seamlessly */}
+      <motion.g
+        initial={reduce ? false : { opacity: 0 }}
+        animate={start ? { opacity: 1 } : { opacity: reduce ? 1 : 0 }}
+        transition={{ duration: 0.6, ease: EASE }}
+      >
+        <motion.g animate={reduce ? undefined : { x: [0, 46] }} transition={{ duration: 5.5, repeat: Infinity, ease: LINEAR }}>
+          {hatch.map((h, i) => (
+            <line key={i} x1={h.x} y1={h.y} x2={h.x + 14} y2={h.y - 20} stroke="rgba(255,255,255,0.09)" strokeWidth="1.4" strokeLinecap="round" />
+          ))}
+        </motion.g>
+      </motion.g>
       {/* hash-block credential chip */}
       <motion.g
         initial={reduce ? false : { opacity: 0, y: 10 }}
@@ -186,7 +190,7 @@ export function AuditShield({ start, reduce }: { start: boolean; reduce: boolean
   );
 }
 
-/* ── 04 · concentric scan arcs + desk nodes ────────────────────────────────── */
+/* ── 04 · concentric scan arcs + outward pulse ─────────────────────────────── */
 export function BandScan({ start, reduce }: { start: boolean; reduce: boolean }) {
   const cx = 300;
   const cy = 300;
@@ -206,7 +210,22 @@ export function BandScan({ start, reduce }: { start: boolean; reduce: boolean })
           transition={{ duration: 0.9, delay: reduce ? 0 : 0.1 + i * 0.1, ease: EASE }}
         />
       ))}
-      {/* desk nodes riding the arcs */}
+      {/* outward pulse — an arc that expands + fades, forever */}
+      {!reduce &&
+        [0, 1].map((k) => (
+          <motion.path
+            key={`pulse${k}`}
+            d={arc(cx, cy, 60, 182, 268)}
+            fill="none"
+            stroke="var(--frost)"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            style={{ transformBox: "view-box", transformOrigin: `${cx}px ${cy}px` }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: [0.9, 3.6], opacity: [0, 0.5, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeOut", delay: k * 2 }}
+          />
+        ))}
       {[
         { r: 110, a: 200 },
         { r: 160, a: 230 },

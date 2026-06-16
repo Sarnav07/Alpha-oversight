@@ -8,8 +8,9 @@ import { motion, useInView, useReducedMotion } from "framer-motion";
  * clone, themed for A&O). LIGHT section (data-section="light"). A shield-shaped
  * badge card (rounded top, pointed bottom — the A&O emblem motif) holds a heading,
  * two lines of copy, and a Name / Phone / Email / Message form with a black
- * full-width Submit pill. No backend is wired — submit shows an inline
- * confirmation client-side. Scroll-reveal + reduced-motion safe. Default export.
+ * full-width Submit pill. Submissions POST to NEXT_PUBLIC_CONTACT_ENDPOINT when
+ * set (e.g. a Formspree/Getform URL); without it the form is demo-only (nothing
+ * sent). Scroll-reveal + reduced-motion safe. Default export.
  */
 
 const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
@@ -56,6 +57,37 @@ export default function ContactSection() {
   const inView = useInView(ref, { once: true, amount: 0.2 });
   const start = reduce || inView;
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Where submissions go: set NEXT_PUBLIC_CONTACT_ENDPOINT to a form endpoint
+  // (e.g. a free Formspree/Getform/webhook URL) and the form POSTs there so you
+  // actually receive messages. Without it the form is demo-only (nothing sent).
+  const ENDPOINT = process.env.NEXT_PUBLIC_CONTACT_ENDPOINT;
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const payload = Object.fromEntries(new FormData(e.currentTarget).entries());
+    if (!ENDPOINT) {
+      setSent(true); // demo mode — no backend configured
+      return;
+    }
+    try {
+      setSending(true);
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      setSent(true);
+    } catch {
+      setError("Couldn't send right now — please try again.");
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <section
@@ -117,13 +149,7 @@ export default function ContactSection() {
                 </button>
               </div>
             ) : (
-              <form
-                className="mt-7 flex flex-col gap-2.5"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setSent(true);
-                }}
-              >
+              <form className="mt-7 flex flex-col gap-2.5" onSubmit={handleSubmit}>
                 <input
                   required
                   name="name"
@@ -155,7 +181,8 @@ export default function ContactSection() {
                 />
                 <button
                   type="submit"
-                  className="mt-1 w-full font-sans text-[14px] font-medium transition-opacity hover:opacity-90"
+                  disabled={sending}
+                  className="mt-1 w-full font-sans text-[14px] font-medium transition-opacity hover:opacity-90 disabled:opacity-60"
                   style={{
                     height: 50,
                     backgroundColor: "var(--obsidian)",
@@ -163,8 +190,13 @@ export default function ContactSection() {
                     borderRadius: "var(--r-pill)",
                   }}
                 >
-                  Submit
+                  {sending ? "Sending…" : "Submit"}
                 </button>
+                {error && (
+                  <p className="mt-1 text-center font-sans text-[12.5px]" style={{ color: "var(--verdict-flag)" }}>
+                    {error}
+                  </p>
+                )}
               </form>
             )}
           </div>

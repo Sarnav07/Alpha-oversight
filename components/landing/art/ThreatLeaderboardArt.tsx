@@ -6,13 +6,12 @@
  * no data fetching, no interactivity. It fills its parent (`w-full h-full`) so a
  * feature card can scale it freely, and it must remain legible when shrunk.
  *
- * Layout faithful to the reference (10.png):
+ * Layout faithful to the reference (10-correct.png):
  *  - title top-CENTRE (font-sans light, no eyebrow above it)
- *  - a 3-column grid: LEFT = two stacked metrics, CENTRE = emblem tile,
- *    RIGHT = two stacked metrics. The four metrics read as the 4 CORNERS
- *    around the emblem. NO absolute positioning — pure CSS grid, no overlaps.
- *  - the emblem is a rounded-square tile with a faint diagonal HATCH texture,
- *    a small "ALPHA & OVERSIGHT" label near its top, and the shared Logomark.
+ *  - a 3-column grid: LEFT = two stacked metrics, CENTRE = the shared frosted
+ *    <ShieldEmblem/>, RIGHT = two stacked metrics. The four metrics read as the
+ *    4 CORNERS around the dead-centred emblem (1fr | auto | 1fr keeps it on the
+ *    central axis). NO absolute positioning — pure CSS grid, no overlaps.
  *  - a centred one-line body sits BELOW the row.
  *
  * Design rules honoured:
@@ -25,7 +24,7 @@
  * Self-contained, prop-less, default export.
  */
 
-import Logomark from "@/components/landing/Logomark";
+import ShieldEmblem from "@/components/landing/ShieldEmblem";
 
 /* ── tiny building block ─────────────────────────────────────────────────── */
 
@@ -60,7 +59,14 @@ function Metric({
 
 export default function ThreatLeaderboardArt() {
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden rounded-[var(--r-card)] border border-[var(--border-subtle)] bg-[var(--bg-card-2)] p-[clamp(16px,3vw,34px)] text-[var(--text-primary)]">
+    <div
+      className="flex h-full min-h-[300px] w-full flex-col overflow-hidden rounded-[var(--r-card)] border border-[var(--border-subtle)] p-[clamp(20px,3vw,40px)] text-[var(--text-primary)]"
+      style={{
+        background:
+          "linear-gradient(180deg, #0a0b0e 0%, #07080a 55%, #0c0e13 100%)",
+        boxShadow: "0 40px 110px rgba(0,0,0,0.55)",
+      }}
+    >
       {/* ── title (top-centre) ───────────────────────────────────────────── */}
       <h3 className="text-center font-sans font-light leading-tight tracking-[-0.01em] [font-size:clamp(16px,2.6vw,28px)]">
         The codify engine
@@ -85,35 +91,12 @@ export default function ThreatLeaderboardArt() {
           />
         </div>
 
-        {/* centre emblem tile */}
-        <div
-          className="relative flex aspect-square w-[clamp(72px,11vw,128px)] flex-col items-center justify-center overflow-hidden border border-[var(--border-default)] bg-[var(--bg-inset)]"
-          style={{
-            borderRadius: "var(--r-chip)",
-            // notch the bottom-left corner to echo the reference emblem
-            clipPath:
-              "polygon(0 0, 100% 0, 100% 100%, 22% 100%, 0 78%)",
-          }}
-        >
-          {/* faint repeating-diagonal hatch texture */}
-          <span
-            aria-hidden="true"
-            className="absolute inset-0 opacity-[0.55]"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(45deg, var(--border-subtle) 0, var(--border-subtle) 1px, transparent 1px, transparent 7px)",
-            }}
-          />
-          {/* small brand label near the top */}
-          <span className="relative mt-[clamp(8px,1.6vh,16px)] font-sans text-[clamp(7px,0.9vw,10px)] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)]">
-            Alpha &amp; Oversight
-          </span>
-          {/* the shared logomark */}
-          <Logomark
-            size={36}
-            className="relative mt-[clamp(8px,2vh,18px)] text-[var(--text-body)]"
-          />
-        </div>
+        {/* centre emblem — the shared frosted shield, perfectly centred between
+            the four metrics (matches the 10-correct leaderboard centrepiece) */}
+        <ShieldEmblem
+          className="h-[clamp(116px,17vw,176px)] w-auto aspect-[280/385]"
+          logoSize={30}
+        />
 
         {/* right column — TR + BR */}
         <div className="flex flex-col justify-between gap-[clamp(22px,5vh,52px)]">
