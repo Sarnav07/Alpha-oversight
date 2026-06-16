@@ -8,6 +8,7 @@ import FeaturesCarousel from "@/components/landing/FeaturesCarousel";
 import UnlockSection from "@/components/landing/UnlockSection";
 import OverviewSection from "@/components/landing/OverviewSection";
 import AuditChainSection from "@/components/landing/AuditChainSection";
+import PoweredBySection from "@/components/landing/PoweredBySection";
 
 /**
  * Public landing page — first-scroll experience.
@@ -30,6 +31,7 @@ export default function LandingPage() {
         <ManifestoSection />
         <FeaturesCarousel />
         <AuditChainSection />
+        <PoweredBySection />
         <UnlockSection />
       </main>
     </>
