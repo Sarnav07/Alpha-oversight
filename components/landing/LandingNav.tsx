@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import Logomark from "@/components/landing/Logomark";
@@ -59,6 +60,11 @@ export default function LandingNav() {
   const [onDark, setOnDark] = useState(false);
   // mobile slide-down menu (md and below — the centered link row is hidden there)
   const [menuOpen, setMenuOpen] = useState(false);
+  // On sub-routes (e.g. /terms), in-page hash links must point back to the home
+  // page; on "/" they stay bare so the browser scrolls without a reload.
+  const pathname = usePathname();
+  const resolveHash = (href: string) =>
+    href.startsWith("#") && pathname !== "/" ? `/${href}` : href;
 
   useEffect(() => {
     let raf = 0;
@@ -184,7 +190,7 @@ export default function LandingNav() {
                   {link.isRoute ? (
                     <Link href={link.href}>{inner}</Link>
                   ) : (
-                    <a href={link.href}>{inner}</a>
+                    <a href={resolveHash(link.href)}>{inner}</a>
                   )}
                 </li>
               );
@@ -285,7 +291,7 @@ export default function LandingNav() {
                   {link.isRoute ? (
                     <Link href={link.href}>{inner}</Link>
                   ) : (
-                    <a href={link.href}>{inner}</a>
+                    <a href={resolveHash(link.href)}>{inner}</a>
                   )}
                 </li>
               );
