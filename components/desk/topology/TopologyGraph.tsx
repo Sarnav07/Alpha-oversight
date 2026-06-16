@@ -29,8 +29,9 @@ import {
 } from "@xyflow/react";
 import { useReducedMotion } from "framer-motion";
 import { useDeskModel } from "@/lib/desk/model";
+import { useDeskUIStore } from "@/lib/desk/uiStore";
 import type { NodeId } from "@/lib/desk/contract";
-import { NODE_POS, WALL } from "./layout";
+import { NODE_POS, WALL, LANES } from "./layout";
 import { PipelineNode, type PipelineFlowNode } from "./PipelineNode";
 import { BandEdge, type BandFlowEdge } from "./BandEdge";
 
@@ -51,6 +52,10 @@ export function TopologyGraph() {
   const model = useDeskModel();
   const reduce = useReducedMotion();
   const staticMode = !!reduce;
+
+  // click-to-filter: the selected node id + toggle action (lib/desk/uiStore).
+  const nodeFilter = useDeskUIStore((s) => s.nodeFilter);
+  const toggleNodeFilter = useDeskUIStore((s) => s.toggleNodeFilter);
 
   // verdict-flip: the flag accent applies to the node that rendered the FLAG.
   const flaggedNodeId: NodeId | null = useMemo(() => {
@@ -76,6 +81,7 @@ export function TopologyGraph() {
         modelTier: n.modelTier,
         flagged: n.id === flaggedNodeId,
         staticMode,
+        selected: n.id === nodeFilter,
         handles: {
           top: true,
           bottom: true,
@@ -84,7 +90,7 @@ export function TopologyGraph() {
         },
       },
     }));
-  }, [model.nodes, flaggedNodeId, staticMode]);
+  }, [model.nodes, flaggedNodeId, staticMode, nodeFilter]);
 
   const edges = useMemo<BandFlowEdge[]>(() => {
     return model.edges.map((e) => {
@@ -134,6 +140,7 @@ export function TopologyGraph() {
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
+        onNodeClick={(_, node) => toggleNodeFilter(node.id as NodeId)}
         panOnScroll={false}
         zoomOnScroll={false}
         preventScrolling={false}
@@ -148,10 +155,56 @@ export function TopologyGraph() {
           color="rgba(255,255,255,0.045)"
         />
 
-        {/* Chinese-wall divider — a non-interactive dashed rail in the gutter. */}
+        {/* Swimlane panels behind the columns, then the Chinese-wall divider. */}
+        <Swimlanes />
         <ChineseWall />
       </ReactFlow>
     </div>
+  );
+}
+
+/**
+ * Swimlane panels — a faint desk-toned frame + eyebrow label behind each column,
+ * rendered in flow-space (ViewportPortal) so they pan/zoom with the graph. zIndex
+ * -1 keeps them behind the nodes; pointer-events off. Desk tones stay tone-only.
+ */
+function Swimlanes() {
+  return (
+    <ViewportPortal>
+      {LANES.map((lane) => (
+        <div
+          key={lane.key}
+          style={{
+            position: "absolute",
+            left: lane.x,
+            top: lane.y,
+            width: lane.width,
+            height: lane.height,
+            zIndex: -1,
+            pointerEvents: "none",
+            borderRadius: 16,
+            border: `1px solid color-mix(in srgb, ${lane.tone} 28%, transparent)`,
+            background: `color-mix(in srgb, ${lane.tone} 6%, transparent)`,
+          }}
+        >
+          <span
+            style={{
+              position: "absolute",
+              top: 8,
+              left: 14,
+              fontFamily: "var(--font-mono)",
+              fontSize: 9,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: `color-mix(in srgb, ${lane.tone} 70%, var(--text-faint))`,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {lane.label}
+          </span>
+        </div>
+      ))}
+    </ViewportPortal>
   );
 }
 

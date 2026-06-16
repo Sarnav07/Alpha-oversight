@@ -1,8 +1,11 @@
 import { API_BASE, IS_MOCK } from "../config";
 import type {
   AuditResponse,
+  BeatResponse,
   Case,
   ConfirmResponse,
+  RejectResponse,
+  RndResponse,
   Rule,
   Stats,
 } from "../types";
@@ -25,12 +28,14 @@ async function post<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-// ---- mock REST fixtures (Q3/Q9 gaps mocked until backend ready) ----
+// ---- mock REST fixtures (rendered with no backend) ----
+// Aligned to the real /rules + /stats contract: families lowercase, status
+// ACTIVE, GET /stats is COUNTS ONLY (narrative tiles stay hard-coded in the UI).
 const MOCK_RULES: Rule[] = [
-  { id: "SPOOF-001", family: "spoofing", params: { min_cancel_ratio: 0.8 }, provenance: "seed", status: "ACTIVE" },
-  { id: "LAYER-002", family: "layering", params: { window_ms: 100, min_depth_levels: 3 }, provenance: "seed", status: "ACTIVE" },
-  { id: "WASH-003", family: "wash_trade", params: { min_self_match_ratio: 0.5 }, provenance: "seed", status: "ACTIVE" },
-  { id: "MARK-004", family: "marking", params: { min_print_move_bps: 100.0 }, provenance: "seed", status: "ACTIVE" },
+  { id: "spoofing-v1-seed", family: "spoofing", params: { min_cancel_ratio: 0.8 }, provenance: "seed", status: "ACTIVE" },
+  { id: "layering-v1-seed", family: "layering", params: { window_ms: 100, min_depth_levels: 3 }, provenance: "seed", status: "ACTIVE" },
+  { id: "wash_trade-v1-seed", family: "wash_trade", params: { min_self_match_ratio: 0.5 }, provenance: "seed", status: "ACTIVE" },
+  { id: "marking-v1-seed", family: "marking", params: { min_print_move_bps: 100.0 }, provenance: "seed", status: "ACTIVE" },
 ];
 
 const MOCK_STATS: Stats = {
@@ -48,9 +53,10 @@ export const api = {
   rules: () => (IS_MOCK ? Promise.resolve(MOCK_RULES) : get<Rule[]>("/rules")),
   stats: () => (IS_MOCK ? Promise.resolve(MOCK_STATS) : get<Stats>("/stats")),
   confirm: (id: string) => post<ConfirmResponse>(`/cases/${id}/confirm`),
-  reject: (id: string) => post<{ case: Case }>(`/cases/${id}/reject`),
+  // reject is wrapped now: { case, codified:false } — callers read .case.
+  reject: (id: string) => post<RejectResponse>(`/cases/${id}/reject`),
   // demo triggers (parameterless POSTs)
-  beatA: () => post<unknown>("/demo/beat-a"),
-  beatB: () => post<unknown>("/demo/beat-b"),
-  rnd: () => post<unknown>("/demo/rnd"), // Q2 — route not yet on backend
+  beatA: () => post<BeatResponse>("/demo/beat-a"),
+  beatB: () => post<BeatResponse>("/demo/beat-b"),
+  rnd: () => post<RndResponse>("/demo/rnd"),
 };

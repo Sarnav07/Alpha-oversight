@@ -1,10 +1,20 @@
-import type { ActivityEvent } from "../types";
+import type { ActivityEvent, CaseState } from "../types";
 
 /**
- * Q5 — the backend currently emits human-readable strings in `content`
- * (e.g. "verdict=FLAG rule=LAYER-002"). This util centralizes the brittle parsing
- * so when the backend adds structured `stage`/`event_type` fields it becomes a
- * one-file pass-through. Topology + timeline read Marker, never raw strings.
+ * The backend emits human-readable strings in `content` (the `agent_name:"pipeline"`
+ * surveillance frames carry the canonical markers). This util centralizes the brittle
+ * parsing so topology + timeline read `Marker`, never raw strings.
+ *
+ * Real `/stream` marker strings (tasks/BACKEND_INTEGRATION.md §SSE):
+ *   opened case <case_id>
+ *   detector clean -> CLOSED
+ *   suspicious -> UNDER_REVIEW; features={...python repr...}
+ *   recruited <handle> (<family>)
+ *   debate complete
+ *   verdict=<PASS|FLAG> rule=<rule_id|None>
+ *   case <case_id> -> <FINAL_STATE>
+ *
+ * Band-handoff frames carry "@mention ... waiting on band" content → waiting_on_band.
  */
 export interface Marker {
   stage?:
@@ -19,33 +29,99 @@ export interface Marker {
   eventType?: "handoff" | "evidence" | "verdict" | "escalation" | "rule_codified";
   result?: string; // PASS | FLAG
   ruleId?: string;
+  /** terminal `case <id> -> <FINAL_STATE>` marker (CLOSED | FLAGGED | ESCALATED | …). */
+  finalState?: CaseState;
+  /** the recruited specialist's family, e.g. "layering" (from `recruited X (layering)`). */
+  family?: string;
+  /** parsed `features={...}` python-repr dict (suspicious frame). Numbers, bools, strings. */
+  features?: Record<string, number | boolean | string>;
+}
+
+/** The 5 backend CaseState enum values — used to validate the `case <id> -> X` tail. */
+const FINAL_STATES: ReadonlySet<string> = new Set([
+  "OPEN",
+  "UNDER_REVIEW",
+  "FLAGGED",
+  "ESCALATED",
+  "CLOSED",
+]);
+
+/**
+ * Parse a python `repr` dict body (the chars between `{` and `}`) per-key with regex.
+ * It is NOT JSON: bools are `True`/`False`, keys/strings use single quotes.
+ * e.g. `'cancel_to_fill': 0.0, 'depth_levels': 4, 'eod_print_spike': False`
+ */
+function parsePyReprDict(body: string): Record<string, number | boolean | string> {
+  const out: Record<string, number | boolean | string> = {};
+  // 'key': <value>  — value is a number, True/False, or a single-quoted string.
+  const re = /'([^']+)'\s*:\s*(True|False|-?\d+(?:\.\d+)?|'[^']*')/g;
+  let mm: RegExpExecArray | null;
+  while ((mm = re.exec(body)) !== null) {
+    const key = mm[1];
+    const raw = mm[2];
+    if (raw === "True") out[key] = true;
+    else if (raw === "False") out[key] = false;
+    else if (raw.startsWith("'")) out[key] = raw.slice(1, -1);
+    else out[key] = Number(raw);
+  }
+  return out;
 }
 
 export function parseMarker(e: ActivityEvent): Marker {
-  const c = (e.content ?? "").toLowerCase();
+  const raw = e.content ?? "";
+  const c = raw.toLowerCase();
   const m: Marker = {};
 
-  const verdict = c.match(/verdict=(\w+)/);
+  // opened case <case_id> — pipeline open (no stage, but anchors the case id elsewhere).
+  // (case id attribution lives in model.deriveCase via e.case_id; nothing to set here.)
+
+  // suspicious -> UNDER_REVIEW; features={...}  → anomaly stage + parsed features.
+  if (/suspicious\s*->\s*under_review/.test(c)) {
+    m.stage = "anomaly";
+    m.eventType = "evidence";
+    const dict = raw.match(/features\s*=\s*\{([^}]*)\}/i);
+    if (dict) m.features = parsePyReprDict(dict[1]);
+  }
+  // detector clean -> CLOSED  → the detector dismissed it; surface as a verdict-less close.
+  // (no debate stage; the terminal `case X -> CLOSED` carries the close signal.)
+
+  // @mention ... "waiting on band"  → investigator round-tripping the Band (blue pulse).
+  if (/waiting on band/.test(c)) m.stage = "waiting_on_band";
+
+  // recruited <handle> (<family>)  → recruit handoff to the specialist. Set AFTER
+  // waiting_on_band so recruit wins when one frame carries both tokens (model.ts §76).
+  const recruit = raw.match(/recruited\s+(\S+)\s*\(([^)]+)\)/i);
+  if (recruit) {
+    m.stage = "recruit";
+    m.eventType = "handoff";
+    m.family = recruit[2].trim().toLowerCase();
+  }
+
+  // debate complete  → prosecution ⚔ defense done.
+  if (/debate complete/.test(c)) m.stage = "debate";
+
+  // verdict=<PASS|FLAG> rule=<rule_id|None>  → adjudicator verdict.
+  const verdict = raw.match(/verdict\s*=\s*(PASS|FLAG)/i);
   if (verdict) {
     m.stage = "verdict";
     m.eventType = "verdict";
     m.result = verdict[1].toUpperCase();
+    const rule = raw.match(/rule\s*=\s*(\S+)/i);
+    // rule may be the literal `None` (PASS, or FLAG with no codified rule).
+    if (rule && rule[1] !== "None") m.ruleId = rule[1].replace(/[.,;]+$/, "");
   }
 
-  const rule = (e.content ?? "").match(/rule=([\w-]+)/i);
-  if (rule) m.ruleId = rule[1];
+  // case <case_id> -> <FINAL_STATE>  → terminal transition (CLOSED | FLAGGED | ESCALATED …).
+  const fin = raw.match(/case\s+\S+\s*->\s*([A-Z_]+)/);
+  if (fin && FINAL_STATES.has(fin[1])) {
+    m.finalState = fin[1] as CaseState;
+    if (fin[1] === "ESCALATED") {
+      m.stage = "escalate";
+      m.eventType = "escalation";
+    }
+  }
 
-  if (/waiting on band/.test(c)) m.stage = "waiting_on_band";
-  if (/handoff/.test(c)) {
-    m.eventType = "handoff";
-    if (/recruit/.test(c)) m.stage = "recruit";
-  }
-  if (/anomaly/.test(c)) m.stage = "anomaly";
-  if (/propose/.test(c)) m.stage = "propose";
-  if (/escalat/.test(c)) {
-    m.stage = "escalate";
-    m.eventType = "escalation";
-  }
+  // rule codified (human-confirm tail) → rule_codified.
   if (/codif/.test(c)) {
     m.stage = "codify";
     m.eventType = "rule_codified";

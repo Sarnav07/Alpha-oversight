@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useDeskModel } from "@/lib/desk/model";
+import { useDeskUIStore } from "@/lib/desk/uiStore";
 import type { Dossier } from "@/lib/types";
 import ModelBadge from "./ModelBadge";
 
@@ -96,9 +97,35 @@ function DossierCard({
   );
 }
 
+/** Free-text test over a dossier's surfaced fields (null-safe). */
+function dossierMatchesQuery(d: Dossier | null, q: string): boolean {
+  if (!q) return true;
+  if (!d) return false;
+  return [d.agent_name, d.headline, d.detail].some((f) =>
+    (f ?? "").toLowerCase().includes(q),
+  );
+}
+
 export default function DossierCards() {
   const reduce = useReducedMotion() ?? false;
   const debate = useDeskModel().debate;
+  const nodeFilter = useDeskUIStore((s) => s.nodeFilter);
+  const query = useDeskUIStore((s) => s.query);
+
+  // Node filter: a side (prosecution/defense) is its own NodeId, so show only the
+  // selected side when the filter targets one of them — hide the panel when the
+  // filter targets some other node. Query: keep only sides whose dossier matches.
+  const q = query.trim().toLowerCase();
+  const nodeAllows = (side: Side) =>
+    !nodeFilter || nodeFilter === side;
+  const showProsecution =
+    nodeAllows("prosecution") && dossierMatchesQuery(debate.prosecution, q);
+  const showDefense =
+    nodeAllows("defense") && dossierMatchesQuery(debate.defense, q);
+
+  // The filter narrowed the desk to a non-debate node (or text with no debate
+  // hit) — drop the whole panel rather than render two empty placeholders.
+  if (!showProsecution && !showDefense) return null;
 
   return (
     <section aria-label="Prosecution vs Defense debate">
@@ -111,8 +138,12 @@ export default function DossierCards() {
         </span>
       </div>
       <div className="flex flex-col sm:flex-row gap-3 items-stretch">
-        <DossierCard side="prosecution" dossier={debate.prosecution} reduce={reduce} />
-        <DossierCard side="defense" dossier={debate.defense} reduce={reduce} />
+        {showProsecution ? (
+          <DossierCard side="prosecution" dossier={debate.prosecution} reduce={reduce} />
+        ) : null}
+        {showDefense ? (
+          <DossierCard side="defense" dossier={debate.defense} reduce={reduce} />
+        ) : null}
       </div>
     </section>
   );

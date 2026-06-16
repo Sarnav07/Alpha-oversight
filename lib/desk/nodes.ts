@@ -16,16 +16,22 @@ export interface NodeMeta {
 }
 
 export const NODE_META: NodeMeta[] = [
+  // `agents` carries BOTH the lowercase Band/pipeline names AND the real CLASS-NAME
+  // casing the agents emit (matched case-insensitively in nodeIdForAgent). Class names:
+  // AnomalyDetector, Investigator, Specialist, Prosecution, Defense, Adjudicator,
+  // EscalationManager (lowercased here, since nodeIdForAgent lowercases both sides).
   { id: "adversary", label: "Adversary", desk: "rnd", agents: ["adversary"], modelTier: "open" },
-  { id: "bridge", label: "Sanitized Bridge", desk: "rnd", agents: ["bridge"], modelTier: null },
-  { id: "anomaly_detector", label: "Anomaly Detector", desk: "surveillance", agents: ["anomaly_detector", "anomaly-detector"], modelTier: "open" },
+  { id: "bridge", label: "Sanitized Bridge", desk: "rnd", agents: ["bridge", "sanitizedbridge"], modelTier: null },
+  // NOTE: `pipeline` (the narration agent carrying every marker) is intentionally NOT
+  // mapped to a node — it would mislight the active node on verdict/terminal frames.
+  { id: "anomaly_detector", label: "Anomaly Detector", desk: "surveillance", agents: ["anomaly_detector", "anomaly-detector", "anomalydetector"], modelTier: "open" },
   { id: "investigator", label: "Investigator", desk: "surveillance", agents: ["investigator"], modelTier: "open" },
-  { id: "specialist", label: "Specialist", desk: "surveillance", agents: ["specialist"], modelTier: "frontier" },
+  { id: "specialist", label: "Specialist", desk: "surveillance", agents: ["specialist", "@layer-spec"], modelTier: "frontier" },
   { id: "prosecution", label: "Prosecution", desk: "surveillance", agents: ["prosecution"], modelTier: "frontier" },
   { id: "defense", label: "Defense", desk: "surveillance", agents: ["defense"], modelTier: "open" },
   { id: "adjudicator", label: "Adjudicator", desk: "surveillance", agents: ["adjudicator"], modelTier: "frontier" },
-  { id: "rule_engine", label: "Rule Engine", desk: "surveillance", agents: ["rule_engine", "rule-engine"], modelTier: "deterministic" },
-  { id: "escalation_manager", label: "Escalation Mgr", desk: "surveillance", agents: ["escalation_manager", "escalation-manager", "escalation"], modelTier: "frontier" },
+  { id: "rule_engine", label: "Rule Engine", desk: "surveillance", agents: ["rule_engine", "rule-engine", "ruleengine"], modelTier: "deterministic" },
+  { id: "escalation_manager", label: "Escalation Mgr", desk: "surveillance", agents: ["escalation_manager", "escalation-manager", "escalation", "escalationmanager"], modelTier: "frontier" },
   { id: "human", label: "Human", desk: "surveillance", agents: ["human"], modelTier: null },
 ];
 

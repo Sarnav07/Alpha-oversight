@@ -32,6 +32,8 @@ export type PipelineNodeData = {
   flagged: boolean;
   /** reduced-motion: render final state, no animation. */
   staticMode: boolean;
+  /** true when this node is the active click-to-filter selection (neutral ring). */
+  selected: boolean;
   /** which connection handles this node needs (derived from EDGES). */
   handles: { top: boolean; bottom: boolean; left: boolean; right: boolean };
 };
@@ -58,7 +60,7 @@ const HANDLE_STYLE = {
 } as const;
 
 function PipelineNodeImpl({ data }: NodeProps<PipelineFlowNode>) {
-  const { status, flagged, staticMode, handles } = data;
+  const { status, flagged, staticMode, handles, selected } = data;
   const waiting = status === "waiting_on_band";
 
   // resolve the accent that drives border + ring + tone label.
@@ -79,7 +81,7 @@ function PipelineNodeImpl({ data }: NodeProps<PipelineFlowNode>) {
   const dim = status === "idle";
   const lit = status === "active" && !staticMode;
 
-  const ring = waiting
+  const baseRing = waiting
     ? undefined // pulse halo via className handles the glow
     : status === "active"
       ? `0 0 0 1px ${accent}, 0 0 20px var(--band-blue-glow)`.replace(
@@ -89,6 +91,15 @@ function PipelineNodeImpl({ data }: NodeProps<PipelineFlowNode>) {
       : flagged
         ? `0 0 0 1px ${accent}, 0 0 18px rgba(239,68,68,0.25)`
         : "none";
+
+  // neutral selection ring (NOT --band-blue, which is SACRED). Layered OUTSIDE
+  // any status ring so the click-to-filter selection reads on every state.
+  const SELECT_RING = "0 0 0 2px var(--border-strong), 0 0 0 4px var(--bg-inset)";
+  const ring = selected
+    ? baseRing && baseRing !== "none"
+      ? `${SELECT_RING}, ${baseRing}`
+      : SELECT_RING
+    : baseRing;
 
   return (
     <div
@@ -102,6 +113,7 @@ function PipelineNodeImpl({ data }: NodeProps<PipelineFlowNode>) {
         padding: "9px 12px",
         opacity: dim ? 0.5 : 1,
         boxShadow: ring,
+        cursor: "pointer",
         transform: lit ? "scale(1.04)" : "scale(1)",
         transition: staticMode
           ? "none"

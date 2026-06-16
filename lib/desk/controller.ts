@@ -13,9 +13,10 @@
 
 import { create } from "zustand";
 import { useTraceStore } from "../store/useTraceStore";
-import { fixtureBeatA } from "../fixtures/beat-a";
-import { fixtureBeatB } from "../fixtures/beat-b";
+import { useClockStore } from "./clock";
 import { fixtureAuditC0187 } from "../fixtures/audit-C-0187";
+import { api } from "../api/client";
+import { IS_MOCK } from "../config";
 import type { AuditView, DeskController } from "./contract";
 import type { ActivityEvent, Rule } from "../types";
 
@@ -77,52 +78,183 @@ export function getAuditView(caseId?: string | null): AuditView {
   };
 }
 
-export function useDeskController(): DeskController {
-  return {
-    runBeatA: () => {
-      clearTimers();
-      useTraceStore.getState().reset();
-      useRulesStore.getState().resetRules();
-      play(fixtureBeatA, 700);
-    },
-    runBeatB: () => {
-      clearTimers();
-      useTraceStore.getState().reset();
-      useRulesStore.getState().resetRules();
-      play(fixtureBeatB, 900);
-    },
-    runRnD: () => {
-      // POST /demo/rnd not built — Beat-B stands in for the R&D lane (Q2).
-      console.info("[desk] R&D lane stubbed — run Beat B for the evasion→escalation demo.");
-    },
-    confirm: async () => {
-      const caseId = useDeskCaseId() ?? "C-0187";
-      play(codifyTail(caseId), 600);
-      useRulesStore.getState().codify({
-        id: `layering-v2-${caseId}`,
-        family: "layering",
-        params: { window_ms: 450, min_depth_levels: 3 },
-        provenance: `human:analyst/${caseId}`,
-        status: "ACTIVE",
-      });
-    },
-    reject: async () => {
-      const caseId = useDeskCaseId() ?? "C-0187";
-      play(
-        [{ agent_name: "human", model_id: "", desk: "surveillance", content: "reject — case CLOSED, no codify", reasoning: null, tool_calls: [], created_at: "2026-06-15T10:23:50Z", case_id: caseId }],
-        600,
-      );
-    },
-    resetDesk: () => {
-      clearTimers();
-      useTraceStore.getState().reset();
-      useRulesStore.getState().resetRules();
-    },
-  };
+/**
+ * LIVE seam: fire a demo POST, then open the real SSE so /stream drives the
+ * fold. The store's connect() builds a LiveSSEAdapter in live mode (no replay
+ * param → the live `/stream`); the backend runs one case at a time, so the
+ * returned case_id rides in on every frame's `case_id` (Q6). REST failures are
+ * logged but non-fatal — the stream is the source of truth.
+ */
+async function startLive(trigger: () => Promise<{ case_id?: string }>) {
+  clearTimers();
+  useTraceStore.getState().reset();
+  useRulesStore.getState().resetRules();
+  // open the SSE first so we don't miss the opening frames the POST kicks off.
+  useTraceStore.getState().connect();
+  try {
+    await trigger();
+  } catch (err) {
+    console.error("[desk] live demo trigger failed:", err);
+  }
 }
 
-/** non-hook read of the current case id from the event stream. */
-function useDeskCaseId(): string | null {
+const liveController: DeskController = {
+  runBeatA: () => {
+    void startLive(() => api.beatA());
+  },
+  runBeatB: () => {
+    void startLive(() => api.beatB());
+  },
+  runRnD: () => {
+    void startLive(async () => {
+      const r = await api.rnd();
+      // rnd union: confirmed → carries a case_id+stream; failed → no case.
+      return { case_id: r.case_id };
+    });
+  },
+  confirm: async () => {
+    const caseId = currentCaseId();
+    if (!caseId) return;
+    try {
+      const res = await api.confirm(caseId);
+      // Optimistic local-view nudge: push a synthetic codify frame so the
+      // timeline/topology react instantly; useInvalidateOnMarkers (watching this
+      // very frame) refetches /rules + /stats for the authoritative 4→5 reveal.
+      const ruleId = res.rule?.id ?? `layering-v2-${caseId}`;
+      play(
+        [
+          {
+            agent_name: "human",
+            model_id: "",
+            desk: "surveillance",
+            content: `confirm ${caseId} — codify the candidate layering rule`,
+            reasoning: null,
+            tool_calls: [{ kind: "band_rule_codified", to: "rule_engine" }],
+            created_at: new Date().toISOString(),
+            case_id: caseId,
+          },
+          {
+            agent_name: "rule_engine",
+            model_id: "deterministic",
+            desk: "surveillance",
+            content: `codify: regression gate PASS — rule ${ruleId} ACTIVE`,
+            reasoning: "replayed the original evasion through the new rule; it now FLAGs",
+            tool_calls: [],
+            created_at: new Date(Date.now() + 1).toISOString(),
+            case_id: caseId,
+          },
+        ],
+        400,
+      );
+    } catch (err) {
+      console.error("[desk] confirm failed:", err);
+    }
+  },
+  reject: async () => {
+    const caseId = currentCaseId();
+    if (!caseId) return;
+    try {
+      const res = await api.reject(caseId);
+      // res.case is the now-CLOSED case (codified:false). Optimistic close frame;
+      // useInvalidateOnMarkers refetches the stats so the tiles settle.
+      const finalState = res.case?.state ?? "CLOSED";
+      play(
+        [
+          {
+            agent_name: "human",
+            model_id: "",
+            desk: "surveillance",
+            content: `reject — case ${caseId} -> ${finalState}, no codify`,
+            reasoning: null,
+            tool_calls: [],
+            created_at: new Date().toISOString(),
+            case_id: caseId,
+          },
+        ],
+        400,
+      );
+    } catch (err) {
+      console.error("[desk] reject failed:", err);
+    }
+  },
+  resetDesk: () => {
+    clearTimers();
+    useTraceStore.getState().disconnect();
+    useTraceStore.getState().reset();
+    useRulesStore.getState().resetRules();
+  },
+};
+
+/**
+ * The mock human-Confirm: append the codify tail onto the loaded clock sequence
+ * and codify the candidate layering rule (the 4→5 reveal). Exported so the 90s
+ * auto-pilot (lib/desk/autopilot.ts) can fire the same confirm without a hook.
+ */
+export function mockConfirm() {
+  const caseId = currentCaseId() ?? "C-0187";
+  useClockStore.getState().append(codifyTail(caseId));
+  useRulesStore.getState().codify({
+    id: `layering-v2-${caseId}`,
+    family: "layering",
+    params: { window_ms: 450, min_depth_levels: 3 },
+    provenance: `human:analyst/${caseId}`,
+    status: "ACTIVE",
+  });
+}
+
+/**
+ * Mock paths drive the ReplayClock (lib/desk/clock.ts) instead of the old inline
+ * `play()` timers — the clock is the single scrubbable player, so Beat A/B/R&D are
+ * load+play and the human Confirm/Reject tails are appended onto the loaded
+ * sequence (so a later scrub replays them too). The clock owns the trace reset +
+ * connection state; we only reset the rule registry alongside.
+ */
+const mockController: DeskController = {
+  runBeatA: () => {
+    useRulesStore.getState().resetRules();
+    useClockStore.getState().load("C-0191");
+    useClockStore.getState().play();
+  },
+  runBeatB: () => {
+    useRulesStore.getState().resetRules();
+    useClockStore.getState().load("C-0187");
+    useClockStore.getState().play();
+  },
+  runRnD: () => {
+    // Real R&D adversarial loop now (fixtureRnD / C-0188) — no longer a stub (Q2).
+    useRulesStore.getState().resetRules();
+    useClockStore.getState().load("C-0188");
+    useClockStore.getState().play();
+  },
+  confirm: async () => mockConfirm(),
+  reject: async () => {
+    const caseId = currentCaseId() ?? "C-0187";
+    useClockStore.getState().append([
+      {
+        agent_name: "human",
+        model_id: "",
+        desk: "surveillance",
+        content: "reject — case CLOSED, no codify",
+        reasoning: null,
+        tool_calls: [],
+        created_at: "2026-06-15T10:23:50Z",
+        case_id: caseId,
+      },
+    ]);
+  },
+  resetDesk: () => {
+    useClockStore.getState().reset();
+    useRulesStore.getState().resetRules();
+  },
+};
+
+export function useDeskController(): DeskController {
+  return IS_MOCK ? mockController : liveController;
+}
+
+/** non-hook read of the current case id from the event stream (NOT a React hook,
+ *  despite being called from controller actions — reads the store imperatively). */
+function currentCaseId(): string | null {
   const events = useTraceStore.getState().events;
   for (let i = events.length - 1; i >= 0; i--) {
     if (events[i].case_id) return events[i].case_id!;

@@ -2,6 +2,8 @@
 
 import { useReducedMotion } from "framer-motion";
 import { useDeskModel } from "@/lib/desk/model";
+import { useDeskUIStore } from "@/lib/desk/uiStore";
+import { ruleMatchesQuery } from "@/lib/desk/filter";
 import type { Rule, RuleFamily, RuleStatus } from "@/lib/types";
 
 /**
@@ -136,11 +138,19 @@ function RuleCard({
 export default function RuleRegistryPanel() {
   const model = useDeskModel();
   const reduce = useReducedMotion() ?? false;
-  const rules = model.rules;
+  const query = useDeskUIStore((s) => s.query);
+  const allRules = model.rules;
   const codified = model.codified;
 
-  // The codified card is the last rule once the 5th has landed.
-  const codifiedIndex = codified ? rules.length - 1 : -1;
+  // The codified card is the last rule once the 5th has landed — track it by
+  // identity so the search filter (below) can't shift it via index drift.
+  const codifiedRuleId =
+    codified && allRules.length ? allRules[allRules.length - 1].id : null;
+
+  // Free-text search narrows the visible rows by family/id (task: SearchBar).
+  const rules = query.trim()
+    ? allRules.filter((r) => ruleMatchesQuery(r, query))
+    : allRules;
 
   return (
     <div
@@ -177,14 +187,23 @@ export default function RuleRegistryPanel() {
       </div>
 
       <ul className="mt-4 flex flex-col gap-2.5" style={{ padding: 0, margin: 0 }}>
-        {rules.map((rule, i) => (
-          <RuleCard
-            key={rule.id}
-            rule={rule}
-            isCodified={i === codifiedIndex}
-            reduce={reduce}
-          />
-        ))}
+        {rules.length === 0 ? (
+          <li
+            className="font-sans"
+            style={{ listStyle: "none", fontSize: 13, color: "var(--text-faint)" }}
+          >
+            No rules match “{query.trim()}”.
+          </li>
+        ) : (
+          rules.map((rule) => (
+            <RuleCard
+              key={rule.id}
+              rule={rule}
+              isCodified={rule.id === codifiedRuleId}
+              reduce={reduce}
+            />
+          ))
+        )}
       </ul>
     </div>
   );

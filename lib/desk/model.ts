@@ -12,7 +12,9 @@ import { useMemo } from "react";
 import { useTraceStore } from "../store/useTraceStore";
 import { parseMarker } from "../eventsource/parseMarker";
 import { NODE_META, EDGES, nodeIdForAgent } from "./nodes";
-import { useRulesStore } from "./controller";
+import { useRulesStore, SEED_RULES } from "./controller";
+import { useStats, useRules } from "../api/queries";
+import { IS_MOCK } from "../config";
 import type {
   DeskModel,
   NodeView,
@@ -23,7 +25,7 @@ import type {
   CaseView,
   DebateView,
 } from "./contract";
-import type { ActivityEvent, Verdict, Stats } from "../types";
+import type { ActivityEvent, Verdict, Stats, Rule } from "../types";
 
 const EMPTY_STATS: Stats = {
   total_cases: 0,
@@ -32,6 +34,24 @@ const EMPTY_STATS: Stats = {
   escalated: 0,
   active_rules: 4,
 };
+
+/**
+ * Resolve the latest event for a node by raw agent_name lookup AND by NodeId,
+ * so it lands whether the frame used a Band-handoff lowercase sender
+ * (`investigator`) or a real class name (`Investigator`). latestByAgent is keyed
+ * by the verbatim agent_name; this folds both casings onto the canonical node.
+ */
+function latestForNode(
+  latestByAgent: Record<string, ActivityEvent>,
+  nodeId: NodeId,
+): ActivityEvent | undefined {
+  let best: ActivityEvent | undefined;
+  for (const [name, ev] of Object.entries(latestByAgent)) {
+    if (nodeIdForAgent(name) !== nodeId) continue;
+    if (!best || ev.created_at >= best.created_at) best = ev;
+  }
+  return best;
+}
 
 /** lowercase RuleFamily set — used to sniff the family out of free-text content. */
 const FAMILIES = ["spoofing", "layering", "wash_trade", "marking"] as const;
@@ -77,7 +97,7 @@ function deriveNodes(
   // handoff until the next desk node — the specialist — responds. parseMarker
   // overwrites stage to "recruit" when both tokens are present, so we read the
   // raw "waiting on band" text instead, then gate on the specialist not yet seen.
-  const invEvent = latestByAgent["investigator"];
+  const invEvent = latestForNode(latestByAgent, "investigator");
   const invWaiting = /waiting on band/i.test(invEvent?.content ?? "");
   const bandWaiting = invWaiting && !seen.has("specialist");
 
@@ -86,7 +106,7 @@ function deriveNodes(
     if (seen.has(meta.id)) status = "done";
     if (meta.id === activeNode) status = "active";
     if (meta.id === "investigator" && bandWaiting) status = "waiting_on_band";
-    const ev = meta.agents.map((a) => latestByAgent[a]).find(Boolean);
+    const ev = latestForNode(latestByAgent, meta.id);
     return {
       id: meta.id,
       label: meta.label,
@@ -122,8 +142,8 @@ function deriveDebate(latestByAgent: Record<string, ActivityEvent>): DebateView 
         }
       : null;
   return {
-    prosecution: toDossier(latestByAgent["prosecution"]),
-    defense: toDossier(latestByAgent["defense"]),
+    prosecution: toDossier(latestForNode(latestByAgent, "prosecution")),
+    defense: toDossier(latestForNode(latestByAgent, "defense")),
   };
 }
 
@@ -150,22 +170,51 @@ function deriveTimeline(events: ActivityEvent[]): TimelineDot[] {
 export function useDeskModel(): DeskModel {
   const events = useTraceStore((s) => s.events);
   const latestByAgent = useTraceStore((s) => s.latestByAgent);
-  const rules = useRulesStore((s) => s.rules);
-  const codified = useRulesStore((s) => s.codified);
+
+  // Mock rule registry — the source of truth ONLY in mock mode (the controller's
+  // codify(4→5) mutates it). Subscribed unconditionally so hook order is stable.
+  const mockRules = useRulesStore((s) => s.rules);
+  const mockCodified = useRulesStore((s) => s.codified);
+
+  // Live REST sources — always called (Rules of Hooks), consumed only when live.
+  // RestLive returns the bundled MOCK_RULES/MOCK_STATS in mock mode, so these are
+  // harmless to subscribe to; we still branch on IS_MOCK for the seam to be explicit.
+  const liveRulesQ = useRules();
+  const liveStatsQ = useStats();
+
+  // The SSE-event fold drives nodes/edges/timeline/debate/case/bandWaiting in BOTH
+  // modes. Only `rules` + `stats` (and the codified flag) differ by data source.
+  const rules: Rule[] = IS_MOCK ? mockRules : liveRulesQ.data ?? SEED_RULES;
+  const liveStats = liveStatsQ.data;
 
   return useMemo<DeskModel>(() => {
     const caseView = deriveCase(events);
     const { nodes, activeNode, bandWaiting } = deriveNodes(events, latestByAgent);
-    const byState: Record<string, number> = {};
-    if (caseView.state) byState[caseView.state] = 1;
-    const stats: Stats = {
-      ...EMPTY_STATS,
-      total_cases: caseView.id ? 1 : 0,
-      by_state: byState,
-      flagged: caseView.state === "FLAGGED" ? 1 : 0,
-      escalated: caseView.state === "ESCALATED" ? 1 : 0,
-      active_rules: rules.length,
-    };
+
+    // codified: mock reads the registry flag; live infers from a 5th (human-
+    // provenance / non-seed) rule landing after the REST refetch.
+    const codified = IS_MOCK
+      ? mockCodified
+      : rules.some((r) => r.provenance?.startsWith?.("human")) || rules.length > 4;
+
+    // stats: mock derives a single-case view from the fold; live uses GET /stats
+    // counts verbatim (active_rules tracks the codified reveal via the rules list).
+    let stats: Stats;
+    if (IS_MOCK || !liveStats) {
+      const byState: Record<string, number> = {};
+      if (caseView.state) byState[caseView.state] = 1;
+      stats = {
+        ...EMPTY_STATS,
+        total_cases: caseView.id ? 1 : 0,
+        by_state: byState,
+        flagged: caseView.state === "FLAGGED" ? 1 : 0,
+        escalated: caseView.state === "ESCALATED" ? 1 : 0,
+        active_rules: rules.length,
+      };
+    } else {
+      stats = { ...liveStats, active_rules: rules.length };
+    }
+
     return {
       case: caseView,
       nodes,
@@ -178,5 +227,5 @@ export function useDeskModel(): DeskModel {
       bandWaiting,
       codified,
     };
-  }, [events, latestByAgent, rules, codified]);
+  }, [events, latestByAgent, rules, mockCodified, liveStats]);
 }

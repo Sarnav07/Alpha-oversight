@@ -48,3 +48,30 @@ export const WALL = {
   height: ROW * 8 + 16,
   width: 2,
 };
+
+/**
+ * Swimlane background panels (flow-space) — a faint desk-toned frame + eyebrow
+ * label behind each column, so the R&D desk and the Surveillance desk read as two
+ * distinct lanes either side of the Chinese wall. Desk tones are tone-only (D3):
+ * a low-opacity border + near-invisible fill, never a loud accent.
+ */
+export const LANES = [
+  {
+    key: "rnd" as const,
+    label: "R&D Desk · Adversary",
+    tone: "var(--desk-rnd)",
+    x: 24,
+    y: Y0 - 30,
+    width: X_WALL - 18 - 24,
+    height: ROW * 8 + 34,
+  },
+  {
+    key: "surv" as const,
+    label: "Surveillance Desk",
+    tone: "var(--desk-surv)",
+    x: X_WALL + 18,
+    y: Y0 - 30,
+    width: X_SURV_PAIR_R + NODE_W + 16 - (X_WALL + 18),
+    height: ROW * 8 + 34,
+  },
+];

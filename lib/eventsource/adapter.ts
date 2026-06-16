@@ -1,19 +1,6 @@
 import { DATA_MODE, API_BASE } from "../config";
 import type { ActivityEvent, ConnectionState } from "../types";
-import { fixtureBeatA } from "../fixtures/beat-a";
-import { fixtureBeatB } from "../fixtures/beat-b";
-
-/**
- * Mock fixture registry — select a recorded case by its case id (the ?replay=
- * param). Defaults to Beat B (the headline 400ms-evasion escalation demo).
- */
-const FIXTURES: Record<string, ActivityEvent[]> = {
-  "C-0187": fixtureBeatB,
-  "C-0191": fixtureBeatA,
-};
-function fixtureFor(replay?: string): ActivityEvent[] {
-  return (replay && FIXTURES[replay]) || fixtureBeatB;
-}
+import { framesFor } from "../fixtures/registry";
 
 /**
  * The swap-proof seam (FRONTEND_BUILD_PLAN.md §7).
@@ -35,6 +22,8 @@ export interface AdapterOpts {
   replay?: string;
   /** ms between mock frames (mock cadence). */
   stepMs?: number;
+  /** optional desk filter — only surface frames from this desk (rnd | surveillance). */
+  desk?: import("../types").Desk;
 }
 
 /** Replays bundled JSONL fixtures at a timed cadence. */
@@ -47,7 +36,7 @@ class MockAdapter implements EventSourceAdapter {
     const step = this.opts.stepMs ?? 900;
     h.onState("connecting");
     // simulate a connect handshake then stream frames
-    const frames = fixtureFor(this.opts.replay);
+    const frames = framesFor(this.opts.replay);
     const open = setTimeout(() => {
       h.onState(replay ? "replay" : "connected");
       frames.forEach((e, i) => {
@@ -73,16 +62,23 @@ class LiveSSEAdapter implements EventSourceAdapter {
     h.onState("connecting");
     const url = new URL(`${API_BASE}/stream`);
     if (this.opts.replay) url.searchParams.set("replay", this.opts.replay);
+    if (this.opts.desk) url.searchParams.set("desk", this.opts.desk);
     const es = new EventSource(url.toString());
     this.es = es;
     es.onopen = () => h.onState(this.opts.replay ? "replay" : "connected");
+    // EventSource natively drops `: keep-alive` heartbeat comments, so onmessage
+    // only fires for real `data:` frames (ActivityEvent JSON).
     es.onmessage = (ev) => {
       try {
-        h.onEvent(JSON.parse(ev.data) as ActivityEvent);
+        const frame = JSON.parse(ev.data) as ActivityEvent;
+        // Client-side desk guard (in case the backend ignores ?desk).
+        if (this.opts.desk && frame.desk && frame.desk !== this.opts.desk) return;
+        h.onEvent(frame);
       } catch {
         /* ignore malformed frame */
       }
     };
+    // Browser EventSource auto-reconnects on transient drops; surface the state.
     es.onerror = () => h.onState("reconnecting");
   }
 

@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useDeskModel } from "@/lib/desk/model";
+import { useDeskUIStore } from "@/lib/desk/uiStore";
+import { nodeIdForAgent } from "@/lib/desk/nodes";
 import type { TimelineDot } from "@/lib/desk/contract";
 
 /**
@@ -31,7 +33,20 @@ const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
 export default function VerdictTimeline() {
   const model = useDeskModel();
   const reduce = useReducedMotion() ?? false;
-  const dots = model.timeline;
+  const nodeFilter = useDeskUIStore((s) => s.nodeFilter);
+  const query = useDeskUIStore((s) => s.query);
+
+  // Apply the click-to-filter node selection + free-text search. A dot's `label`
+  // is its agent_name, so the node match folds through nodeIdForAgent and the
+  // text match runs over that same label (the dot carries no richer content).
+  const dots = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return model.timeline.filter((d) => {
+      if (nodeFilter && nodeIdForAgent(d.label) !== nodeFilter) return false;
+      if (q && !d.label.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [model.timeline, nodeFilter, query]);
 
   // Track whether a FLAG has appeared after a PASS — drives the segment re-shade.
   const [flipped, setFlipped] = useState(false);

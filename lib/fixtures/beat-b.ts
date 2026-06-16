@@ -6,11 +6,17 @@ import type { ActivityEvent } from "../types";
  * deterministic engine returns verdict=PASS (the evasion worked), the escalation
  * manager kicks it to a human, and the case ESCALATES awaiting confirmation.
  *
- * The investigator frame carries "waiting on band" + "handoff" + "recruit" so
- * parseMarker lights the blue Band pulse and the recruit stage. Every content
- * string is authored to satisfy parseMarker.ts; every frame carries case_id.
- *
- * Mirrors the backend replay JSONL shape so mock cadence == live == replay.
+ * MARKER GRAMMAR (mock == live == replay): the surveillance `pipeline` frames
+ * carry the EXACT backend marker strings parseMarker.ts consumes —
+ *   opened case <id>
+ *   suspicious -> UNDER_REVIEW; features={...python repr...}
+ *   recruited @layer-spec (layering)   (+ "waiting on band" → blue pulse)
+ *   debate complete
+ *   verdict=PASS rule=None
+ *   case <id> -> ESCALATED
+ * Real agents emit CLASS NAMES (AnomalyDetector, Investigator, …); Band-handoff
+ * frames use the lowercase sender (investigator, @layer-spec, escalation).
+ * nodeIdForAgent lowercases + maps both. Every frame carries case_id.
  */
 export const fixtureBeatB: ActivityEvent[] = [
   {
@@ -34,10 +40,21 @@ export const fixtureBeatB: ActivityEvent[] = [
     case_id: "C-0187",
   },
   {
-    agent_name: "anomaly_detector",
+    agent_name: "pipeline",
+    model_id: "",
+    desk: "surveillance",
+    content: "opened case C-0187",
+    reasoning: null,
+    tool_calls: [],
+    created_at: "2026-06-15T10:23:42.5Z",
+    case_id: "C-0187",
+  },
+  {
+    agent_name: "AnomalyDetector",
     model_id: "surv-open",
     desk: "surveillance",
-    content: "anomaly: cancel_to_fill=0.94 depth_levels=5 -> suspicious -> UNDER_REVIEW",
+    content:
+      "suspicious -> UNDER_REVIEW; features={'cancel_to_fill': 0.94, 'depth_levels': 5, 'self_match_ratio': 0.0, 'eod_print_spike': False}",
     reasoning: null,
     tool_calls: [],
     created_at: "2026-06-15T10:23:43Z",
@@ -47,14 +64,14 @@ export const fixtureBeatB: ActivityEvent[] = [
     agent_name: "investigator",
     model_id: "surv-open",
     desk: "surveillance",
-    content: "handoff: waiting on Band — recruit @layer-spec (layering)",
+    content: "@layer-spec waiting on band — recruited @layer-spec (layering)",
     reasoning: "needs a layering specialist; round-trips the recruit handoff across the Band",
     tool_calls: [{ kind: "band_handoff", to: "specialist" }],
     created_at: "2026-06-15T10:23:44Z",
     case_id: "C-0187",
   },
   {
-    agent_name: "specialist",
+    agent_name: "Specialist",
     model_id: "surv-frontier",
     desk: "surveillance",
     content: "@layer-spec propose: contested window_ms~400 layering inputs",
@@ -64,7 +81,7 @@ export const fixtureBeatB: ActivityEvent[] = [
     case_id: "C-0187",
   },
   {
-    agent_name: "prosecution",
+    agent_name: "Prosecution",
     model_id: "prosecution-frontier",
     desk: "surveillance",
     content: "400ms cancel after partial fill = intent to evade",
@@ -74,7 +91,7 @@ export const fixtureBeatB: ActivityEvent[] = [
     case_id: "C-0187",
   },
   {
-    agent_name: "defense",
+    agent_name: "Defense",
     model_id: "defense-open",
     desk: "surveillance",
     content: "gap is bona-fide venue latency; depth genuine",
@@ -84,20 +101,30 @@ export const fixtureBeatB: ActivityEvent[] = [
     case_id: "C-0187",
   },
   {
+    agent_name: "pipeline",
+    model_id: "",
+    desk: "surveillance",
+    content: "debate complete",
+    reasoning: null,
+    tool_calls: [],
+    created_at: "2026-06-15T10:23:47.5Z",
+    case_id: "C-0187",
+  },
+  {
     agent_name: "rule_engine",
     model_id: "deterministic",
     desk: "surveillance",
-    content: "verdict=PASS rule=None cited{gap_ms:400,window_ms:100} — seed window too tight",
-    reasoning: null,
+    content: "verdict=PASS rule=None",
+    reasoning: "seed window too tight — gap_ms=400 sits outside window_ms=100",
     tool_calls: [],
     created_at: "2026-06-15T10:23:48Z",
     case_id: "C-0187",
   },
   {
-    agent_name: "escalation_manager",
+    agent_name: "EscalationManager",
     model_id: "escalation-frontier",
     desk: "surveillance",
-    content: "escalate: recommend confirm — novel evasion slipped the rules, awaiting human",
+    content: "case C-0187 -> ESCALATED",
     reasoning: "rules missed a confirmed-profitable evasion; route to human",
     tool_calls: [{ kind: "band_escalation", to: "human" }],
     created_at: "2026-06-15T10:23:49Z",

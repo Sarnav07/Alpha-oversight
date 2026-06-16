@@ -1,9 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import Logomark from "@/components/landing/Logomark";
 import { useTraceStore } from "@/lib/store/useTraceStore";
 import { useDeskController } from "@/lib/desk/controller";
+import { useDemoStore, startDemo, stopDemo } from "@/lib/desk/autopilot";
+import { useDeskUIStore, rehydrateSoundPref } from "@/lib/desk/uiStore";
+import { primeAudio } from "@/lib/desk/sound";
+import { IS_MOCK } from "@/lib/config";
 import ConnectionStatus from "./ConnectionStatus";
 
 /**
@@ -77,8 +82,68 @@ function DemoButton({
   );
 }
 
+/** AUTO-PILOT chip + live narration line, shown only while the 90s demo runs. */
+function AutoPilotStrip() {
+  const caption = useDemoStore((s) => s.caption);
+  const reduce = useReducedMotion() ?? false;
+  return (
+    <motion.div
+      initial={reduce ? false : { opacity: 0, y: -3 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: EASE }}
+      className="flex w-full items-center gap-2.5 border-t border-[var(--hairline)] pt-2.5"
+    >
+      <span
+        className="inline-flex items-center gap-1.5 rounded-[var(--r-chip)] border px-2 py-1 font-mono text-[10px] uppercase tracking-wider"
+        style={{ color: "var(--band-blue)", borderColor: "var(--band-blue-dim)", background: "#0b1320" }}
+      >
+        <span className="h-[6px] w-[6px] rounded-full anim-band-pulse" style={{ background: "var(--band-blue)" }} />
+        Auto-pilot
+      </span>
+      <span className="truncate font-mono text-[11px] text-[var(--text-body)]">{caption}</span>
+    </motion.div>
+  );
+}
+
+/**
+ * SoundToggle — speaker/mute for the synthesized desk cues (lib/desk/sound.ts).
+ * Default OFF; persisted in useDeskUIStore + localStorage. The click is the user
+ * gesture that lazily primes the AudioContext (browser autoplay policy), so cues
+ * only ever fire after this has been turned on.
+ */
+function SoundToggle() {
+  const reduce = useReducedMotion() ?? false;
+  const soundOn = useDeskUIStore((s) => s.soundOn);
+  const toggleSound = useDeskUIStore((s) => s.toggleSound);
+
+  return (
+    <motion.button
+      type="button"
+      onClick={() => {
+        // prime audio on the gesture, THEN flip — so turning it on can sound.
+        primeAudio();
+        toggleSound();
+      }}
+      whileTap={reduce ? undefined : { scale: 0.95 }}
+      transition={{ duration: 0.15, ease: EASE }}
+      aria-pressed={soundOn}
+      aria-label={soundOn ? "Mute desk cues" : "Enable desk cues"}
+      title={soundOn ? "Sound cues: on" : "Sound cues: off"}
+      className="font-mono text-[10px] uppercase tracking-wider rounded-[var(--r-chip)] border px-2.5 py-1.5 transition-colors"
+      style={{
+        borderColor: soundOn ? "var(--border-strong)" : "var(--border-subtle)",
+        color: soundOn ? "var(--text-primary)" : "var(--text-muted)",
+        background: soundOn ? "var(--bg-inset)" : "transparent",
+      }}
+    >
+      {soundOn ? "♪ On" : "♪ Off"}
+    </motion.button>
+  );
+}
+
 function DemoControls() {
   const controller = useDeskController();
+  const demoActive = useDemoStore((s) => s.active);
   return (
     <div className="flex items-center gap-1.5">
       <span className="font-mono text-[9px] uppercase tracking-wider text-[var(--text-faint)] mr-1 hidden md:inline">
@@ -87,13 +152,32 @@ function DemoControls() {
       <DemoButton label="Run Beat A" onClick={controller.runBeatA} />
       <DemoButton label="Run Beat B" onClick={controller.runBeatB} />
       <DemoButton label="Run R&D" onClick={controller.runRnD} />
-      <DemoButton label="Reset" onClick={controller.resetDesk} variant="ghost" />
+      {IS_MOCK ? (
+        <DemoButton
+          label={demoActive ? "■ Stop" : "▶ 90s Demo"}
+          onClick={demoActive ? stopDemo : startDemo}
+        />
+      ) : null}
+      <DemoButton
+        label="Reset"
+        onClick={() => {
+          stopDemo();
+          controller.resetDesk();
+        }}
+        variant="ghost"
+      />
     </div>
   );
 }
 
 export default function DeskHeader({ onOpenAudit }: DeskHeaderProps) {
   const connection = useTraceStore((s) => s.connection);
+  const demoActive = useDemoStore((s) => s.active);
+
+  // rehydrate the persisted sound pref once on the client (SSR-safe default OFF).
+  useEffect(() => {
+    rehydrateSoundPref();
+  }, []);
 
   return (
     <header className="flex flex-wrap items-center gap-x-4 gap-y-3 px-6 py-3.5 border-b border-[var(--hairline)] bg-[var(--bg-nav)]">
@@ -110,6 +194,7 @@ export default function DeskHeader({ onOpenAudit }: DeskHeaderProps) {
       <div className="flex items-center gap-2 ml-auto">
         {connection === "replay" ? <ReplayBanner /> : null}
         <ConnectionStatus state={connection} />
+        <SoundToggle />
         {onOpenAudit ? (
           <DemoButton label="Audit ▦" onClick={onOpenAudit} variant="ghost" />
         ) : null}
@@ -118,6 +203,8 @@ export default function DeskHeader({ onOpenAudit }: DeskHeaderProps) {
       <div className="w-full flex md:w-auto md:ml-2">
         <DemoControls />
       </div>
+
+      {demoActive ? <AutoPilotStrip /> : null}
     </header>
   );
 }

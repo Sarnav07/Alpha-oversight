@@ -4,16 +4,20 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { AuditView } from "@/lib/desk/contract";
 import type { LedgerEntry } from "@/lib/types";
 import { fixtureAuditC0187 } from "@/lib/fixtures/audit-C-0187";
+import { useAudit } from "@/lib/api/queries";
+import { useTraceStore } from "@/lib/store/useTraceStore";
+import { IS_MOCK } from "@/lib/config";
 
 /**
  * AuditDrawer — the compliance system of record. A right slide-over that renders
- * the hash-chained audit ledger (GET /cases/{id}/audit) as mono rows, each
- * link showing prev_hash → hash so the chain reads as a chain. The header badge
+ * the hash-chained audit ledger (GET /cases/{id}/audit) as mono rows. Each row is
+ * a Band-handoff leaf: `from → to`, a `kind` badge, the `direction`, and the
+ * sha256 / prev_hash → hash links so the chain reads as a chain. The header badge
  * `verify_chain ✓/✗` reflects `verified` (a fresh server-side verify_chain).
  *
- * Controlled: pass `{open, onClose}`. The audit view defaults to the C-0187
- * fixture (DataLayer has not yet exposed getAuditView() on the controller —
- * TODO: import that once present so the drawer follows the live case).
+ * Controlled: pass `{open, onClose}`. In LIVE mode the drawer follows the active
+ * case via useAudit(<live case id from the trace store>); in MOCK mode it uses the
+ * `audit` prop the page derives from getAuditView() (C-0187 fixture).
  */
 
 const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
@@ -27,11 +31,21 @@ const FIXTURE_AUDIT: AuditView = {
 type AuditDrawerProps = {
   open: boolean;
   onClose: () => void;
-  /** Defaults to the C-0187 fixture until the controller exposes the live view. */
+  /** MOCK source — the C-0187 fixture view the page passes in. */
   audit?: AuditView;
 };
 
 const short = (h: string) => (h ? `${h.slice(0, 8)}…${h.slice(-4)}` : "∅");
+
+/** Live case id from the trace store — the latest frame carrying a case_id. */
+function useLiveCaseId(): string | null {
+  return useTraceStore((s) => {
+    for (let i = s.events.length - 1; i >= 0; i--) {
+      if (s.events[i].case_id) return s.events[i].case_id!;
+    }
+    return null;
+  });
+}
 
 function LedgerRow({ entry, index }: { entry: LedgerEntry; index: number }) {
   return (
@@ -40,24 +54,22 @@ function LedgerRow({ entry, index }: { entry: LedgerEntry; index: number }) {
         <span className="font-mono text-[10px] text-[var(--text-faint)] w-6 shrink-0">
           {String(index).padStart(2, "0")}
         </span>
-        <span className="text-[var(--text-primary)] truncate">{entry.agent}</span>
-        <span className="font-mono text-[9px] uppercase tracking-wider text-[var(--text-muted)] rounded-[var(--r-chip)] border border-[var(--border-subtle)] px-1.5 py-0.5">
-          {entry.role}
-        </span>
-        {entry.desk ? (
-          <span
-            className="font-mono text-[9px] ml-auto shrink-0"
-            style={{
-              color:
-                entry.desk === "rnd" ? "var(--desk-rnd)" : "var(--desk-surv)",
-            }}
-          >
-            {entry.desk}
+        <span className="text-[var(--text-primary)] truncate">
+          {entry.from}
+          <span aria-hidden className="text-[var(--text-muted)] px-1">
+            →
           </span>
-        ) : null}
+          {entry.to}
+        </span>
+        <span className="font-mono text-[9px] uppercase tracking-wider text-[var(--text-muted)] rounded-[var(--r-chip)] border border-[var(--border-subtle)] px-1.5 py-0.5">
+          {entry.kind}
+        </span>
+        <span className="font-mono text-[9px] ml-auto shrink-0 text-[var(--text-faint)]">
+          {entry.direction}
+        </span>
       </div>
       <p className="font-mono text-[10px] text-[var(--text-body)] mt-1.5">
-        sha256 {short(entry.content_sha256)}
+        sha256 {short(entry.sha256)}
       </p>
       <p className="font-mono text-[10px] mt-1 flex items-center gap-1.5 text-[var(--text-faint)]">
         <span>{short(entry.prev_hash)}</span>
@@ -72,7 +84,22 @@ function LedgerRow({ entry, index }: { entry: LedgerEntry; index: number }) {
 
 export default function AuditDrawer({ open, onClose, audit }: AuditDrawerProps) {
   const reduce = useReducedMotion() ?? false;
-  const view = audit ?? FIXTURE_AUDIT;
+
+  // LIVE: follow the active case via GET /cases/{id}/audit. MOCK: use the prop /
+  // fixture. useAudit is gated on caseId, so it stays inert (no fetch) in mock.
+  const liveCaseId = useLiveCaseId();
+  const liveAudit = useAudit(IS_MOCK ? null : liveCaseId);
+
+  let view: AuditView;
+  if (!IS_MOCK && liveAudit.data) {
+    view = {
+      caseId: liveAudit.data.case_id,
+      entries: liveAudit.data.entries,
+      verified: liveAudit.data.verified,
+    };
+  } else {
+    view = audit ?? FIXTURE_AUDIT;
+  }
   const verified = view.verified;
 
   return (

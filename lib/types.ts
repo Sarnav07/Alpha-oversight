@@ -49,6 +49,8 @@ export interface Features {
   depth_levels: number;
   self_match_ratio: number;
   eod_print_spike: boolean;
+  /** added at the terminal transition (FLAGGED/ESCALATED) — the codified family. */
+  family?: RuleFamily | string;
 }
 
 export interface ResolvedInputs {
@@ -58,11 +60,15 @@ export interface ResolvedInputs {
 }
 
 export interface Case {
-  id: string;
+  /** backend uses case_id (== room_id == Band task_id). */
+  case_id: string;
+  room_id: string;
   state: CaseState;
   verdict: Verdict | null;
   features: Features | null;
   resolved_inputs: ResolvedInputs | null;
+  /** OrderEvent[] — empty until terminal (FLAGGED/ESCALATED), then the codify sidecar. */
+  events: Record<string, unknown>[];
   created_at: string;
   updated_at: string;
 }
@@ -96,13 +102,21 @@ export interface Stats {
   active_rules: number;
 }
 
-/** audit/ledger.py — one hash-chained entry. */
+/**
+ * audit/ledger.py — a Band-handoff ledger leaf. This is the ONLY leaf kind that
+ * GET /cases/{id}/audit returns: agent-step leaves carry no case_id and are
+ * filtered out server-side, so the audit drawer shows cross-desk Band messages.
+ */
 export interface LedgerEntry {
-  agent: string;
-  desk: Desk | null;
-  role: string;
-  content_sha256: string;
+  case_id: string;
+  kind: BandKind;
+  from: string;
+  to: string;
+  direction: "sent" | "received";
+  sha256: string;
   band_message_id: string | null;
+  /** duplicate of band_message_id (the ledger writes both). */
+  bmid?: string | null;
   prev_hash: string;
   hash: string;
 }
@@ -128,4 +142,30 @@ export interface ConfirmResponse {
   codified: boolean;
   regression_passed: boolean;
   rule: Rule | null;
+}
+
+/** POST /cases/{id}/reject response (now wrapped — was a bare Case before Phase 5c). */
+export interface RejectResponse {
+  case: Case;
+  codified: false;
+}
+
+/** POST /demo/beat-a | /demo/beat-b response. */
+export interface BeatResponse {
+  case_id: string;
+  state: CaseState;
+  verdict: Verdict | null;
+}
+
+/** POST /demo/rnd response — union of adversary-failed vs adversary-succeeded. */
+export interface RndResponse {
+  confirmed: boolean;
+  rounds: number;
+  /** present when the adversary found no evade-and-profit sequence. */
+  note?: string;
+  /** present when confirmed: the surveillance run on the evasion. */
+  params?: Record<string, unknown>;
+  case_id?: string;
+  state?: CaseState;
+  verdict?: Verdict | null;
 }
