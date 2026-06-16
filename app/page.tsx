@@ -19,7 +19,8 @@ import SiteFooter from "@/components/landing/SiteFooter";
 /**
  * Public landing page — first-scroll experience.
  *
- * A black <Preloader/> splash plays once per session, then the page reveals the
+ * A black <Preloader/> splash plays on every full load (first visit + refresh),
+ * skipped only on soft client-side nav back to "/", then the page reveals the
  * pinned "device-zoom" hero (<HeroScroll/>, which itself mounts <LandingNav/>
  * and composes <CommandCenterArt/> across the four reference frames), handing
  * off to the closing <KeyFigures/> stats band.

@@ -17,11 +17,17 @@ import {
  * fades + slightly scales out and unmounts itself.
  *
  * Prop-less, self-contained. Respects prefers-reduced-motion (static
- * wordmark, shorter beat) and a per-session sessionStorage guard so it
- * does not replay on client-side navigation within the session.
+ * wordmark, shorter beat). A module-scoped guard plays the splash on every
+ * full document load (first visit AND refresh — a hard load is a fresh JS
+ * context, so the flag resets) while skipping replay on soft client-side
+ * navigation back to "/" within the same session (module state survives
+ * soft navs but not a reload).
  */
 
-const SPLASH_KEY = "ao_splash_seen";
+// Lives in the module's JS context: false on every fresh document load
+// (initial visit or refresh), true after the splash has played once within
+// this client session. Survives App-Router soft navigations; reset by reload.
+let hasPlayedThisDocument = false;
 
 // Two clauses: "ALPHA" / "& OVERSIGHT" — each splits into letters for stagger.
 const CLAUSE_A = "ALPHA".split("");
@@ -38,27 +44,16 @@ export default function Preloader() {
   useEffect(() => {
     setMounted(true);
 
-    let alreadySeen = false;
-    try {
-      alreadySeen = window.sessionStorage.getItem(SPLASH_KEY) === "1";
-    } catch {
-      // sessionStorage may be unavailable (private mode / SSR) — show anyway.
-      alreadySeen = false;
+    if (hasPlayedThisDocument) {
+      return; // already played in this session's JS context — skip on soft nav
     }
 
-    if (alreadySeen) {
-      return; // skip splash for the rest of this session
-    }
-
+    // Claim the play immediately so a soft nav away mid-splash won't replay it.
+    hasPlayedThisDocument = true;
     setShow(true);
 
     const hold = reduceMotion ? 1200 : 2600;
     timerRef.current = setTimeout(() => {
-      try {
-        window.sessionStorage.setItem(SPLASH_KEY, "1");
-      } catch {
-        /* ignore */
-      }
       setShow(false);
     }, hold);
 
