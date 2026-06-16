@@ -5,6 +5,7 @@ import HeroScroll from "@/components/landing/HeroScroll";
 import KeyFigures from "@/components/landing/KeyFigures";
 import ManifestoSection from "@/components/landing/ManifestoSection";
 import FeaturesCarousel from "@/components/landing/FeaturesCarousel";
+import UnlockSection from "@/components/landing/UnlockSection";
 
 /**
  * Public landing page — first-scroll experience.
@@ -25,6 +26,7 @@ export default function LandingPage() {
         <KeyFigures />
         <ManifestoSection />
         <FeaturesCarousel />
+        <UnlockSection />
       </main>
     </>
   );
