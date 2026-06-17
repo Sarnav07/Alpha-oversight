@@ -20,10 +20,17 @@ frontier", fabricated `847 alerts / 72% FP / <3s` stats - was hallucination.
 - **Two desks, one Chinese wall.** R&D = 1 agent (**Adversary**). Surveillance =
   7 (**Anomaly Detector, Investigator, Specialist, Prosecution, Defense,
   Adjudicator, Escalation Manager**).
-- **Model tiers (2) - mixed, not by desk.** FRONTIER = **Prosecution**
-  (`claude-sonnet-4-6`) + **Escalation Manager** (`gpt-5-mini`). OPEN = everyone
-  else (Qwen3-Next-80B; Defense = Qwen3.6-35B). ⚠️ Never call the whole
-  Surveillance desk "frontier."
+- **Models - per-seat, mixed (canonical matrix: `../docs/MODEL_ASSIGNMENTS.md`,
+  2026-06-17).** The four seats on an adversarial boundary run **four distinct
+  families**: **Adversary** `claude-opus-4-8` (Anthropic, the frontier seat) ·
+  **Prosecution** `Kimi-K2.7` (Moonshot) · **Defense** `DeepSeek-V4-Pro` (DeepSeek)
+  · **Adjudicator** `GLM-5.2` (Zhipu). **Escalation** = `Qwen3.5-397B`; Anomaly /
+  Investigator / Specialist share `Qwen3-Next-80B` (Qwen). ⚠️ Never call the whole
+  Surveillance desk "frontier" - the frontier model is the **Adversary**. *(The
+  older Phase-7 live-run lineup - Prosecution `claude-sonnet-4-6` + Escalation
+  `gpt-5-mini` frontier, rest Qwen3-Next-80B / Defense Qwen3.6-35B - is superseded;
+  match whatever the demo actually runs, and `MODEL_ASSIGNMENTS.md` is the source
+  of truth.)*
 - **Band = transport-of-record** (NOT a notification). 5 kinds:
   `HANDOFF · EVIDENCE · VERDICT · ESCALATION · RULE_CODIFIED`. The
   Prosecution⚔Defense debate runs **locally**, not over Band.
@@ -63,6 +70,8 @@ npm run dev      # next dev -p 4100
 npm run build    # next build  (run this before `start` - `start` serves the last build)
 npm run start    # next start -p 4100
 npm run lint     # eslint
+npm test         # vitest run (whole suite); `npx vitest run path/to.test.ts` one file,
+                 #   `npx vitest run -t "name"` one test. NEVER add a test that hits a real API.
 npx tsc --noEmit # AUTHORITATIVE type check - run after every edit
 ```
 
@@ -107,14 +116,23 @@ backend repo's `FRONTEND_SPEC.md` / `FRONTEND_BUILD_PLAN.md`.
   <UnlockSection/> <OverviewSection/> <AuditChainSection/> <PoweredBySection/>
   <WhySection/> <MoreAboutSection/> <FaqSection/> <StayAheadSection/>
   <ContactSection/> <SiteFooter/>`.
-- `app/how-it-works/page.tsx` - the "The Evasion" scroll-story. `EvasionStory`
-  is a **split layout** (narrative-left / live-graph-right, pinned scrub through
-  6 beats; `data-section="dark"` stage); copy/numbers track the report PDF
-  (manipulation line `τ 0.80`, 100→450ms window, rules 4→5). `StorySections`
-  carries the two-desks + seed-rule + rule-engine sections.
-- `app/desk/page.tsx` - the live Command Center (SSE trace viewer). ⚠️ **Slated
-  for a full redesign** - the current look is rejected; do NOT over-invest in its
-  visuals, it will be replaced. The data layer (`lib/desk/`) is fine to build on.
+- `app/how-it-works/page.tsx` - rebuilt from scratch on the report's **six-part
+  spine**: Hero → Motivation → Overview → Methodology (5 sub-flows) → Project
+  structure → What's different → See it live. Section components live in
+  `components/how-it-works/sections/`; the report figures are recreated as
+  **native, self-drawing SVG schematics** (not pasted images) built on the
+  `components/how-it-works/diagram/kit.tsx` primitives (D1 Architecture · D2
+  CaseRelay · D3 OracleLoop · D4 Verdict · D6 Trust). The `EvasionStory` gem
+  (split narrative / live-graph, 6-beat scrub, `data-section="dark"`) is reused in
+  Methodology sub-flow (d). Bolder "forensic ops" aesthetic is **page-scoped via
+  `data-surface="ops"`** (Fraunces display + Geist Mono data + blueprint grid /
+  grain / band-glow - all additive in `globals.css`, nothing leaks to other
+  routes). Build contract + paste-ready copy: `tasks/HIW_DESIGN_SPEC.md`.
+- `app/desk/page.tsx` - the live Command Center (SSE trace viewer). The redesign
+  is **complete**: horizontal Command Center layout, and the whole `/desk` route
+  is **light-themed** (`data-section="light"`) to match the landing. Keep the
+  semantic accents (band-blue "waiting on Band", verdict colors) intact when
+  touching it. The data layer (`lib/desk/`) is stable to build on.
 - `components/landing/` - `Preloader` · `HeroScroll` · `LandingNav`
   (deterministic luminance scroll-spy) · `KeyFigures` (system-fact count-ups) ·
   `ManifestoSection` · `FeaturesCarousel` (pinned, landscape cards, laptop bleed)

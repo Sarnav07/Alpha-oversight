@@ -38,7 +38,7 @@ function ReplayBanner() {
       style={{
         color: "var(--verdict-escalate)",
         borderColor: "var(--verdict-escalate)",
-        background: "#1c1405",
+        background: "#fbf0dd",
       }}
     >
       <span aria-hidden>⟲</span> REPLAY
@@ -95,7 +95,7 @@ function AutoPilotStrip() {
     >
       <span
         className="inline-flex items-center gap-1.5 rounded-[var(--r-chip)] border px-2 py-1 font-mono text-[10px] uppercase tracking-wider"
-        style={{ color: "var(--band-blue)", borderColor: "var(--band-blue-dim)", background: "#0b1320" }}
+        style={{ color: "var(--band-blue)", borderColor: "var(--band-blue-dim)", background: "#e8f1ff" }}
       >
         <span className="h-[6px] w-[6px] rounded-full anim-band-pulse" style={{ background: "var(--band-blue)" }} />
         Auto-pilot

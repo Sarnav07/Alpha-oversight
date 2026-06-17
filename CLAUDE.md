@@ -30,6 +30,9 @@ binds a real `band_message_id`, `verify_chain()` holds). Live model mix:
 - `docs/BUILD_BLUEPRINT.md` — build spec + exact interface signatures.
 - `tasks/todo.md` — phase-by-phase progress + the live punch-list.
 - `tasks/todo-rnd-loop.md` — R&D-loop detail.
+- `docs/MODEL_ASSIGNMENTS.md` — per-seat model choices (frontier adversary + 4
+  distinct families at the key decisions), Featherless cold-load/rate-limit facts,
+  and `scripts/warm_models.py`. Reflects the 2026-06-17 model reassignment.
 
 ## Commands (venv already exists at `.venv`, deps installed — no network needed)
 ```bash

@@ -2,8 +2,9 @@
  * TopologyGraph - the /desk CENTERPIECE.
  *
  * An @xyflow/react graph of the adversarial trade-surveillance pipeline, driven
- * entirely by `useDeskModel()` (NodeView[] / EdgeView[]). R&D desk on the LEFT,
- * a Chinese-wall divider, Surveillance desk flowing top→bottom on the RIGHT.
+ * entirely by `useDeskModel()` (NodeView[] / EdgeView[]). HORIZONTAL flow: R&D
+ * desk on the LEFT, a vertical Chinese-wall divider, then the Surveillance spine
+ * flowing left→right with the Prosecution ⚔ Defense fan above/below the spine.
  *
  * Load-bearing visual: the Investigator node turns --band-blue with a breathing
  * halo + "▓ waiting on Band ▓" while `model.bandWaiting`, and a blue pulse dot
@@ -29,33 +30,53 @@ import {
 } from "@xyflow/react";
 import { useReducedMotion } from "framer-motion";
 import { useDeskModel } from "@/lib/desk/model";
-import { useDeskUIStore } from "@/lib/desk/uiStore";
 import type { NodeId } from "@/lib/desk/contract";
 import { NODE_POS, WALL, LANES } from "./layout";
-import { PipelineNode, type PipelineFlowNode } from "./PipelineNode";
+import { PipelineNode, type PipelineFlowNode, type NodeHandles } from "./PipelineNode";
 import { BandEdge, type BandFlowEdge } from "./BandEdge";
 
 const nodeTypes: NodeTypes = { pipeline: PipelineNode };
 const edgeTypes: EdgeTypes = { band: BandEdge };
 
 /**
- * Which side handles each node exposes, derived from the cross-wall geometry:
- * the only horizontal hop is bridge(right) → anomaly_detector(left). Everything
- * else flows vertically (bottom→top), including the prosecution/defense fan.
+ * Which handles each node exposes for the HORIZONTAL flow. The spine connects
+ * right(source) → left(target); the R&D stack (adversary → bridge) and the
+ * human → rule_engine codify feedback use the vertical (bottom/top) handles.
  */
-const NEEDS_RIGHT = new Set<NodeId>(["bridge"]);
-const NEEDS_LEFT = new Set<NodeId>(["anomaly_detector"]);
-/** the cross-wall edge uses side handles instead of top/bottom. */
-const SIDE_EDGE = (from: NodeId, to: NodeId) => from === "bridge" && to === "anomaly_detector";
+const NODE_HANDLES: Record<NodeId, NodeHandles> = {
+  adversary: { tLeft: false, tTop: false, tBottom: false, sRight: false, sBottom: true },
+  bridge: { tLeft: false, tTop: true, tBottom: false, sRight: true, sBottom: false },
+  anomaly_detector: { tLeft: true, tTop: false, tBottom: false, sRight: true, sBottom: false },
+  investigator: { tLeft: true, tTop: false, tBottom: false, sRight: true, sBottom: false },
+  specialist: { tLeft: true, tTop: false, tBottom: false, sRight: true, sBottom: false },
+  prosecution: { tLeft: true, tTop: false, tBottom: false, sRight: true, sBottom: false },
+  defense: { tLeft: true, tTop: false, tBottom: false, sRight: true, sBottom: false },
+  adjudicator: { tLeft: true, tTop: false, tBottom: false, sRight: true, sBottom: false },
+  rule_engine: { tLeft: true, tTop: false, tBottom: true, sRight: true, sBottom: false },
+  escalation_manager: { tLeft: true, tTop: false, tBottom: false, sRight: true, sBottom: false },
+  human: { tLeft: true, tTop: false, tBottom: false, sRight: false, sBottom: true },
+};
+
+/** Per-edge source/target handle ids (keyed `${from}->${to}`). */
+const EDGE_HANDLES: Record<string, { source: string; target: string }> = {
+  "adversary->bridge": { source: "s-bottom", target: "t-top" },
+  "bridge->anomaly_detector": { source: "s-right", target: "t-left" },
+  "anomaly_detector->investigator": { source: "s-right", target: "t-left" },
+  "investigator->specialist": { source: "s-right", target: "t-left" },
+  "specialist->prosecution": { source: "s-right", target: "t-left" },
+  "specialist->defense": { source: "s-right", target: "t-left" },
+  "prosecution->adjudicator": { source: "s-right", target: "t-left" },
+  "defense->adjudicator": { source: "s-right", target: "t-left" },
+  "adjudicator->rule_engine": { source: "s-right", target: "t-left" },
+  "rule_engine->escalation_manager": { source: "s-right", target: "t-left" },
+  "escalation_manager->human": { source: "s-right", target: "t-left" },
+  "human->rule_engine": { source: "s-bottom", target: "t-bottom" },
+};
 
 export function TopologyGraph() {
   const model = useDeskModel();
   const reduce = useReducedMotion();
   const staticMode = !!reduce;
-
-  // click-to-filter: the selected node id + toggle action (lib/desk/uiStore).
-  const nodeFilter = useDeskUIStore((s) => s.nodeFilter);
-  const toggleNodeFilter = useDeskUIStore((s) => s.toggleNodeFilter);
 
   // verdict-flip: the flag accent applies to the node that rendered the FLAG.
   const flaggedNodeId: NodeId | null = useMemo(() => {
@@ -81,29 +102,25 @@ export function TopologyGraph() {
         modelTier: n.modelTier,
         flagged: n.id === flaggedNodeId,
         staticMode,
-        selected: n.id === nodeFilter,
-        handles: {
-          top: true,
-          bottom: true,
-          left: NEEDS_LEFT.has(n.id),
-          right: NEEDS_RIGHT.has(n.id),
-        },
+        selected: false,
+        handles: NODE_HANDLES[n.id],
       },
     }));
-  }, [model.nodes, flaggedNodeId, staticMode, nodeFilter]);
+  }, [model.nodes, flaggedNodeId, staticMode]);
 
   const edges = useMemo<BandFlowEdge[]>(() => {
     return model.edges.map((e) => {
-      const side = SIDE_EDGE(e.from, e.to);
+      const key = `${e.from}->${e.to}`;
+      const h = EDGE_HANDLES[key];
       const bandPulse =
         model.bandWaiting && e.from === "investigator" && e.to === "specialist";
       return {
-        id: `${e.from}->${e.to}`,
+        id: key,
         source: e.from,
         target: e.to,
         type: "band" as const,
-        sourceHandle: side ? "r" : null,
-        targetHandle: side ? "l" : null,
+        sourceHandle: h?.source ?? null,
+        targetHandle: h?.target ?? null,
         data: {
           kind: e.kind,
           active: e.active,
@@ -119,7 +136,7 @@ export function TopologyGraph() {
       style={{
         width: "100%",
         height: "100%",
-        minHeight: 560,
+        minHeight: 350,
         background: "var(--bg-inset)",
         borderRadius: "var(--r-card)",
         border: "1px solid var(--hairline)",
@@ -134,13 +151,12 @@ export function TopologyGraph() {
         edgeTypes={edgeTypes}
         proOptions={{ hideAttribution: true }}
         fitView
-        fitViewOptions={{ padding: 0.14, minZoom: 0.4, maxZoom: 1.1 }}
+        fitViewOptions={{ padding: 0.06, minZoom: 0.4, maxZoom: 1.2 }}
         minZoom={0.4}
         maxZoom={1.4}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
-        onNodeClick={(_, node) => toggleNodeFilter(node.id as NodeId)}
         panOnScroll={false}
         zoomOnScroll={false}
         preventScrolling={false}
@@ -152,7 +168,7 @@ export function TopologyGraph() {
           variant={BackgroundVariant.Dots}
           gap={26}
           size={1}
-          color="rgba(255,255,255,0.045)"
+          color="rgba(20,22,28,0.06)"
         />
 
         {/* Swimlane panels behind the columns, then the Chinese-wall divider. */}

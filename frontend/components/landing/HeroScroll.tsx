@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import LandingNav from "./LandingNav";
-import CommandCenterArt from "./CommandCenterArt";
+import HeroSplitArt from "./HeroSplitArt";
 import Logomark from "@/components/landing/Logomark";
 import { useIsMobile } from "./useIsMobile";
 
@@ -161,7 +161,7 @@ export default function HeroScroll() {
           <div className="mt-14 w-full max-w-[var(--maxw-content)]">
             <div className="overflow-hidden rounded-[20px] border border-[var(--border-default)] bg-[var(--obsidian)] shadow-2xl">
               <div className="aspect-[16/10] w-full">
-                <CommandCenterArt />
+                <HeroSplitArt />
               </div>
             </div>
           </div>
@@ -248,7 +248,7 @@ export default function HeroScroll() {
 
             {/* screen - the actual dashboard art, inset inside the bezel */}
             <div className="absolute inset-[11px] z-20 overflow-hidden rounded-[10px] bg-[var(--obsidian)]">
-              <CommandCenterArt />
+              <HeroSplitArt />
             </div>
 
             {/* cookie consent card (FRAME 1) - dark, overlaid low-left on the

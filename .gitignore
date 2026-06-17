@@ -8,3 +8,7 @@ node_modules/
 .next/
 *.egg-info/
 .pytest_cache/
+
+# bundled Chromium for screenshots (local only)
+chrome/
+frontend/chrome/

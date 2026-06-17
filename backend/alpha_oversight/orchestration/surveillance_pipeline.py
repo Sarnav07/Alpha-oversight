@@ -60,22 +60,36 @@ if TYPE_CHECKING:
 
 # Logical role -> model key. The pipeline accepts an override map; these defaults
 # are the keys ``providers.register_models()`` installs from env.
-# Plumbing roles (triage/investigate/specialist/adjudicate) run on a big *open*
-# Featherless model (``open-triage`` = Qwen3-Next-80B-A3B-Instruct: 80B total /
-# 3B-active MoE — large enough for reliable structured JSON, non-thinking so it
-# stays fast across the four sequential calls). The visible adversarial contrast
-# is frontier Prosecution (``claude-sonnet-4-6``) vs open Defense
-# (``Qwen3.6-35B-A3B``); Escalation synthesises the human packet on ``gpt-5-mini``.
-# Override any role via the `models` arg.
+#
+# Model-FAMILY diversity is deliberate: the four seats that sit on opposite sides
+# of an adversarial boundary each run a DISTINCT family, so no decision-maker
+# shares correlated blind spots with the agent it argues against or judges:
+#   adversary   = claude-opus-4-8     (Anthropic, paid — see ADVERSARY_MODEL_KEY)
+#   prosecution = Kimi-K2.7-Code      (Moonshot)
+#   defense     = DeepSeek-V4-Pro     (DeepSeek)
+#   adjudicator = GLM-5.2             (Zhipu — the load-bearing window resolve)
+# Triage/recruit/specialist share the fast open MoE (``open-triage`` =
+# Qwen3-Next-80B-A3B-Instruct, 80B/3B-active — non-thinking, quick structured
+# JSON); escalation synthesises the human packet on Qwen3.5-397B. Collapsing the
+# non-key seats onto one model keeps a single case within Featherless's $25-plan
+# cap of 4 model-switches/minute (the four families above are the seats that
+# matter for bias). Every surveillance seat is open/flat-rate — only the adversary
+# is paid. Override any role via the `models` arg.
 _DEFAULT_MODELS: dict[str, str] = {
     "anomaly": "open-triage",
     "investigator": "open-triage",
     "specialist": "open-triage",
-    "prosecution": "prosecution-frontier",
+    "prosecution": "prosecution-open",
     "defense": "defense-open",
-    "adjudicator": "open-triage",
-    "escalation": "escalation-frontier",
+    "adjudicator": "adjudicator-open",
+    "escalation": "escalation-open",
 }
+
+# The R&D adversary's model key. It is set HERE (not in _DEFAULT_MODELS) because
+# the adversary is built on the R&D desk, not by the surveillance choreography —
+# but it lives beside the map so the family-diversity invariant stays in one
+# place: this MUST remain a different family from every surveillance seat above.
+ADVERSARY_MODEL_KEY = "adversary-frontier"
 
 
 def _now() -> str:

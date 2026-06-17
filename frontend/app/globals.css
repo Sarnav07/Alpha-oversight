@@ -76,6 +76,13 @@
   --border-default: #e7e7e7;
   --border-subtle: #ececec;
   --hairline: #e7e7e7;
+  --bg-inset: #f4f5f7;
+  --bg-nav: #f7f7f8;
+  --bg-section-alt: #f6f6f6;
+  --bg-card-hover: #eef0f3;
+  --border-strong: #d4d6da;
+  --band-blue-glow: #3b82f633;
+  --status-idle: #9aa0aa;
 }
 
 /* DARK reset - restores the root (dark) token values so a dark panel nested
@@ -201,10 +208,81 @@ body {
   .anim-band-pulse,
   .anim-fade-up,
   .anim-codify,
-  .anim-scroll-cue {
+  .anim-scroll-cue,
+  .ops-trace,
+  .ops-sweep {
     animation: none !important;
   }
   * {
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ============================================================
+   HOW-IT-WORKS "ops" surface — a BOLDER editorial layer, PAGE-SCOPED.
+   Additive only: nothing above is changed, so the landing page and every
+   other route are untouched. Everything here lives under [data-surface="ops"]
+   set on the /how-it-works root. Display = Fraunces (editorial serif);
+   data/eyebrows stay Geist Mono; band-blue stays sacred.
+   ============================================================ */
+[data-surface="ops"] {
+  --font-display: var(--font-geist-sans), system-ui, sans-serif;
+  --ops-line: color-mix(in srgb, var(--band-blue) 7%, transparent);
+}
+[data-surface="ops"] .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.012em;
+}
+
+/* faint forensic blueprint grid (for dark stages / section backdrops) */
+.ops-grid {
+  background-image:
+    linear-gradient(to right, var(--ops-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--ops-line) 1px, transparent 1px);
+  background-size: 46px 46px;
+  background-position: center;
+}
+.ops-grid-fade {
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 35%, transparent 78%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 35%, transparent 78%);
+}
+
+/* film-grain overlay — static texture, reduced-motion safe. Use on a
+   position:relative parent (the grain paints into ::after). */
+.ops-grain {
+  position: relative;
+  isolation: isolate;
+}
+.ops-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* a thin top hairline that glows band-blue (section seam on dark stages) */
+.ops-seam {
+  border-top: 1px solid color-mix(in srgb, var(--band-blue) 22%, transparent);
+  box-shadow: 0 -1px 24px -8px var(--band-blue-glow);
+}
+
+/* band-blue glow ring for genuine "on Band" elements (sacred-blue only) */
+.ops-glow-band {
+  box-shadow: 0 0 0 1px var(--band-blue), 0 0 26px var(--band-blue-glow);
+}
+
+/* self-drawing diagram trace fallback + wall sweep (kit, when JS motion off) */
+@keyframes ops-trace {
+  from { stroke-dashoffset: var(--ops-len, 1200); }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes ops-sweep {
+  0% { transform: translateX(-8%); opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { transform: translateX(108%); opacity: 0; }
 }

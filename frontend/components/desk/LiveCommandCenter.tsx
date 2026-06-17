@@ -17,11 +17,7 @@ import { TopologyGraph } from "@/components/desk/topology/TopologyGraph";
 import HITLControls from "@/components/desk/HITLControls";
 import DossierCards from "@/components/desk/DossierCards";
 import VerdictTimeline from "@/components/desk/VerdictTimeline";
-import RuleRegistryPanel from "@/components/desk/RuleRegistryPanel";
 import AuditDrawer from "@/components/desk/AuditDrawer";
-import SearchBar from "@/components/desk/SearchBar";
-import FilterChips from "@/components/desk/FilterChips";
-import NodeTrace from "@/components/desk/NodeTrace";
 import HotkeyLegend from "@/components/desk/HotkeyLegend";
 
 /**
@@ -70,16 +66,19 @@ export function LiveCommandCenter() {
   }, []);
 
   return (
-    <section id="live-desk" className="flex min-h-screen flex-col bg-page text-frost">
+    <section id="live-desk" className="flex min-h-screen flex-col bg-page text-ink">
       <DeskHeader onOpenAudit={() => setAuditOpen(true)} />
       <ErrorBanner />
       <StatsBar />
-      {IS_MOCK ? <ReplayTransport /> : null}
 
-      <div className="grid flex-1 grid-cols-1 gap-4 px-4 py-4 sm:px-6 sm:py-5 lg:grid-cols-[minmax(0,1.9fr)_minmax(340px,1fr)]">
+      <div
+        className="mx-auto flex w-full flex-1 flex-col gap-4 px-4 py-4 sm:px-6 sm:py-5"
+        style={{ maxWidth: "1470px" }}
+      >
+        {/* Agents - horizontal band, 1470 x 350. */}
         <section
           aria-label="Surveillance pipeline topology"
-          className="relative min-h-[420px] sm:min-h-[560px]"
+          className="relative h-[350px]"
         >
           <TopologyGraph />
           {showLiveHint ? (
@@ -110,15 +109,19 @@ export function LiveCommandCenter() {
           ) : null}
         </section>
 
-        <aside className="flex min-w-0 flex-col gap-4 lg:max-h-[calc(100vh-180px)] lg:overflow-y-auto">
-          <SearchBar />
-          <FilterChips />
-          <HITLControls />
-          <NodeTrace />
-          <DossierCards />
-          <VerdictTimeline />
-          <RuleRegistryPanel />
-        </aside>
+        {/* Playback transport - mock only, below the agents. */}
+        {IS_MOCK ? <ReplayTransport /> : null}
+
+        {/* Lower region: debate (left) · verdict timeline + human review (right). */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+          <div className="lg:flex-none">
+            <DossierCards />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col gap-4">
+            <VerdictTimeline />
+            <HITLControls />
+          </div>
+        </div>
       </div>
 
       <HotkeyLegend />

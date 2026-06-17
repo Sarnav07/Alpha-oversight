@@ -31,10 +31,19 @@ class Settings(BaseModel):
     aiml_frontier_model: str = ""
     aiml_frontier_model_alt: str = ""
     aiml_free_model: str = ""
-    # ── Featherless (open) ──
+    # Adversary (R&D) — the one paid frontier seat (Anthropic, via AIML). Kept a
+    # DIFFERENT model family from every surveillance agent so the red team shares
+    # no correlated blind spots with its own catchers.
+    adversary_model: str = ""
+    # ── Featherless (open, flat-rate) — one env per role so each critical seat
+    #    can run a DISTINCT family (bias isolation). Each falls back to
+    #    ``featherless_open_model`` in providers.register_models if left blank. ──
     featherless_ai_api_key: str = ""
-    featherless_open_model: str = ""
-    featherless_defense_model: str = ""
+    featherless_open_model: str = ""          # anomaly + investigator + specialist (fast triage MoE)
+    featherless_prosecution_model: str = ""   # prosecution (debate: argue manipulation)
+    featherless_defense_model: str = ""       # defense (debate: argue exoneration)
+    featherless_adjudicator_model: str = ""   # adjudicator (load-bearing window resolve)
+    featherless_escalation_model: str = ""    # escalation (human review packet)
     featherless_max_concurrency: int = 4
     # ── Band (two identities) ──
     band_rnd_api_key: str = ""
@@ -69,9 +78,13 @@ class Settings(BaseModel):
             aiml_frontier_model=os.environ.get("AIML_FRONTIER_MODEL", ""),
             aiml_frontier_model_alt=os.environ.get("AIML_FRONTIER_MODEL_ALT", ""),
             aiml_free_model=os.environ.get("AIML_FREE_MODEL", ""),
+            adversary_model=os.environ.get("ADVERSARY_MODEL", ""),
             featherless_ai_api_key=os.environ.get("FEATHERLESS_AI_API_KEY", ""),
             featherless_open_model=os.environ.get("FEATHERLESS_OPEN_MODEL", ""),
+            featherless_prosecution_model=os.environ.get("FEATHERLESS_PROSECUTION_MODEL", ""),
             featherless_defense_model=os.environ.get("FEATHERLESS_DEFENSE_MODEL", ""),
+            featherless_adjudicator_model=os.environ.get("FEATHERLESS_ADJUDICATOR_MODEL", ""),
+            featherless_escalation_model=os.environ.get("FEATHERLESS_ESCALATION_MODEL", ""),
             featherless_max_concurrency=int(os.environ.get("FEATHERLESS_MAX_CONCURRENCY", "4")),
             band_rnd_api_key=os.environ.get("BAND_RND_API_KEY", ""),
             band_rnd_agent_id=os.environ.get("BAND_RND_AGENT_ID", ""),

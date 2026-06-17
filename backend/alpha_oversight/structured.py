@@ -2,12 +2,18 @@
 
 Single-shot agents call this directly. On ValidationError it appends a repair
 message carrying ``schema.model_json_schema()`` and retries once, then raises
-``StructuredError``.
+``StructuredError``. On a *transient* API error (notably Featherless's $25-plan
+cap of 4 model-switches/minute) it backs off and retries the network call so the
+case slows rather than fails.
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
+import logging
+import os
+import random
 from typing import TypeVar
 
 import litellm
@@ -16,7 +22,35 @@ from pydantic import BaseModel, ValidationError
 from alpha_oversight import providers
 from alpha_oversight.reused.gateway import MODELS
 
+logger = logging.getLogger(__name__)
+
 T = TypeVar("T", bound=BaseModel)
+
+# Transient API failures worth retrying with backoff (vs. a permanent 400/auth
+# error, which we let propagate untouched). RateLimitError is the important one:
+# Featherless caps model-SWITCHING at 4/minute on the $25 plan and the courtroom
+# seats each run a different family, so a hot run can trip it — we wait the rolling
+# window out instead of failing the case. Built defensively so a model name that a
+# given litellm version doesn't export can't crash import.
+_TRANSIENT: tuple[type[BaseException], ...] = tuple(
+    cls
+    for cls in (
+        getattr(litellm, name, None)
+        for name in (
+            "RateLimitError", "APIConnectionError",
+            "ServiceUnavailableError", "InternalServerError",
+        )
+    )
+    if isinstance(cls, type)
+)
+_RATE_LIMIT = getattr(litellm, "RateLimitError", None)
+
+# Hard per-call ceiling. Featherless loads these big open models on-demand, so a
+# COLD call can take minutes; this bounds a truly hung call. A timeout is NOT in
+# _TRANSIENT (a hung/cold model won't recover on a blind retry), so it fails the
+# call instead of looping. Warm calls return in seconds — pre-warm the models for
+# a snappy demo. Tunable via env.
+_CALL_TIMEOUT = float(os.environ.get("LLM_CALL_TIMEOUT", "600"))
 
 
 class StructuredError(Exception):
@@ -37,6 +71,53 @@ def _repair_message(schema: type[BaseModel], raw_text: str, err: ValidationError
     }
 
 
+async def _call_once(spec, convo: list[dict], call_kwargs: dict) -> str:
+    response = await litellm.acompletion(
+        model=spec.litellm_model,
+        messages=convo,
+        max_tokens=spec.max_tokens,
+        temperature=spec.temperature,
+        response_format={"type": "json_object"},
+        timeout=_CALL_TIMEOUT,
+        **call_kwargs,
+    )
+    return response.choices[0].message.content or ""
+
+
+async def _call_with_backoff(
+    spec, convo: list[dict], call_kwargs: dict, featherless: bool, retries: int = 4
+) -> str:
+    """One LLM call, retrying transient API errors with backoff.
+
+    The Featherless semaphore is taken PER attempt, so the slot is released during
+    the backoff sleep (never held while we wait out a rate-limit window). Permanent
+    errors (400/401/…) are not in ``_TRANSIENT`` and propagate on the first try.
+    """
+    last: BaseException | None = None
+    for attempt in range(retries + 1):
+        try:
+            if featherless:
+                async with providers.FEATHERLESS_SEMAPHORE:
+                    return await _call_once(spec, convo, call_kwargs)
+            return await _call_once(spec, convo, call_kwargs)
+        except _TRANSIENT as e:  # type: ignore[misc]
+            last = e
+            if attempt >= retries:
+                raise
+            # Rate limits clear as the rolling minute ages — wait it out (~20/40/60/80s).
+            # Other transients (timeout, 5xx, conn reset) get a short exponential backoff.
+            if _RATE_LIMIT is not None and isinstance(e, _RATE_LIMIT):
+                wait = 20.0 * (attempt + 1) + random.uniform(0, 5)
+            else:
+                wait = 2.0 ** attempt + random.uniform(0, 1)
+            logger.warning(
+                "structured_completion transient error on %s (attempt %d/%d): %s — retrying in %.1fs",
+                spec.litellm_model, attempt + 1, retries, type(e).__name__, wait,
+            )
+            await asyncio.sleep(wait)
+    raise last  # pragma: no cover - loop above always returns or raises
+
+
 async def structured_completion(
     messages: list[dict],
     schema: type[T],
@@ -45,11 +126,12 @@ async def structured_completion(
 ) -> T:
     """JSON-object completion validated into ``schema``, with bounded repair.
 
-    Makes a ``response_format={"type":"json_object"}`` litellm call, validates the
-    returned text with ``schema.model_validate_json``. On ``ValidationError`` it
-    appends one repair turn (carrying ``schema.model_json_schema()``) and retries,
-    up to ``max_repair`` extra attempts, then raises ``StructuredError``.
-    Featherless calls take a ``FEATHERLESS_SEMAPHORE`` slot.
+    Makes a ``response_format={"type":"json_object"}`` litellm call (with transient
+    backoff — see ``_call_with_backoff``), validates the returned text with
+    ``schema.model_validate_json``. On ``ValidationError`` it appends one repair turn
+    (carrying ``schema.model_json_schema()``) and retries, up to ``max_repair`` extra
+    attempts, then raises ``StructuredError``. Featherless calls take a
+    ``FEATHERLESS_SEMAPHORE`` slot.
     """
     spec = MODELS.get(model_key)
     if spec is None:
@@ -61,22 +143,7 @@ async def structured_completion(
     last_err: Exception | None = None
 
     for _ in range(max_repair + 1):  # 1 initial attempt + max_repair repairs
-        async def _do_call() -> str:
-            response = await litellm.acompletion(
-                model=spec.litellm_model,
-                messages=convo,
-                max_tokens=spec.max_tokens,
-                temperature=spec.temperature,
-                response_format={"type": "json_object"},
-                **call_kwargs,
-            )
-            return response.choices[0].message.content or ""
-
-        if featherless:
-            async with providers.FEATHERLESS_SEMAPHORE:
-                raw_text = await _do_call()
-        else:
-            raw_text = await _do_call()
+        raw_text = await _call_with_backoff(spec, convo, call_kwargs, featherless)
 
         try:
             return schema.model_validate_json(raw_text)

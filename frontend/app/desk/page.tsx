@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function DeskPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--bg-page)", color: "var(--text-primary)" }}>
+    <div data-section="light" className="min-h-screen" style={{ backgroundColor: "var(--bg-page)", color: "var(--text-primary)" }}>
       <DeskShowcaseHeader />
       <main>
         <DeskShowcaseHero />

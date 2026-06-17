@@ -55,7 +55,7 @@ function DossierCard({
       initial={reduce ? false : { opacity: 0, x: meta.xFrom }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: EASE }}
-      className="flex-1 min-w-0 rounded-[var(--r-card)] border bg-[var(--bg-card)] p-4"
+      className="w-full min-w-0 rounded-[var(--r-card)] border bg-[var(--bg-card)] p-4 sm:w-[400px] sm:min-h-[350px]"
       style={{ borderColor: meta.accentDim }}
     >
       <div className="flex items-center justify-between gap-2 mb-3">

@@ -50,10 +50,36 @@ export default function HITLControls() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
 
-  // Only the human decides on an ESCALATED case. Hidden in every other state.
-  // Note: once confirm/reject resolves, the model leaves ESCALATED and this
-  // unmounts - so we never linger in a stale success phase.
-  if (state !== "ESCALATED") return null;
+  // Only the human decides on an ESCALATED case. In every other state we still
+  // render the box frame (idle) so the right column always shows two boxes.
+  // Once confirm/reject resolves, the model leaves ESCALATED and this falls back
+  // to the idle frame - we never linger in a stale success phase.
+  if (state !== "ESCALATED") {
+    return (
+      <section
+        aria-label="Human review"
+        className="rounded-[var(--r-card)] border p-4"
+        style={{ borderColor: "var(--border-subtle)", background: "var(--bg-card)" }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <span
+            className="text-[11px] uppercase tracking-[0.18em]"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Human review
+          </span>
+          <span className="font-mono text-[10px] text-[var(--text-faint)]">
+            in the loop
+          </span>
+        </div>
+        <p className="text-[12px] text-[var(--text-faint)] leading-relaxed">
+          No case awaiting review. When the engine passes but the debate flags a
+          novel evasion, the case escalates here for your Confirm - codifying a new
+          rule and re-flagging - or Reject to close.
+        </p>
+      </section>
+    );
+  }
 
   const busy = phase === "confirming" || phase === "rejecting";
 

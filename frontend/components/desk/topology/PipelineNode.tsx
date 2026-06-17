@@ -20,6 +20,16 @@ import { memo } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 import type { NodeId, NodeStatus } from "@/lib/desk/contract";
 import type { Desk } from "@/lib/types";
+import { NODE_W, NODE_H } from "./layout";
+
+/** Which connection handles a node exposes (horizontal flow + the pros/def fan). */
+export type NodeHandles = {
+  tLeft: boolean; // target - incoming from the left (spine)
+  tTop: boolean; // target - incoming from above (bridge ← adversary)
+  tBottom: boolean; // target - incoming from below (rule_engine ← human codify)
+  sRight: boolean; // source - outgoing to the right (spine)
+  sBottom: boolean; // source - outgoing downward (adversary → bridge, human → codify)
+};
 
 export type PipelineNodeData = {
   nodeId: NodeId;
@@ -35,7 +45,7 @@ export type PipelineNodeData = {
   /** true when this node is the active click-to-filter selection (neutral ring). */
   selected: boolean;
   /** which connection handles this node needs (derived from EDGES). */
-  handles: { top: boolean; bottom: boolean; left: boolean; right: boolean };
+  handles: NodeHandles;
 };
 
 export type PipelineFlowNode = Node<PipelineNodeData, "pipeline">;
@@ -105,15 +115,19 @@ function PipelineNodeImpl({ data }: NodeProps<PipelineFlowNode>) {
     <div
       className={waiting && !staticMode ? "anim-band-pulse" : undefined}
       style={{
-        width: 184,
+        width: NODE_W,
+        minHeight: NODE_H,
         boxSizing: "border-box",
-        background: waiting ? "rgba(59,130,246,0.10)" : "var(--bg-card)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        background: waiting ? "rgba(59,130,246,0.12)" : "var(--bg-card)",
         border: `1px solid ${accent}`,
         borderRadius: "var(--r-card)",
         padding: "9px 12px",
         opacity: dim ? 0.5 : 1,
         boxShadow: ring,
-        cursor: "pointer",
+        cursor: "default",
         transform: lit ? "scale(1.04)" : "scale(1)",
         transition: staticMode
           ? "none"
@@ -121,17 +135,14 @@ function PipelineNodeImpl({ data }: NodeProps<PipelineFlowNode>) {
         color: "var(--text-primary)",
       }}
     >
-      {handles.top && (
-        <Handle type="target" position={Position.Top} style={HANDLE_STYLE} isConnectable={false} />
+      {handles.tLeft && (
+        <Handle id="t-left" type="target" position={Position.Left} style={HANDLE_STYLE} isConnectable={false} />
       )}
-      {handles.left && (
-        <Handle
-          id="l"
-          type="target"
-          position={Position.Left}
-          style={HANDLE_STYLE}
-          isConnectable={false}
-        />
+      {handles.tTop && (
+        <Handle id="t-top" type="target" position={Position.Top} style={HANDLE_STYLE} isConnectable={false} />
+      )}
+      {handles.tBottom && (
+        <Handle id="t-bottom" type="target" position={Position.Bottom} style={HANDLE_STYLE} isConnectable={false} />
       )}
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
@@ -198,22 +209,11 @@ function PipelineNodeImpl({ data }: NodeProps<PipelineFlowNode>) {
         )}
       </div>
 
-      {handles.bottom && (
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          style={HANDLE_STYLE}
-          isConnectable={false}
-        />
+      {handles.sRight && (
+        <Handle id="s-right" type="source" position={Position.Right} style={HANDLE_STYLE} isConnectable={false} />
       )}
-      {handles.right && (
-        <Handle
-          id="r"
-          type="source"
-          position={Position.Right}
-          style={HANDLE_STYLE}
-          isConnectable={false}
-        />
+      {handles.sBottom && (
+        <Handle id="s-bottom" type="source" position={Position.Bottom} style={HANDLE_STYLE} isConnectable={false} />
       )}
     </div>
   );

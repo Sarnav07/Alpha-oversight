@@ -93,14 +93,26 @@ def register_models() -> None:
     aiml_base = s.aiml_api_base or PROVIDERS["aimlapi"]["api_base"]
 
     # (logical key, raw model id from env, provider name, litellm prefix, api_base)
+    # The four critical seats (adversary/prosecution/defense/adjudicator) each run
+    # a DISTINCT model family — no shared blind spots across an adversarial
+    # boundary. Triage + specialist share ``open-triage`` (one fast MoE) so a single
+    # case stays within Featherless's $25-plan cap of 4 model-switches/minute. Each
+    # per-role open key falls back to ``featherless_open_model`` when unset.
+    _open = s.featherless_open_model
     specs = [
+        # ── AIML (paid frontier) ──
+        ("adversary-frontier", s.adversary_model, "aimlapi", "aiml", aiml_base),
+        # Kept registered for back-compat / an optional paid flip of a seat via env.
         ("prosecution-frontier", s.aiml_frontier_model, "aimlapi", "aiml", aiml_base),
         ("escalation-frontier", s.aiml_frontier_model_alt or s.aiml_frontier_model,
          "aimlapi", "aiml", aiml_base),
         ("aiml-free", s.aiml_free_model, "aimlapi", "aiml", aiml_base),
-        ("open-triage", s.featherless_open_model, "featherless", "featherless_ai", None),
-        ("defense-open", s.featherless_defense_model or s.featherless_open_model,
-         "featherless", "featherless_ai", None),
+        # ── Featherless (open, flat-rate) — one model family per critical seat ──
+        ("open-triage", _open, "featherless", "featherless_ai", None),
+        ("prosecution-open", s.featherless_prosecution_model or _open, "featherless", "featherless_ai", None),
+        ("defense-open", s.featherless_defense_model or _open, "featherless", "featherless_ai", None),
+        ("adjudicator-open", s.featherless_adjudicator_model or _open, "featherless", "featherless_ai", None),
+        ("escalation-open", s.featherless_escalation_model or _open, "featherless", "featherless_ai", None),
     ]
     for key, raw_id, provider, prefix, api_base in specs:
         if not raw_id:
@@ -116,6 +128,12 @@ def register_models() -> None:
             # every demo role headroom — it is a ceiling, not a target (models
             # stop at EOS), so non-reasoning roles pay nothing for it.
             max_tokens=8192,
+            # The adversary's frontier model (claude-opus-4-8) is an adaptive-
+            # thinking model that rejects an explicit temperature, and litellm has
+            # no metadata to drop it on the aiml/ route — so send the model's own
+            # default (temperature=1), which also suits a creative red-teamer. Open
+            # seats stay deterministic at 0.0 for stable structured JSON.
+            temperature=1.0 if key == "adversary-frontier" else 0.0,
             api_base=api_base,
             key_env=key_env,
         )

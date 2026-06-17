@@ -259,10 +259,14 @@ function StepRow({ t, i, eyebrow }: { t: MotionValue<number>; i: number; eyebrow
 
 function ChapterContent({ t, i, ch }: { t: MotionValue<number>; i: number; ch: Chapter }) {
   const center = c(i);
+  // Wide opacity-1 plateau (held across +/-0.6*HALF) so the active chapter is
+  // fully legible despite the useSpring lag. The outer fade stops sit at the
+  // chapter BOUNDARY (+/-1.0*HALF), so chapter N reaches 0 exactly where N+1
+  // starts rising - the crossfades meet at the boundary with no blank band.
   const range: [number, number, number, number] = [
     center - HALF,
-    center - 0.32 * HALF,
-    center + 0.32 * HALF,
+    center - 0.6 * HALF,
+    center + 0.6 * HALF,
     center + HALF,
   ];
   const opacity = useTransform(t, range, [0, 1, 1, 0]);
@@ -320,7 +324,7 @@ function MetricCell({
 }) {
   return (
     <span className="flex items-baseline gap-1.5">
-      <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-[var(--text-faint)]">
+      <span className="font-mono text-[8.5px] uppercase tracking-[0.1em] text-[var(--text-faint)]">
         {label}
       </span>
       <motion.span
@@ -807,7 +811,7 @@ function MetricsStrip({ t }: { t: MotionValue<number> }) {
 
   return (
     <div
-      className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b px-5 py-2.5"
+      className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 border-b px-5 py-2.5"
       style={{ borderColor: "var(--hairline)" }}
     >
       <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-[var(--desk-surv)]">
@@ -817,7 +821,9 @@ function MetricsStrip({ t }: { t: MotionValue<number> }) {
         />
         live · market #0
       </span>
-      <span className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-1">
+      {/* metrics wrap to their own full-width row under the live badge so the
+          five label+value cells never collide on a narrow graph column */}
+      <span className="flex w-full flex-wrap items-center gap-x-3.5 gap-y-1">
         <MetricCell label="cancel_rate" value={<motion.span>{ratioText}</motion.span>} tone={ratioTone} />
         <MetricCell label="depth" value={<motion.span>{depthText}</motion.span>} />
         <MetricCell label="window" value={<motion.span>{windowText}</motion.span>} />
