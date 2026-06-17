@@ -1,5 +1,5 @@
 /**
- * ReplayClock — the single mock playback engine for /desk.
+ * ReplayClock - the single mock playback engine for /desk.
  *
  * Replaces the controller's fire-and-forget `setTimeout` fan-out with a stateful,
  * scrubbable player: one recurring timer walks a loaded fixture into useTraceStore
@@ -8,10 +8,10 @@
  * useDeskModel and every component are untouched (the swap-proof seam holds).
  *
  * MOCK ONLY. Live mode streams real frames over EventSource (store.connect +
- * LiveSSEAdapter) and never touches this clock — you can't scrub a live LLM run.
+ * LiveSSEAdapter) and never touches this clock - you can't scrub a live LLM run.
  *
  * Connection coupling: mock playback IS a recorded replay, so the clock sets the
- * trace store's connection to "replay" while loaded and "idle" once reset — this
+ * trace store's connection to "replay" while loaded and "idle" once reset - this
  * is what finally drives the ConnectionStatus pill + ReplayBanner honestly,
  * instead of the page hard-setting "connected".
  */
@@ -39,7 +39,7 @@ function clearTicker() {
   }
 }
 
-/** Mock playback is honestly a recorded replay — map status → connection pill. */
+/** Mock playback is honestly a recorded replay - map status → connection pill. */
 function syncConnection(status: ClockStatus) {
   useTraceStore.getState().setConnection(status === "idle" ? "idle" : "replay");
 }
@@ -49,7 +49,7 @@ interface ClockState {
   caseId: string | null;
   /** the full loaded sequence. */
   frames: ActivityEvent[];
-  /** playhead — count of frames already pushed (0..frames.length). */
+  /** playhead - count of frames already pushed (0..frames.length). */
   index: number;
   status: ClockStatus;
   speed: ClockSpeed;

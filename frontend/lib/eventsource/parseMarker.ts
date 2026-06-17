@@ -35,13 +35,13 @@ export interface Marker {
   family?: string;
   /** the case id parsed from `opened case <id>` / `case <id> -> <state>` markers.
    *  Live `/stream` frames carry NO `case_id` field (backend `ActivityEvent` omits
-   *  it — see surveillance_pipeline.py); the id lives only inside `content`. */
+   *  it - see surveillance_pipeline.py); the id lives only inside `content`. */
   caseId?: string;
   /** parsed `features={...}` python-repr dict (suspicious frame). Numbers, bools, strings. */
   features?: Record<string, number | boolean | string>;
 }
 
-/** The 5 backend CaseState enum values — used to validate the `case <id> -> X` tail. */
+/** The 5 backend CaseState enum values - used to validate the `case <id> -> X` tail. */
 const FINAL_STATES: ReadonlySet<string> = new Set([
   "OPEN",
   "UNDER_REVIEW",
@@ -57,7 +57,7 @@ const FINAL_STATES: ReadonlySet<string> = new Set([
  */
 function parsePyReprDict(body: string): Record<string, number | boolean | string> {
   const out: Record<string, number | boolean | string> = {};
-  // 'key': <value>  — value is a number, True/False, or a single-quoted string.
+  // 'key': <value>  - value is a number, True/False, or a single-quoted string.
   const re = /'([^']+)'\s*:\s*(True|False|-?\d+(?:\.\d+)?|'[^']*')/g;
   let mm: RegExpExecArray | null;
   while ((mm = re.exec(body)) !== null) {
@@ -73,7 +73,7 @@ function parsePyReprDict(body: string): Record<string, number | boolean | string
 
 /**
  * The latest case id carried by the event stream. Live `/stream` frames have no
- * `case_id` field — the id lives only inside the `content` markers — so we fall
+ * `case_id` field - the id lives only inside the `content` markers - so we fall
  * back to parsing it. Mock fixtures set `case_id` directly, so the `??` short-
  * circuits. Single source of truth for "which case is on screen", shared by the
  * desk controller (confirm/reject target) and the audit drawer (live fetch key).
@@ -150,7 +150,7 @@ export function parseMarker(e: ActivityEvent): Marker {
     m.eventType = "rule_codified";
   }
 
-  // DEV-ONLY: a `pipeline` frame is the canonical marker carrier — if one yields
+  // DEV-ONLY: a `pipeline` frame is the canonical marker carrier - if one yields
   // nothing recognised the grammar has drifted from the backend. Warn (never in
   // production, never alters the return) so a silent parser regression is loud
   // in dev. Other agents' chatter frames legitimately carry no marker, so we

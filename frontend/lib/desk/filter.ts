@@ -1,5 +1,5 @@
 /**
- * Desk filter predicates + hooks — the shared matching logic behind the
+ * Desk filter predicates + hooks - the shared matching logic behind the
  * click-to-filter node selection and the free-text search (lib/desk/uiStore.ts).
  *
  * One source of truth so VerdictTimeline, DossierCards, RuleRegistryPanel and the

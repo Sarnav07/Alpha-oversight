@@ -1,5 +1,5 @@
 /**
- * Static topology metadata — the canonical node set + ordered pipeline edges.
+ * Static topology metadata - the canonical node set + ordered pipeline edges.
  * Shared by useDeskModel (status folding) and TopologyGraph (layout). Lead-owned
  * alongside contract.ts; teammate A reads it, teammate B reads it for layout.
  */
@@ -23,7 +23,7 @@ export const NODE_META: NodeMeta[] = [
   { id: "adversary", label: "Adversary", desk: "rnd", agents: ["adversary"], modelTier: "open" },
   { id: "bridge", label: "Sanitized Bridge", desk: "rnd", agents: ["bridge", "sanitizedbridge"], modelTier: null },
   // NOTE: `pipeline` (the narration agent carrying every marker) is intentionally NOT
-  // mapped to a node — it would mislight the active node on verdict/terminal frames.
+  // mapped to a node - it would mislight the active node on verdict/terminal frames.
   { id: "anomaly_detector", label: "Anomaly Detector", desk: "surveillance", agents: ["anomaly_detector", "anomaly-detector", "anomalydetector"], modelTier: "open" },
   { id: "investigator", label: "Investigator", desk: "surveillance", agents: ["investigator"], modelTier: "open" },
   { id: "specialist", label: "Specialist", desk: "surveillance", agents: ["specialist", "@layer-spec"], modelTier: "open" },

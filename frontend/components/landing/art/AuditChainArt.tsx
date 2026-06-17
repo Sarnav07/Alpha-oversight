@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * AuditChainArt — the STATIC dark "Audit Lineage" artwork shown INSIDE a feature
+ * AuditChainArt - the STATIC dark "Audit Lineage" artwork shown INSIDE a feature
  * card on the landing page. It is the A&O analog of AlphaLedger's "Verified &
  * Audited Leaderboard" screenshot: a compact, hash-chained audit ledger.
  *
- * This is pure presentation art — no data, no props, no fetching. Every value is
+ * This is pure presentation art - no data, no props, no fetching. Every value is
  * a hand-set mock chosen to read well when the card is scaled inside the
  * horizontal feature carousel. The component fills its parent (`w-full h-full`).
  *
@@ -83,7 +83,7 @@ export default function AuditChainArt() {
         <div className="flex items-center gap-2 text-[var(--text-muted)]">
           <FingerprintIcon />
           <p className="font-sans text-[9px] font-medium uppercase leading-tight tracking-[0.18em] text-[var(--text-muted)] sm:text-[10px]">
-            Audit Lineage —<br className="sm:hidden" /> Hash-Chained Ledger
+            Audit Lineage -<br className="sm:hidden" /> Hash-Chained Ledger
           </p>
         </div>
 
@@ -146,12 +146,12 @@ export default function AuditChainArt() {
                 {r.agent}
               </span>
 
-              {/* desk — tinted surv */}
+              {/* desk - tinted surv */}
               <span
                 className="font-mono text-[9px]"
                 style={{ color: r.desk ? "var(--desk-surv)" : "var(--text-faint)" }}
               >
-                {r.desk ?? "—"}
+                {r.desk ?? "-"}
               </span>
 
               {/* role */}
@@ -164,7 +164,7 @@ export default function AuditChainArt() {
                 className="truncate font-mono text-[9px]"
                 style={{ color: r.band ? "var(--band-blue)" : "var(--text-faint)" }}
               >
-                {r.band ?? "—"}
+                {r.band ?? "-"}
               </span>
 
               {/* prev → hash */}
@@ -182,7 +182,7 @@ export default function AuditChainArt() {
 
       {/* ── caption ────────────────────────────────────────────────────────── */}
       <p className="mt-3 font-sans text-[9px] leading-snug text-[var(--text-faint)] sm:text-[10px]">
-        every ledger leaf carries a Band message id — the audit trail{" "}
+        every ledger leaf carries a Band message id - the audit trail{" "}
         <span className="italic">is</span> the Band message log.
       </p>
     </div>

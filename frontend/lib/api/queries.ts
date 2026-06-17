@@ -3,7 +3,7 @@
 /**
  * TanStack Query layer over the REST client (lib/api/client).
  * DeskLive consumes these hooks; the public API is FROZEN in
- * tasks/BACKEND_INTEGRATION.md — do not rename/resign without updating both.
+ * tasks/BACKEND_INTEGRATION.md - do not rename/resign without updating both.
  */
 import { useEffect, useRef } from "react";
 import {
@@ -17,7 +17,7 @@ import { parseMarker } from "../eventsource/parseMarker";
 import { useTraceStore } from "../store/useTraceStore";
 import type { AuditResponse, Case, Rule, Stats } from "../types";
 
-/** Query keys — single source of truth for invalidation. */
+/** Query keys - single source of truth for invalidation. */
 export const qk = {
   stats: ["stats"] as const,
   rules: ["rules"] as const,
@@ -104,7 +104,7 @@ export function useInvalidateOnMarkers(): void {
       queryClient.invalidateQueries({ queryKey: ["audit"] });
     };
 
-    // The codify marker can outrun the server commit — an immediate /rules +
+    // The codify marker can outrun the server commit - an immediate /rules +
     // /stats refetch returns the pre-commit count and flickers 5→4→5. Debounce
     // ONLY codify ~500ms so the refetch reads the post-commit truth. Every other
     // transition (verdict/escalate/terminal) still invalidates immediately.

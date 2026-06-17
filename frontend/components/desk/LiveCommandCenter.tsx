@@ -25,7 +25,7 @@ import NodeTrace from "@/components/desk/NodeTrace";
 import HotkeyLegend from "@/components/desk/HotkeyLegend";
 
 /**
- * LiveCommandCenter — the functional Command Center (FRONTEND_BUILD_PLAN §9).
+ * LiveCommandCenter - the functional Command Center (FRONTEND_BUILD_PLAN §9).
  *
  * Composition only. State flows: fixtures → controller.play → useTraceStore →
  * useDeskModel → components. The controller drives mock playback, so we auto-run

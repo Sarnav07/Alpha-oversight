@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 
 /**
- * Reveal — reveal-on-scroll wrapper (fade + rise, fires once on enter).
+ * Reveal - reveal-on-scroll wrapper (fade + rise, fires once on enter).
  * Shared anim primitive (lead-frozen): how-it-works + landing sections import it.
  * Reduced-motion → renders the final state immediately, no transform.
  */

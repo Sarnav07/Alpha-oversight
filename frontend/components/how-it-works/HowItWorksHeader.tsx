@@ -4,7 +4,7 @@ import Link from "next/link";
 import Logomark from "@/components/landing/Logomark";
 
 /**
- * HowItWorksHeader — sticky top bar for the /how-it-works editorial route.
+ * HowItWorksHeader - sticky top bar for the /how-it-works editorial route.
  *
  * Light bar (h-14, top-0, z-50). Because a sticky element can sit OUTSIDE the
  * nearest data-section="light" frame during scroll, tokens would resolve to the
@@ -39,10 +39,10 @@ export function HowItWorksHeader({ backHref = "/" }: HowItWorksHeaderProps) {
         className="mx-auto flex h-full items-center justify-between px-6"
         style={{ maxWidth: "var(--maxw-content)" }}
       >
-        {/* Brand cluster — currentColor (= ink) flows into the mark + wordmark */}
+        {/* Brand cluster - currentColor (= ink) flows into the mark + wordmark */}
         <Link
           href={backHref}
-          aria-label="Alpha & Oversight — back to home"
+          aria-label="Alpha & Oversight - back to home"
           className="flex items-center"
           style={{ color: INK, textDecoration: "none" }}
         >

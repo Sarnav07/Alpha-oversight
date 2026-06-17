@@ -6,7 +6,7 @@ import Logomark from "./Logomark";
 import { RadarSearch, DetectRing, AuditShield, BandScan } from "./art/AboutCardArt";
 
 /**
- * MoreAboutSection — the closing "MORE ABOUT US" bento grid (AlphaLedger
+ * MoreAboutSection - the closing "MORE ABOUT US" bento grid (AlphaLedger
  * "Features" grid clone, themed for A&O). A 2×2 grid of numbered cards, each a
  * two-tone heading + copy + a bespoke monochrome visual that draws in. The whole
  * grid staggers in on scroll; cards lift on hover. prefers-reduced-motion / SSR
@@ -29,28 +29,28 @@ const CARDS: Card[] = [
   {
     no: "01",
     title: ["Adversarial", "Red-Team"],
-    body: "An open-weight Adversary red-teams the tape in real time — inventing fresh evasion tactics so the desk trains against the threat before the market ever sees it.",
+    body: "An open-weight Adversary red-teams the tape in real time - inventing fresh evasion tactics so the desk trains against the threat before the market ever sees it.",
     Art: RadarSearch,
     artClass: "inset-0",
   },
   {
     no: "02",
     title: ["A surveillance desk that", "contests every anomaly"],
-    steps: ["Ingest & scan the tape", "Score every anomaly", "Contest it in a dossier", "Verdict — flag or escalate"],
+    steps: ["Ingest & scan the tape", "Score every anomaly", "Contest it in a dossier", "Verdict - flag or escalate"],
     Art: DetectRing,
     artClass: "right-[-28px] top-1/2 h-[260px] w-[260px] -translate-y-1/2",
   },
   {
     no: "03",
     title: ["Tamper-evident", "Audit Chain"],
-    body: "Every handoff and verdict is hash-chained into a replayable ledger — provenance you can verify end to end.",
+    body: "Every handoff and verdict is hash-chained into a replayable ledger - provenance you can verify end to end.",
     Art: AuditShield,
     artClass: "inset-0",
   },
   {
     no: "04",
     title: ["Cross-desk", "Band Coordination"],
-    body: "Adversary, Surveillance and Audit move as one across the Band — a single live trace from first signal to settled verdict.",
+    body: "Adversary, Surveillance and Audit move as one across the Band - a single live trace from first signal to settled verdict.",
     Art: BandScan,
     artClass: "inset-0",
   },
@@ -68,7 +68,7 @@ function BentoCard({ card, index, start, reduce }: { card: Card; index: number; 
       className="group relative flex min-h-[300px] flex-col overflow-hidden rounded-[20px] p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-shadow duration-300 hover:shadow-[0_26px_70px_-12px_rgba(0,0,0,0.6)] sm:min-h-[330px] sm:p-9"
       style={{ backgroundColor: "var(--bg-inset)" }}
     >
-      {/* border ring — brightens on hover */}
+      {/* border ring - brightens on hover */}
       <div className="pointer-events-none absolute inset-0 rounded-[20px] border border-[#1c1d1f] transition-colors duration-300 group-hover:border-white/20" />
       {/* radial glow on hover */}
       <div

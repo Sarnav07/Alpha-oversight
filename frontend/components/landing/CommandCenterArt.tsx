@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * CommandCenterArt — the STATIC dark "Command Center" dashboard artwork shown
- * INSIDE the laptop screen during the hero scrollytelling (frames 2–3) and that
+ * CommandCenterArt - the STATIC dark "Command Center" dashboard artwork shown
+ * INSIDE the laptop screen during the hero scrollytelling (frames 2-3) and that
  * fills the viewport at frame 3.
  *
- * This is precise *presentation art* — there is no data fetching, no props, and
+ * This is precise *presentation art* - there is no data fetching, no props, and
  * no relationship to the real live Command Center at /desk. Every value below is
  * a hand-set mock chosen to match the A&O design language. The component fills
  * its parent (`w-full h-full`) so the parent's scroll choreography can scale and
@@ -189,10 +189,10 @@ export default function CommandCenterArt() {
 
       {/* ── main grid ────────────────────────────────────────────────────── */}
       <div className="grid min-h-0 flex-1 grid-cols-[1.25fr_1fr] gap-3 p-3">
-        {/* ════ LEFT — runtime topology (the centerpiece) ════ */}
+        {/* ════ LEFT - runtime topology (the centerpiece) ════ */}
         <section className="flex min-w-0 flex-col rounded-[var(--r-card)] border border-[var(--border-subtle)] bg-[var(--bg-inset)] p-3.5">
           <div className="mb-3 flex items-center justify-between">
-            <Eyebrow>Features — Runtime Topology</Eyebrow>
+            <Eyebrow>Features - Runtime Topology</Eyebrow>
             <span className="font-mono text-[8px] uppercase tracking-[0.12em] text-[var(--text-faint)]">
               case-0042
             </span>
@@ -281,9 +281,9 @@ export default function CommandCenterArt() {
           </div>
         </section>
 
-        {/* ════ RIGHT — stacked: rulebook / dossier contest / feed ════ */}
+        {/* ════ RIGHT - stacked: rulebook / dossier contest / feed ════ */}
         <section className="flex min-h-0 min-w-0 flex-col gap-3">
-          {/* — Codified rulebook (LIGHT mini-table) — */}
+          {/* - Codified rulebook (LIGHT mini-table) - */}
           <div
             data-section="light"
             className="rounded-[var(--r-card)] border border-[var(--border-default)] bg-[var(--bg-page)] p-2.5"
@@ -316,7 +316,7 @@ export default function CommandCenterArt() {
                   </span>
                 </li>
               ))}
-              {/* new codified rule — amber-flashed */}
+              {/* new codified rule - amber-flashed */}
               <li
                 className="anim-codify mt-0.5 flex items-center justify-between gap-2 rounded-[var(--r-chip)] border px-1.5 py-1"
                 style={{ borderColor: "var(--verdict-escalate)" }}
@@ -334,7 +334,7 @@ export default function CommandCenterArt() {
             </ul>
           </div>
 
-          {/* — Dossier contest (dark) — */}
+          {/* - Dossier contest (dark) - */}
           <div className="rounded-[var(--r-card)] border border-[var(--border-subtle)] bg-[var(--bg-card)] p-2.5">
             <Eyebrow>Dossier Contest</Eyebrow>
             <div className="mt-1.5 flex flex-col gap-1.5">
@@ -344,7 +344,7 @@ export default function CommandCenterArt() {
                 </Pill>
                 <p className="min-w-0 font-sans text-[9.5px] leading-snug text-[var(--text-body)]">
                   <span className="font-mono text-[var(--text-muted)]">prosecution:</span>{" "}
-                  layered bids withdrawn pre-fill — intent to deceive.
+                  layered bids withdrawn pre-fill - intent to deceive.
                 </p>
               </div>
               <div className="flex items-start gap-1.5">
@@ -359,7 +359,7 @@ export default function CommandCenterArt() {
             </div>
           </div>
 
-          {/* — Live activity feed (dark) — */}
+          {/* - Live activity feed (dark) - */}
           <div className="flex min-h-0 flex-1 flex-col rounded-[var(--r-card)] border border-[var(--border-subtle)] bg-[var(--bg-card)] p-2.5">
             <div className="mb-1.5 flex items-center justify-between">
               <Eyebrow>Live Activity</Eyebrow>
@@ -368,7 +368,7 @@ export default function CommandCenterArt() {
               </span>
             </div>
             <ul className="flex flex-col gap-1">
-              {/* investigator row — blue-tinted "waiting on Band" */}
+              {/* investigator row - blue-tinted "waiting on Band" */}
               <li
                 className="flex items-center gap-2 rounded-[var(--r-chip)] px-1.5 py-1"
                 style={{ backgroundColor: "#cfe0ff14" }}

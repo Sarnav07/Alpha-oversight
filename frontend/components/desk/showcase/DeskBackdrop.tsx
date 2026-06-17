@@ -3,9 +3,9 @@
 import { motion, useReducedMotion } from "framer-motion";
 
 /**
- * DeskBackdrop — the landing-style ambient backdrop for the /desk showcase: a
+ * DeskBackdrop - the landing-style ambient backdrop for the /desk showcase: a
  * faint drifting grid + two slow monochrome glows. Decorative only and strictly
- * MONOCHROME — the sacred `--band-blue` is never used for decoration. Absolute,
+ * MONOCHROME - the sacred `--band-blue` is never used for decoration. Absolute,
  * pointer-events-none; drop it as the first child of a `relative` section.
  * Reduced motion → the glows hold still.
  */

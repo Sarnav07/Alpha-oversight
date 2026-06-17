@@ -7,7 +7,7 @@
  * screenshots the #live-desk element at each milestone. Evidence: PNGs + e2e.log
  * + diagnostics.json (console errors / page errors / failed requests).
  *
- * Run: node run-e2e.mjs   (takes several minutes — real LLM calls per beat)
+ * Run: node run-e2e.mjs   (takes several minutes - real LLM calls per beat)
  */
 import { createRequire } from "node:module";
 import { existsSync, mkdirSync, writeFileSync, appendFileSync } from "node:fs";
@@ -122,7 +122,7 @@ try {
   });
 
   await step("5 Confirm -> codify 4->5", async () => {
-    const ok = await clickText(["confirm — codify", "codify rule", "confirm"]);
+    const ok = await clickText(["confirm - codify", "codify rule", "confirm"]);
     const r = await waitFor(async () => { const x = await apiGet("/rules"); return x && x.length >= 5 ? x : null; }, { timeout: 90000, label: "backend rules 4->5" });
     result.rulesAfterConfirm = r ? r.length : null;
     await sleep(3000); await scrollLiveDesk();
@@ -150,7 +150,7 @@ try {
     await clickText(["run r&d", "r&d"]);
     await sleep(8000); await shotEl("#live-desk", "07-rnd-running");
     const c = await waitFor(() => newCase(before, ["FLAGGED", "ESCALATED", "CLOSED"]), { timeout: 240000, interval: 5000, label: "R&D produced a case" });
-    result.rnd = c ? { case_id: c.case_id, state: c.state } : "no-new-case (adversary may not have found an evasion — acceptable)";
+    result.rnd = c ? { case_id: c.case_id, state: c.state } : "no-new-case (adversary may not have found an evasion - acceptable)";
     await sleep(3000); await scrollLiveDesk(); await shotEl("#live-desk", "08-rnd-settled");
     log("  rnd=" + JSON.stringify(result.rnd));
   });

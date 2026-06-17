@@ -4,10 +4,10 @@ import { Reveal } from "@/components/anim/Reveal";
 import { MaskLines } from "@/components/anim/MaskLines";
 
 /**
- * AgentRoster — "The cast". The red-team adversary + the seven-agent
+ * AgentRoster - "The cast". The red-team adversary + the seven-agent
  * Surveillance pipeline + the deterministic rule engine, sourced verbatim from
  * the project report (§02 roster). Each card shows the role, its model tier
- * (frontier = gold, open = graphite — tone-only, never decorative), and what it
+ * (frontier = gold, open = graphite - tone-only, never decorative), and what it
  * sends/receives over Band. Light backbone (inherits the page's data-section).
  *
  * Scroll motion via the shared Reveal/MaskLines primitives (reduced-motion safe).
@@ -35,7 +35,7 @@ const SURVEILLANCE: Agent[] = [
     name: "Anomaly Detector",
     tier: "open",
     model: "Qwen3-Next-80B",
-    role: "First glance at a window of orders — computes the hard features (cancel-to-fill, depth, self-match) and decides what smells off.",
+    role: "First glance at a window of orders - computes the hard features (cancel-to-fill, depth, self-match) and decides what smells off.",
     io: "receives HANDOFF · opens the case",
   },
   {
@@ -57,14 +57,14 @@ const SURVEILLANCE: Agent[] = [
     tier: "frontier",
     model: "claude-sonnet-4-6",
     role: "Argues the reading that makes the order flow look most like manipulation.",
-    io: "debates locally — off Band",
+    io: "debates locally - off Band",
   },
   {
     name: "Defense",
     tier: "open",
     model: "Qwen3.6-35B-A3B",
-    role: "Argues the innocent reading — legitimate, bona-fide trading.",
-    io: "debates locally — off Band",
+    role: "Argues the innocent reading - legitimate, bona-fide trading.",
+    io: "debates locally - off Band",
   },
   {
     name: "Adjudicator",
@@ -168,7 +168,7 @@ export function AgentRoster() {
       <Reveal delay={0.08}>
         <p className="mt-6 max-w-2xl font-sans" style={{ fontSize: 15, lineHeight: 1.6, color: "var(--text-body)" }}>
           You just watched them hand a case down the line. Here is who they are.
-          Two roles — Prosecution and the human-facing Escalation Manager — run a
+          Two roles - Prosecution and the human-facing Escalation Manager - run a
           frontier model; the workhorses run a strong, cheaper open model. The
           rule engine isn’t an agent at all.
         </p>
@@ -196,7 +196,7 @@ export function AgentRoster() {
               Two deterministic referees
             </span>
             <p className="mt-3 font-sans" style={{ fontSize: 14, lineHeight: 1.6, color: "var(--text-body)" }}>
-              Before any evasion may cross the wall, code — not a model — checks it
+              Before any evasion may cross the wall, code - not a model - checks it
               twice: <strong style={{ color: "var(--text-primary)", fontWeight: 500 }}>did it evade?</strong> (the
               real engine returns PASS) and <strong style={{ color: "var(--text-primary)", fontWeight: 500 }}>was it real?</strong> (it
               must profit and move price). Only a sequence that does both is a
@@ -221,7 +221,7 @@ export function AgentRoster() {
             <AgentCard agent={a} />
           </Reveal>
         ))}
-        {/* Rule engine — distinct, not an agent */}
+        {/* Rule engine - distinct, not an agent */}
         <Reveal delay={0.04 * SURVEILLANCE.length}>
           <article
             className="flex h-full flex-col p-5"
@@ -238,11 +238,11 @@ export function AgentRoster() {
               <TierBadge tier="deterministic" />
             </div>
             <code className="mt-1 font-mono text-[11px]" style={{ color: "var(--text-faint)" }}>
-              plain code — not an LLM
+              plain code - not an LLM
             </code>
             <p className="mt-3 font-sans" style={{ fontSize: 13.5, lineHeight: 1.55, color: "var(--text-body)" }}>
               Walks the active rules over the agreed numbers and returns PASS or
-              FLAG — same inputs, same answer, every time. The single authority
+              FLAG - same inputs, same answer, every time. The single authority
               that decides. No agent can overrule it.
             </p>
             <div

@@ -4,10 +4,10 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useTraceStore } from "@/lib/store/useTraceStore";
 
 /**
- * ErrorBanner — a thin desk-wide strip shown ONLY when the live stream is
+ * ErrorBanner - a thin desk-wide strip shown ONLY when the live stream is
  * conclusively down (connection === "error"; LiveSSEAdapter escalates here on a
  * CLOSED socket / persistent onerror / a dead-on-connect timeout). A transient
- * flap reads "reconnecting" and is NOT surfaced here — this is the backend-down
+ * flap reads "reconnecting" and is NOT surfaced here - this is the backend-down
  * affordance. Reads `connection` from the same store source as ConnectionStatus.
  *
  * Restraint: --verdict-flag red on the obsidian backbone, frost type. Never
@@ -52,7 +52,7 @@ export default function ErrorBanner() {
               Backend unreachable
             </span>
             <span style={{ color: "var(--text-body)" }}>
-              — retrying. Showing last known state.
+              - retrying. Showing last known state.
             </span>
           </div>
         </motion.div>

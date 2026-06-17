@@ -4,10 +4,10 @@ import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 
 /**
- * MaskLines — editorial line-mask reveal: each line rises out of an
+ * MaskLines - editorial line-mask reveal: each line rises out of an
  * overflow-hidden clip, staggered, so type appears UNMASKED rather than faded.
  * Shared anim primitive (lead-frozen). The in-view trigger lives on the
- * (unclipped) container — observing the clipped lines directly would never fire.
+ * (unclipped) container - observing the clipped lines directly would never fire.
  * Reduced-motion → static lines, no clip animation.
  */
 const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];

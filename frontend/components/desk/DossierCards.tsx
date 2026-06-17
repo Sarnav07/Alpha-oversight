@@ -7,8 +7,8 @@ import type { Dossier } from "@/lib/types";
 import ModelBadge from "./ModelBadge";
 
 /**
- * DossierCards — the adversarial debate split: Prosecution ⚔ Defense, side by
- * side. The cross-model contrast is the point — Prosecution runs a frontier
+ * DossierCards - the adversarial debate split: Prosecution ⚔ Defense, side by
+ * side. The cross-model contrast is the point - Prosecution runs a frontier
  * model (gold accent), Defense a strong open model (graphite accent). Reads
  * `model.debate` (DebateView); shows an empty state until debate frames arrive.
  *
@@ -113,7 +113,7 @@ export default function DossierCards() {
   const query = useDeskUIStore((s) => s.query);
 
   // Node filter: a side (prosecution/defense) is its own NodeId, so show only the
-  // selected side when the filter targets one of them — hide the panel when the
+  // selected side when the filter targets one of them - hide the panel when the
   // filter targets some other node. Query: keep only sides whose dossier matches.
   const q = query.trim().toLowerCase();
   const nodeAllows = (side: Side) =>
@@ -124,7 +124,7 @@ export default function DossierCards() {
     nodeAllows("defense") && dossierMatchesQuery(debate.defense, q);
 
   // The filter narrowed the desk to a non-debate node (or text with no debate
-  // hit) — drop the whole panel rather than render two empty placeholders.
+  // hit) - drop the whole panel rather than render two empty placeholders.
   if (!showProsecution && !showDefense) return null;
 
   return (

@@ -33,7 +33,7 @@ import {
 } from "./evasion/stage";
 
 /**
- * EvasionStory — the centerpiece pinned scroll-story for /how-it-works.
+ * EvasionStory - the centerpiece pinned scroll-story for /how-it-works.
  *
  * One morphing SVG stage (the order/time lane) driven by scroll progress through
  * SIX chapters. A tall runway creates the scroll distance; a sticky stage holds
@@ -72,7 +72,7 @@ export function EvasionStory() {
     damping: 28,
     restDelta: 0.0001,
   });
-  // A frozen progress value parked on the final chapter — drives the static
+  // A frozen progress value parked on the final chapter - drives the static
   // (reduced-motion) split so the narrative + metrics show the resolved state.
   const tStatic = useMotionValue(c(5));
 
@@ -101,9 +101,9 @@ export function EvasionStory() {
 
   return (
     <section aria-label="The Evasion" className="relative">
-      {/* Runway — its height is the scroll distance the story plays over. */}
+      {/* Runway - its height is the scroll distance the story plays over. */}
       <div ref={runwayRef} className="relative h-[620vh]">
-        {/* Sticky stage — pinned below the 3.5rem header for the duration. */}
+        {/* Sticky stage - pinned below the 3.5rem header for the duration. */}
         <div className="sticky top-14 h-[calc(100vh-3.5rem)] w-full">
           <div className="mx-auto flex h-full w-full max-w-[var(--maxw-content)] items-center px-4 sm:px-8">
             <SplitFrame
@@ -142,7 +142,7 @@ function StageFrame({ children }: { children: React.ReactNode }) {
 }
 
 /* ════════════════════════════════════════════════════════════════════════
-   SPLIT LAYOUT — narrative (left) · live graph (right). Nothing overlaps:
+   SPLIT LAYOUT - narrative (left) · live graph (right). Nothing overlaps:
    the story you read sits beside the picture it describes.
    ════════════════════════════════════════════════════════════════════════ */
 function SplitFrame({ narrative, graph }: { narrative: React.ReactNode; graph: React.ReactNode }) {
@@ -194,7 +194,7 @@ function NarrativeColumn({ t }: { t: MotionValue<number> }) {
 
       <StepList t={t} />
 
-      {/* active beat — crossfaded, anchored to the bottom of the column */}
+      {/* active beat - crossfaded, anchored to the bottom of the column */}
       <div className="relative mt-auto min-h-[190px] pt-6">
         {CHAPTERS.map((ch, i) => (
           <ChapterContent key={ch.no} t={t} i={i} ch={ch} />
@@ -308,7 +308,7 @@ function ChapterContent({ t, i, ch }: { t: MotionValue<number>; i: number; ch: C
   );
 }
 
-/* The live-metrics strip (top of the graph column) — horizontal, no overlap. */
+/* The live-metrics strip (top of the graph column) - horizontal, no overlap. */
 function MetricCell({
   label,
   value,
@@ -592,7 +592,7 @@ function MorphStage({ t }: { t: MotionValue<number> }) {
           stroke="var(--hairline)"
           strokeWidth={1}
         />
-        {/* threshold line — the "manipulation" line */}
+        {/* threshold line - the "manipulation" line */}
         <line
           x1={GAUGE.x - 6}
           y1={ratioY(GAUGE.threshold)}
@@ -620,7 +620,7 @@ function MorphStage({ t }: { t: MotionValue<number> }) {
           style={{ y: needleY, height: barHeight, fill: gaugeTone }}
           opacity={0.85}
         />
-        {/* needle cap — translateY by the needle position */}
+        {/* needle cap - translateY by the needle position */}
         <motion.line
           x1={GAUGE.x - 4}
           x2={GAUGE.x + GAUGE.width + 4}
@@ -659,7 +659,7 @@ function MorphStage({ t }: { t: MotionValue<number> }) {
   );
 }
 
-/* A single CANCEL mark — an ✕ that scales in as the cluster forms. */
+/* A single CANCEL mark - an ✕ that scales in as the cluster forms. */
 function CancelMark({
   x,
   index,
@@ -695,7 +695,7 @@ function InvestigatorMarker({ bandOn }: { bandOn: MotionValue<number> }) {
   const iy = 92;
   return (
     <g>
-      {/* breathing band halo — the CSS box-shadow pulse (.anim-band-pulse) does
+      {/* breathing band halo - the CSS box-shadow pulse (.anim-band-pulse) does
           not render on SVG nodes, so the breathing is driven by a looping
           framer animation on the ring (radius + opacity) once the case has
           crossed; haloOpacity gates it on from chapter 3. */}
@@ -773,7 +773,7 @@ function RatioLabel({ ratio, stroke }: { ratio: MotionValue<number>; stroke: Mot
 }
 
 /* ════════════════════════════════════════════════════════════════════════
-   HUD — derive the numeric MotionValues for the read-out
+   HUD - derive the numeric MotionValues for the read-out
    ════════════════════════════════════════════════════════════════════════ */
 function MetricsStrip({ t }: { t: MotionValue<number> }) {
   const ratio = useTransform<number, number>(t, [c(1) - HALF, c(1)], [RATIO.clean, RATIO.evasion]);
@@ -795,7 +795,7 @@ function MetricsStrip({ t }: { t: MotionValue<number> }) {
   const verdict = useTransform(t, (v): string => {
     if (v >= c(5) - 0.2 * HALF) return "FLAG ✓";
     if (v >= c(4) - HALF) return "PASS → ESC";
-    return "—";
+    return "-";
   });
   const verdictTone = useTransform(t, (v): string => {
     if (v >= c(5) - 0.2 * HALF) return "var(--verdict-flag)";
@@ -829,13 +829,13 @@ function MetricsStrip({ t }: { t: MotionValue<number> }) {
 }
 
 /* ════════════════════════════════════════════════════════════════════════
-   CHAPTERS — the six story beats (shared by the pinned crossfade captions and
+   CHAPTERS - the six story beats (shared by the pinned crossfade captions and
    the mobile stacked-sequence fallback)
    ════════════════════════════════════════════════════════════════════════ */
 type Chapter = {
   no: number;
   eyebrow: string;
-  /** Who is acting in this beat — shown in the narrative column. */
+  /** Who is acting in this beat - shown in the narrative column. */
   agent: string;
   title: React.ReactNode;
   body: string;
@@ -853,7 +853,7 @@ const CHAPTERS: Chapter[] = [
         <span className="text-[var(--text-muted)]">Most flow is benign.</span>
       </>
     ),
-    body: "The Anomaly Detector takes the first glance — computing the hard features (cancel-to-fill, book depth, self-match). At 0.08 nothing trips the rulebook, so the case closes clean.",
+    body: "The Anomaly Detector takes the first glance - computing the hard features (cancel-to-fill, book depth, self-match). At 0.08 nothing trips the rulebook, so the case closes clean.",
   },
   {
     no: 2,
@@ -865,7 +865,7 @@ const CHAPTERS: Chapter[] = [
         <span className="text-[var(--text-muted)]">A 400ms cancel cluster forms.</span>
       </>
     ),
-    body: "Orders placed only to be pulled — layering the book to mislead. Cancel-to-fill spikes to 0.94, and two deterministic referees confirm it both evades the rulebook and profits before it may cross the wall.",
+    body: "Orders placed only to be pulled - layering the book to mislead. Cancel-to-fill spikes to 0.94, and two deterministic referees confirm it both evades the rulebook and profits before it may cross the wall.",
     chip: { label: "ADVERSARY · 400ms layering-evasion · Market #0", tone: "var(--desk-rnd)" },
   },
   {
@@ -878,7 +878,7 @@ const CHAPTERS: Chapter[] = [
         <span className="text-[var(--text-muted)]">Only sanitized events pass.</span>
       </>
     ),
-    body: "The SanitizedBridge strips the adversary's reasoning and even its model — only raw order events cross. Surveillance picks them up; the Investigator turns blue, waiting on Band as it recruits a specialist.",
+    body: "The SanitizedBridge strips the adversary's reasoning and even its model - only raw order events cross. Surveillance picks them up; the Investigator turns blue, waiting on Band as it recruits a specialist.",
     chip: { label: "▓ waiting on Band ▓", tone: "var(--band-blue)" },
   },
   {
@@ -904,7 +904,7 @@ const CHAPTERS: Chapter[] = [
         <span className="text-[var(--text-muted)]">The cluster sits outside.</span>
       </>
     ),
-    body: "The seed rule FINRA-5210-layering scores PASS — the 400ms evasion slips its 100ms window. No LLM can overrule the engine, so the case ESCALATES to a human.",
+    body: "The seed rule FINRA-5210-layering scores PASS - the 400ms evasion slips its 100ms window. No LLM can overrule the engine, so the case ESCALATES to a human.",
     chip: { label: "PASS (rules missed) → ESCALATE", tone: "var(--verdict-escalate)" },
   },
   {
@@ -919,7 +919,7 @@ const CHAPTERS: Chapter[] = [
         </span>
       </>
     ),
-    body: "The human confirms. A new rule is derived and regression-gated — replayed against the original evasion until it FLAGs — then codified. The rulebook grows 4 ▸ 5 and a RULE_CODIFIED message goes out on Band.",
+    body: "The human confirms. A new rule is derived and regression-gated - replayed against the original evasion until it FLAGs - then codified. The rulebook grows 4 ▸ 5 and a RULE_CODIFIED message goes out on Band.",
     chip: { label: "FLAG ✓ · regression gate PASS · rules 4 ▸ 5", tone: "var(--verdict-flag)" },
   },
 ];
@@ -946,12 +946,12 @@ function StaticFinalStage() {
           </text>
         </g>
       ))}
-      {/* codified window (450ms) — cluster INSIDE → FLAG */}
+      {/* codified window (450ms) - cluster INSIDE → FLAG */}
       <rect x={left} y={LANE.y - 96} width={w} height={192} rx={6} fill="rgba(239,68,68,0.07)" stroke="var(--verdict-flag)" strokeWidth={1.25} strokeDasharray="5 4" />
       <text x={tx(CLUSTER_CENTER_MS)} y={LANE.y - 108} textAnchor="middle" className="font-mono" fontSize={11} fill="var(--verdict-flag)">
         window 450ms
       </text>
-      {/* cancel cluster — FLAG red */}
+      {/* cancel cluster - FLAG red */}
       {CANCEL_XS.map((x, i) => (
         <g key={i}>
           <line x1={x - 7} y1={LANE.y - 7} x2={x + 7} y2={LANE.y + 7} stroke="var(--verdict-flag)" strokeWidth={2.2} strokeLinecap="round" />
@@ -973,7 +973,7 @@ function StaticFinalStage() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════
-   MOBILE STORY — no pin. A static final stage at the top, then the six chapters
+   MOBILE STORY - no pin. A static final stage at the top, then the six chapters
    rendered as normal stacked cards the user scrolls through.
    ════════════════════════════════════════════════════════════════════════ */
 function MobileStory() {

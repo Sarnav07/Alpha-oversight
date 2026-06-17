@@ -3,13 +3,13 @@
 import { useDeskUIStore } from "@/lib/desk/uiStore";
 
 /**
- * SearchBar — free-text filter over the visible rules + trace. The query lives in
+ * SearchBar - free-text filter over the visible rules + trace. The query lives in
  * useDeskUIStore; RuleRegistryPanel, VerdictTimeline, DossierCards and the
  * filtered NodeTrace log all read it via lib/desk/filter.ts.
  *
  * Pragmatic by design: the mock surfaces one live case at a time, so "search" =
  * narrow what's already on screen (rule rows by family/id, trace by
- * agent_name/content), not a backend query. Plain controls — no animation, so
+ * agent_name/content), not a backend query. Plain controls - no animation, so
  * reduced-motion needs no special path.
  */
 export default function SearchBar() {

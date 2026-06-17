@@ -1,5 +1,5 @@
 /**
- * FROZEN CONTRACT — the single seam between the desk data layer and every
+ * FROZEN CONTRACT - the single seam between the desk data layer and every
  * `/desk` component. Lead-owned: teammates IMPORT from here but must NOT edit it.
  *
  * Data flow:  fixtures → MockAdapter → useTraceStore(events) → useDeskModel()
@@ -8,7 +8,7 @@
  *             ActivityEvents except useDeskModel itself.
  *
  * Mock-now, swap-proof: when the live backend lands, only model.ts/controller.ts
- * change — this contract and all components stay identical.
+ * change - this contract and all components stay identical.
  */
 import type {
   CaseState,
@@ -23,7 +23,7 @@ import type {
 /** Canonical topology node ids (one per pipeline actor). Order = R&D → Surveillance → Human. */
 export type NodeId =
   | "adversary" // R&D desk (red team)
-  | "bridge" // SanitizedBridge — the Chinese wall
+  | "bridge" // SanitizedBridge - the Chinese wall
   | "anomaly_detector"
   | "investigator" // the one that goes BLUE waiting on Band
   | "specialist"
@@ -102,7 +102,7 @@ export interface DeskController {
   runBeatA(): void;
   /** novel 400ms evasion → PASS → ESCALATED (awaits confirm). */
   runBeatB(): void;
-  /** R&D lane — stubbed (POST /demo/rnd not built). No-op + console note for now. */
+  /** R&D lane - stubbed (POST /demo/rnd not built). No-op + console note for now. */
   runRnD(): void;
   /** ESCALATED → FLAGGED: appends the codify tail (5th rule + regression-gate ✓). */
   confirm(): Promise<void>;

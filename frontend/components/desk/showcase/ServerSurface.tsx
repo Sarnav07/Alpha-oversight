@@ -6,7 +6,7 @@ import { Reveal } from "@/components/anim/Reveal";
 import { MaskLines } from "@/components/anim/MaskLines";
 
 /**
- * ServerSurface — report §10. The backend is a small FastAPI service the UI
+ * ServerSurface - report §10. The backend is a small FastAPI service the UI
  * talks to over a handful of REST endpoints + one live SSE stream. Left: the
  * endpoint table. Right: a live ActivityEvent ticker (the exact frame shape the
  * stream emits), frames appearing one at a time to sell "live". Reduced motion →
@@ -29,8 +29,8 @@ const FRAMES: Frame[] = [
   { agent: "Adversary", model: "Qwen3-Next-80B", desk: "rnd", content: "emitted layering scenario · Market #0", t: "09:41:00" },
   { agent: "AnomalyDetector", model: "deterministic", desk: "surveillance", content: "features · cancel_to_fill=0.94 depth=5", t: "09:41:02" },
   { agent: "Investigator", model: "Qwen3-Next-80B", desk: "surveillance", content: "▓ waiting on Band ▓ recruit @layer-spec", t: "09:41:04" },
-  { agent: "Prosecution", model: "claude-sonnet-4-6", desk: "surveillance", content: "layered bids withdrawn pre-fill — intent to deceive", t: "09:41:07" },
-  { agent: "RuleEngine", model: "deterministic", desk: "surveillance", content: "VERDICT PASS — 400ms slips the 100ms window", t: "09:41:09" },
+  { agent: "Prosecution", model: "claude-sonnet-4-6", desk: "surveillance", content: "layered bids withdrawn pre-fill - intent to deceive", t: "09:41:07" },
+  { agent: "RuleEngine", model: "deterministic", desk: "surveillance", content: "VERDICT PASS - 400ms slips the 100ms window", t: "09:41:09" },
   { agent: "EscalationManager", model: "gpt-5-mini", desk: "surveillance", content: "ESCALATION → human · recommend confirm", t: "09:41:10" },
 ];
 
@@ -121,7 +121,7 @@ export function ServerSurface() {
       <Reveal delay={0.08}>
         <p className="mt-6 max-w-2xl font-sans" style={{ fontSize: 15, lineHeight: 1.6, color: "var(--text-body)" }}>
           The frontend talks to the backend through a handful of REST endpoints
-          plus one live event stream — and that stream is the spine of the
+          plus one live event stream - and that stream is the spine of the
           dashboard. One small JSON frame per agent action is all the UI needs to
           draw the whole trace.
         </p>

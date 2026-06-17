@@ -4,7 +4,7 @@ import { fixtureBeatB } from "./beat-b";
 import { fixtureRnD } from "./rnd";
 
 /**
- * The single fixture registry — one source of truth shared by the ReplayClock
+ * The single fixture registry - one source of truth shared by the ReplayClock
  * (mock player), the LiveSSEAdapter's `?replay=` parity, and the ReplayTransport
  * case picker. Keyed by case id (the `?replay=<case_id>` param). Beat B is the
  * headline default (novel 400ms evasion → ESCALATED).

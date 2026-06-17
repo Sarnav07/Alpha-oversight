@@ -1,25 +1,25 @@
 import type { ActivityEvent } from "../types";
 
 /**
- * R&D lane — case C-0188. The full adversarial loop the Beat-B fixture only
+ * R&D lane - case C-0188. The full adversarial loop the Beat-B fixture only
  * hinted at: the R&D adversary iterates evasions against the seed rules in
  * simulation (round 1 @100ms caught, round 2 @250ms caught, round 3 @400ms
  * evades + turns a profit), CONFIRMS the working evasion, then the Sanitized
  * Bridge hands the order flow across the Chinese wall (events only). From there
- * the SAME surveillance pipeline as Beat B runs — debate → deterministic
+ * the SAME surveillance pipeline as Beat B runs - debate → deterministic
  * verdict=PASS (the evasion worked) → ESCALATED to a human.
  *
  * The adversary rounds are `desk:"rnd"` narration frames (sniffed for family =
  * layering); the surveillance frames carry the EXACT backend marker grammar
  * parseMarker.ts consumes (mock == live == replay). Every frame carries case_id.
- * Drives "Run R&D" and the R&D swimlane — Beat B no longer has to stand in (Q2).
+ * Drives "Run R&D" and the R&D swimlane - Beat B no longer has to stand in (Q2).
  */
 export const fixtureRnD: ActivityEvent[] = [
   {
     agent_name: "adversary",
     model_id: "rnd-open",
     desk: "rnd",
-    content: "round 1/3: 100ms layering burst on Market #0 — caught by FINRA-5210 seed rule",
+    content: "round 1/3: 100ms layering burst on Market #0 - caught by FINRA-5210 seed rule",
     reasoning: "cancel cluster sits inside the 100ms seed window; rejected in sim, iterate",
     tool_calls: [],
     created_at: "2026-06-15T10:25:30Z",
@@ -29,7 +29,7 @@ export const fixtureRnD: ActivityEvent[] = [
     agent_name: "adversary",
     model_id: "rnd-open",
     desk: "rnd",
-    content: "round 2/3: 250ms layering burst — still flagged in sim; widen the cancel gap",
+    content: "round 2/3: 250ms layering burst - still flagged in sim; widen the cancel gap",
     reasoning: "250ms gap is closer but the deterministic engine still trips; push past the window",
     tool_calls: [],
     created_at: "2026-06-15T10:25:32Z",
@@ -39,8 +39,8 @@ export const fixtureRnD: ActivityEvent[] = [
     agent_name: "adversary",
     model_id: "rnd-open",
     desk: "rnd",
-    content: "round 3/3: 400ms layering evasion — evades the seed rule, +2.1% sim profit, CONFIRMED",
-    reasoning: "stretches the cancel cluster past the 100ms window; profitable and undetected — escalate to the Band",
+    content: "round 3/3: 400ms layering evasion - evades the seed rule, +2.1% sim profit, CONFIRMED",
+    reasoning: "stretches the cancel cluster past the 100ms window; profitable and undetected - escalate to the Band",
     tool_calls: [],
     created_at: "2026-06-15T10:25:34Z",
     case_id: "C-0188",
@@ -80,7 +80,7 @@ export const fixtureRnD: ActivityEvent[] = [
     agent_name: "investigator",
     model_id: "surv-open",
     desk: "surveillance",
-    content: "@layer-spec waiting on band — recruited @layer-spec (layering)",
+    content: "@layer-spec waiting on band - recruited @layer-spec (layering)",
     reasoning: "needs a layering specialist; round-trips the recruit handoff across the Band",
     tool_calls: [{ kind: "band_handoff", to: "specialist" }],
     created_at: "2026-06-15T10:25:37Z",
@@ -131,7 +131,7 @@ export const fixtureRnD: ActivityEvent[] = [
     model_id: "deterministic",
     desk: "surveillance",
     content: "verdict=PASS rule=None",
-    reasoning: "seed window too tight — gap_ms=400 sits outside window_ms=100",
+    reasoning: "seed window too tight - gap_ms=400 sits outside window_ms=100",
     tool_calls: [],
     created_at: "2026-06-15T10:25:41Z",
     case_id: "C-0188",

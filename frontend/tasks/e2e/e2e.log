@@ -25,7 +25,7 @@
 [07:47:42]   beatB case=case-fb955a65 state=ESCALATED
 [07:47:42] 
 === 5 Confirm -> codify 4->5 ===
-[07:47:42]   ▶ clicked "confirm — codify rule"
+[07:47:42]   ▶ clicked "confirm - codify rule"
 [07:47:42]   ✓ backend rules 4->5 (0s)
 [07:47:47]   📸 05-codify-4to5.png
 [07:47:47]   rules after confirm=5 :: FINRA-5210-layering, FINRA-5210-spoofing, SEC-10b-5-marking, SEC-10b-5-wash, layering-v2-case-fb955a65
@@ -42,7 +42,7 @@
 [07:47:58]   📸 07-rnd-running.png
 [07:51:58]   ✗ TIMEOUT R&D produced a case (240s)
 [07:52:02]   📸 08-rnd-settled.png
-[07:52:02]   rnd="no-new-case (adversary may not have found an evasion — acceptable)"
+[07:52:02]   rnd="no-new-case (adversary may not have found an evasion - acceptable)"
 [07:52:02] 
 FINAL /stats = {"total_cases":2,"by_state":{"FLAGGED":2},"flagged":2,"escalated":0,"active_rules":5}
 [07:52:02] 

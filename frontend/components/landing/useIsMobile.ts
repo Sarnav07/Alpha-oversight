@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 /**
- * useIsMobile — true once the viewport is below the Tailwind `md` breakpoint
+ * useIsMobile - true once the viewport is below the Tailwind `md` breakpoint
  * (767px). Used to gate the landing/how-it-works GSAP pins + 3D device-zoom: on
  * mobile those scroll-jack and overflow horizontally, so the components fall
  * back to their static/stacked render (the same path reduced-motion takes).

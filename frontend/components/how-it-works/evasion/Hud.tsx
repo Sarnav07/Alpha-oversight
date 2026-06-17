@@ -3,10 +3,10 @@
 import { motion, useTransform, type MotionValue } from "framer-motion";
 
 /**
- * Hud — the live metrics read-out pinned top-right of the stage. All values are
+ * Hud - the live metrics read-out pinned top-right of the stage. All values are
  * mono (Geist Mono) and animate continuously off the shared spring `t`, so the
  * numbers tick as the cluster forms, the ratio spikes, and the rule window
- * widens — a running telemetry strip rather than per-chapter swaps.
+ * widens - a running telemetry strip rather than per-chapter swaps.
  *
  * Rows: cancel_to_fill ratio · depth_levels · window_ms (contested→codified) ·
  * verdict · active rules (4 ▸ 5). Each row formats a derived MotionValue.
@@ -98,7 +98,7 @@ export function Hud({
 }
 
 /**
- * HudStatic — the reduced-motion final-state read-out (codified window 450ms,
+ * HudStatic - the reduced-motion final-state read-out (codified window 450ms,
  * FLAG ✓, rules 5). No MotionValues.
  */
 export function HudStatic() {

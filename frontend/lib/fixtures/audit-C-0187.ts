@@ -1,7 +1,7 @@
 import type { AuditResponse } from "../types";
 
 /**
- * Audit hash-chain fixture for case C-0187 — feeds the AuditDrawer
+ * Audit hash-chain fixture for case C-0187 - feeds the AuditDrawer
  * (GET /cases/{id}/audit). Band-handoff LEAVES ONLY (the only kind the audit
  * endpoint returns; agent-step leaves carry no case_id and are filtered out
  * server-side). Five genuinely chained LedgerEntry rows: genesis prev_hash=""

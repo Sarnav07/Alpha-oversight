@@ -1,5 +1,5 @@
 /**
- * stage.ts — geometry + helpers for the "The Evasion" pinned scroll-story stage.
+ * stage.ts - geometry + helpers for the "The Evasion" pinned scroll-story stage.
  *
  * The stage is a single dark SVG canvas (viewBox 1000×560) showing a horizontal
  * order/time lane. The lane's x-axis is TIME in milliseconds (0 → ~600ms); order
@@ -62,7 +62,7 @@ export function laneY(lane: -1 | 0 | 1): number {
 }
 
 /* ── the cancel cluster (chapters 2→) ───────────────────────────────────────
- * Eight CANCEL marks spanning ~400ms — the layering evasion. Centered on the
+ * Eight CANCEL marks spanning ~400ms - the layering evasion. Centered on the
  * lane mid so the rule-window bracket can sit symmetrically around it. */
 export const CLUSTER = {
   startMs: 110,

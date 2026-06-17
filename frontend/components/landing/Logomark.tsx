@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * Logomark — faithful recreation of the AlphaLedger brand mark.
+ * Logomark - faithful recreation of the AlphaLedger brand mark.
  *
  * The mark is two side-by-side angular elements sharing a baseline, rendered in
  * solid currentColor so it inherits text color (works on light + dark sections):
- *   (1) LEFT  — a stylized "ㄱ"/"7"/katana glyph: a heavy horizontal top bar that
+ *   (1) LEFT  - a stylized "ㄱ"/"7"/katana glyph: a heavy horizontal top bar that
  *               turns downward into a stem and curves to a rounded foot lower-left.
- *   (2) RIGHT — a solid filled vertical rounded bar (a bold "l"/"I"), same height.
+ *   (2) RIGHT - a solid filled vertical rounded bar (a bold "l"/"I"), same height.
  *
  * Drawn on a 100×100 viewBox; the SVG width tracks the glyph cluster aspect (~1:1).
  */
@@ -32,7 +32,7 @@ function Mark({ size = 22, className }: { size?: number; className?: string }) {
       style={{ display: "block", flexShrink: 0 }}
     >
       {/*
-        LEFT glyph — the "ㄱ" / katana.
+        LEFT glyph - the "ㄱ" / katana.
         Top bar runs across the top; the right edge drops down as the stem; the
         stem's lower-left is cut by a generous inner radius so the foot reads as
         a rounded hook. Bar thickness ~24 units, stem width ~22 units.
@@ -54,7 +54,7 @@ function Mark({ size = 22, className }: { size?: number; className?: string }) {
         "
         fill="currentColor"
       />
-      {/* RIGHT glyph — solid rounded vertical bar. */}
+      {/* RIGHT glyph - solid rounded vertical bar. */}
       <rect x="79" y="6" width="14" height="88" rx="7" fill="currentColor" />
     </svg>
   );

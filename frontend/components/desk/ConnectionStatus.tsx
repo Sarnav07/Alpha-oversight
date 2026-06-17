@@ -3,10 +3,10 @@
 import type { ConnectionState } from "@/lib/types";
 
 /**
- * ConnectionStatus — the Band connection pill with a status dot. Standalone,
+ * ConnectionStatus - the Band connection pill with a status dot. Standalone,
  * cleaned-up replacement for the inline version in the old /desk foundation proof.
  * `replay` reads amber here; the ReplayBanner chip (DeskHeader) carries the
- * dedicated replay affordance. Static — the dot pulses only when connecting/
+ * dedicated replay affordance. Static - the dot pulses only when connecting/
  * reconnecting and reduced-motion is off (handled via the globals kill-switch).
  */
 type ConnectionStatusProps = {

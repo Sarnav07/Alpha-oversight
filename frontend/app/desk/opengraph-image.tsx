@@ -1,8 +1,8 @@
 import { ImageResponse } from "next/og";
 
-// /desk Open Graph card — distinct title for the live command center.
+// /desk Open Graph card - distinct title for the live command center.
 // Self-contained: the Logomark SVG is inlined (no client-component import).
-export const alt = "Alpha & Oversight — Live Command Center";
+export const alt = "Alpha & Oversight - Live Command Center";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

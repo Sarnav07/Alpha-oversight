@@ -4,7 +4,7 @@ import Link from "next/link";
 import Logomark from "./Logomark";
 
 /**
- * SiteFooter — the closing footer (AlphaLedger footer clone, themed for A&O).
+ * SiteFooter - the closing footer (AlphaLedger footer clone, themed for A&O).
  * LIGHT section. Three columns: a nav-link list, a centred logomark + tagline +
  * social circles, and a "Launch Desk" pill beside a back-to-top button. Below a
  * hairline: copyright / contact email / legal links. Then a giant full-width
@@ -82,11 +82,11 @@ export default function SiteFooter() {
             )}
           </nav>
 
-          {/* centre — mark + tagline + socials */}
+          {/* centre - mark + tagline + socials */}
           <div className="flex flex-col items-center text-center">
             <Logomark size={26} withWordmark />
             <p className="mt-4 max-w-[34ch] font-sans" style={{ fontSize: 13, lineHeight: 1.55, color: "var(--text-muted)" }}>
-              Adversarial trade-surveillance, contested in the open — every verdict sealed to a
+              Adversarial trade-surveillance, contested in the open - every verdict sealed to a
               tamper-evident ledger.
             </p>
             <div className="mt-5 flex items-center gap-3">
@@ -103,7 +103,7 @@ export default function SiteFooter() {
             </div>
           </div>
 
-          {/* right — CTA + back to top */}
+          {/* right - CTA + back to top */}
           <div className="flex items-center justify-start gap-3 md:justify-end">
             <Link
               href="/desk"
@@ -147,7 +147,7 @@ export default function SiteFooter() {
         </div>
       </div>
 
-      {/* giant wordmark — full bleed, clipped at the bottom */}
+      {/* giant wordmark - full bleed, clipped at the bottom */}
       <div aria-hidden="true" className="mt-12 w-full" style={{ lineHeight: 0 }}>
         <svg viewBox="0 0 1200 172" preserveAspectRatio="xMidYMax meet" className="block w-full">
           <text

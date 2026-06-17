@@ -7,7 +7,7 @@ import { ruleMatchesQuery } from "@/lib/desk/filter";
 import type { Rule, RuleFamily, RuleStatus } from "@/lib/types";
 
 /**
- * RuleRegistryPanel — the deterministic rule registry, the codify 4→5 reveal.
+ * RuleRegistryPanel - the deterministic rule registry, the codify 4→5 reveal.
  *
  * Lists `model.rules` (Rule[]) as cards: mono id, family badge, key params (mono),
  * provenance, status. Header shows the "4 → 5" count. When `model.codified` is
@@ -142,7 +142,7 @@ export default function RuleRegistryPanel() {
   const allRules = model.rules;
   const codified = model.codified;
 
-  // The codified card is the last rule once the 5th has landed — track it by
+  // The codified card is the last rule once the 5th has landed - track it by
   // identity so the search filter (below) can't shift it via index drift.
   const codifiedRuleId =
     codified && allRules.length ? allRules[allRules.length - 1].id : null;

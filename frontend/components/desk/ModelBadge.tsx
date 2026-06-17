@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * ModelBadge — the cross-model tier tag (shared; DossierCards + others import it).
+ * ModelBadge - the cross-model tier tag (shared; DossierCards + others import it).
  * frontier (gold `--tier-frontier`) if the model id mentions "frontier", else
- * open (graphite `--tier-open`). Mono glyph `▸ frontier|open`. Static — no motion.
+ * open (graphite `--tier-open`). Mono glyph `▸ frontier|open`. Static - no motion.
  */
 type ModelBadgeProps = {
   modelId: string;

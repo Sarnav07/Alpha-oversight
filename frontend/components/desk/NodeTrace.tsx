@@ -3,10 +3,10 @@
 import { useFilteredEvents, useFilterActive } from "@/lib/desk/filter";
 
 /**
- * NodeTrace — the filtered detail log. Renders ONLY while a node filter or search
+ * NodeTrace - the filtered detail log. Renders ONLY while a node filter or search
  * query is active (lib/desk/filter.ts), listing the raw events that match so the
  * operator sees exactly what the topology click / search narrowed to. Plain list,
- * no animation — reduced-motion safe by construction.
+ * no animation - reduced-motion safe by construction.
  */
 export default function NodeTrace() {
   const { any } = useFilterActive();

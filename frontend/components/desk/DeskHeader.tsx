@@ -12,7 +12,7 @@ import { IS_MOCK } from "@/lib/config";
 import ConnectionStatus from "./ConnectionStatus";
 
 /**
- * DeskHeader — the live-desk top bar. Angular logomark + wordmark, the
+ * DeskHeader - the live-desk top bar. Angular logomark + wordmark, the
  * ConnectionStatus pill, a ReplayBanner chip (shown only while the stream is
  * replaying recorded JSONL), and DemoControls: scripted beats + reset that drive
  * the DeskController. The header is the operator's cockpit chrome.
@@ -106,7 +106,7 @@ function AutoPilotStrip() {
 }
 
 /**
- * SoundToggle — speaker/mute for the synthesized desk cues (lib/desk/sound.ts).
+ * SoundToggle - speaker/mute for the synthesized desk cues (lib/desk/sound.ts).
  * Default OFF; persisted in useDeskUIStore + localStorage. The click is the user
  * gesture that lazily primes the AudioContext (browser autoplay policy), so cues
  * only ever fire after this has been turned on.
@@ -120,7 +120,7 @@ function SoundToggle() {
     <motion.button
       type="button"
       onClick={() => {
-        // prime audio on the gesture, THEN flip — so turning it on can sound.
+        // prime audio on the gesture, THEN flip - so turning it on can sound.
         primeAudio();
         toggleSound();
       }}

@@ -7,12 +7,12 @@ import Logomark from "./Logomark";
 import { BarSignal, AreaRamp, AreaProof } from "./art/StatCharts";
 
 /**
- * WhySection — the "Why Alpha & Oversight" proof band (AlphaLedger "Why …"
+ * WhySection - the "Why Alpha & Oversight" proof band (AlphaLedger "Why …"
  * clone, themed for adversarial trade-surveillance).
  *
  * DARK section (obsidian, root tokens). Left: eyebrow + angular mark, a two-tone
  * heading, and a white "Launch Desk" pill. Right: three hairline-separated
- * columns — each a label, a MONO count-up stat, and a bespoke monochrome
+ * columns - each a label, a MONO count-up stat, and a bespoke monochrome
  * mini-chart (detection bars · rulebook ramp · audit-proof). Everything reveals
  * on scroll-in; counts animate from 0 and charts draw in. prefers-reduced-motion
  * / SSR renders the final composed state immediately.
@@ -152,7 +152,7 @@ export default function WhySection() {
         </div>
 
         <div className="mt-14 grid grid-cols-1 gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)] lg:gap-16">
-          {/* left — heading + CTA */}
+          {/* left - heading + CTA */}
           <div className="flex flex-col">
             <motion.h2
               id="why-title"
@@ -194,7 +194,7 @@ export default function WhySection() {
             </motion.div>
           </div>
 
-          {/* right — three stat columns; hover one → 50:25:25 */}
+          {/* right - three stat columns; hover one → 50:25:25 */}
           <div className="flex flex-col gap-12 sm:flex-row sm:gap-0">
             {STATS.map((s, i) => (
               <StatColumn

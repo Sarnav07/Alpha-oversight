@@ -5,7 +5,7 @@ import { Reveal } from "@/components/anim/Reveal";
 import Logomark from "@/components/landing/Logomark";
 
 /**
- * ClosingCTA — the closing call-to-action for /how-it-works.
+ * ClosingCTA - the closing call-to-action for /how-it-works.
  *
  * A centered card on the light backbone: shield/logomark emblem → two-tone
  * heading → "Watch it live" → /desk (next/link) + a "Replay ↑" scroll-to-top
@@ -43,7 +43,7 @@ export function ClosingCTA({ watchHref = "/desk" }: ClosingCTAProps) {
             backgroundColor: "var(--bg-card)",
           }}
         >
-          {/* shield emblem — the angular mark inside a hairline ring */}
+          {/* shield emblem - the angular mark inside a hairline ring */}
           <div
             aria-hidden="true"
             className="flex items-center justify-center"
@@ -76,7 +76,7 @@ export function ClosingCTA({ watchHref = "/desk" }: ClosingCTAProps) {
             className="mt-5 max-w-md font-sans"
             style={{ fontSize: 15, lineHeight: 1.6, color: "var(--text-body)" }}
           >
-            The same loop, streaming in real time — evasions invented, debated,
+            The same loop, streaming in real time - evasions invented, debated,
             and codified on the live desk.
           </p>
 

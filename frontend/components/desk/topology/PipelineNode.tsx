@@ -1,5 +1,5 @@
 /**
- * PipelineNode — one custom xyflow node = one pipeline actor.
+ * PipelineNode - one custom xyflow node = one pipeline actor.
  *
  * Status visuals (NodeView.status):
  *   idle             → dim, muted border

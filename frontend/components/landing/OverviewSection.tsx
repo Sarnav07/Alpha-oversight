@@ -6,11 +6,11 @@ import { Reveal } from "@/components/anim/Reveal";
 import { MaskLines } from "@/components/anim/MaskLines";
 
 /**
- * OverviewSection — the "#overview" anchor: a NONAGON of every role on the two
+ * OverviewSection - the "#overview" anchor: a NONAGON of every role on the two
  * desks, with Band at the centre. Nine nodes sit on a 9-sided ring; the nine
  * sides are the nine Band hops, each carrying a structured artifact, forming one
  * closed adversarial loop. Replaces a linear box-row so a reviewer cannot read it
- * as "two agents pass a message" — Band is literally the hub every role binds to.
+ * as "two agents pass a message" - Band is literally the hub every role binds to.
  *
  * Ring order (clockwise from top): adversary (R&D, open-weight) ─cross-wall─▶
  * anomaly_detector → investigator → specialist → prosecution ⚔ defense →
@@ -68,7 +68,7 @@ const toneColor: Record<Tone, string> = {
   human: "var(--text-faint)",
 };
 
-/* ── nonagon geometry (viewBox 0 0 1120 900) — a wide ellipse-laid 9-gon ───── */
+/* ── nonagon geometry (viewBox 0 0 1120 900) - a wide ellipse-laid 9-gon ───── */
 const CX = 560;
 const CY = 460;
 const RX = 372;
@@ -181,7 +181,7 @@ export default function OverviewSection() {
         <Reveal delay={0.1}>
           <p className="mt-7 font-sans" style={{ fontSize: "clamp(14px, 1.4vw, 16px)", lineHeight: 1.65, color: "var(--text-body)", maxWidth: 700 }}>
             No role talks to another directly. Eight specialised agents, a human in the loop, and a deterministic rule engine sit on a
-            nonagon — and every artifact between them (the cross-wall order flow, the recruit, the evidence, the verdict, the escalation
+            nonagon - and every artifact between them (the cross-wall order flow, the recruit, the evidence, the verdict, the escalation
             packet) rides <span style={{ color: "var(--band-blue)" }}>Band</span>, the hub at the centre and the hash-chained audit anchor.
           </p>
         </Reveal>
@@ -211,7 +211,7 @@ export default function OverviewSection() {
               </marker>
             </defs>
 
-            {/* faint spokes — every role binds to Band at the hub */}
+            {/* faint spokes - every role binds to Band at the hub */}
             {PTS.map((p) => (
               <motion.line
                 key={`spoke-${p.id}`}
@@ -228,7 +228,7 @@ export default function OverviewSection() {
               />
             ))}
 
-            {/* nonagon sides (the eight forward Band hops) — self-draw */}
+            {/* nonagon sides (the eight forward Band hops) - self-draw */}
             <motion.path
               d={BAND_D}
               fill="none"
@@ -240,7 +240,7 @@ export default function OverviewSection() {
               animate={show ? { pathLength: 1 } : undefined}
               transition={{ duration: 1.5, delay: 0.4, ease: EASE }}
             />
-            {/* closing side — the codify feedback (amber, dashed) */}
+            {/* closing side - the codify feedback (amber, dashed) */}
             <motion.path
               d={CLOSE_D}
               fill="none"
@@ -281,7 +281,7 @@ export default function OverviewSection() {
               ⟂ Chinese wall
             </motion.text>
 
-            {/* centre — Band */}
+            {/* centre - Band */}
             <motion.g
               initial={reduce ? false : { opacity: 0 }}
               animate={show ? { opacity: 1 } : undefined}
@@ -309,7 +309,7 @@ export default function OverviewSection() {
             </p>
             <p className="mx-auto mt-3 text-center font-mono" style={{ fontSize: 11.5, lineHeight: 1.6, color: "var(--text-faint)", maxWidth: 760 }}>
               Every side is a real Band message (handoff.send → POST /agent/chats/&#123;room&#125;/messages), bound into the hash-chained
-              ledger — handoff layer, structured-context channel, sole cross-wall bridge, and audit anchor. Not a wrapper, not a
+              ledger - handoff layer, structured-context channel, sole cross-wall bridge, and audit anchor. Not a wrapper, not a
               notification.
             </p>
           </Reveal>
@@ -319,7 +319,7 @@ export default function OverviewSection() {
         <div ref={listRef} className="mt-10 md:hidden">
           <HopList show={showList} reduce={reduce} />
           <p className="mt-6 font-mono" style={{ fontSize: 11, lineHeight: 1.6, color: "var(--text-faint)" }}>
-            Every hop is a real Band message bound into the hash-chained ledger — the handoff layer, structured-context channel, sole
+            Every hop is a real Band message bound into the hash-chained ledger - the handoff layer, structured-context channel, sole
             cross-wall bridge, and audit anchor.
           </p>
         </div>

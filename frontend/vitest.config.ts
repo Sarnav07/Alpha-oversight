@@ -8,9 +8,9 @@ const rootAlias = { "@": fileURLToPath(new URL(".", import.meta.url)) };
 
 // Two projects under one `vitest run`:
 //
-//   node   — pure-TS units (parseMarker + any other lib/**/*.test.ts). The
+//   node   - pure-TS units (parseMarker + any other lib/**/*.test.ts). The
 //            default `node` environment is sufficient; no jsdom/react needed.
-//   jsdom  — React component / hook suites (*.browser.test.tsx). jsdom DOM +
+//   jsdom  - React component / hook suites (*.browser.test.tsx). jsdom DOM +
 //            @testing-library/jest-dom matchers via test/setup.ts.
 //
 // Globals stay OFF in BOTH projects on purpose: every test imports its test

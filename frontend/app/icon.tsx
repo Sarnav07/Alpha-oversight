@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-// App icon — the AlphaLedger mark on obsidian, 32×32.
+// App icon - the AlphaLedger mark on obsidian, 32×32.
 // Self-contained: the Logomark SVG is inlined (no client-component import).
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";

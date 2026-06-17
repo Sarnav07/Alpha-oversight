@@ -4,18 +4,18 @@ import { Reveal } from "@/components/anim/Reveal";
 import { MaskLines } from "@/components/anim/MaskLines";
 
 /**
- * StorySections — the reveal-on-scroll editorial blocks that sit BELOW the
+ * StorySections - the reveal-on-scroll editorial blocks that sit BELOW the
  * pinned scroll-story (owned by teammate "Evasion"). Light backbone; tokens
  * resolve to the white theme inside the lead's data-section="light" wrap.
  *
  * Three blocks:
- *   (a) "Two desks"     — R&D (red team, --desk-rnd) ⚔ Surveillance (blue team,
+ *   (a) "Two desks"     - R&D (red team, --desk-rnd) ⚔ Surveillance (blue team,
  *                         --desk-surv) as two cards explaining the Chinese-wall
  *                         co-evolution.
- *   (b) "Four detectors"— spoofing / layering / wash_trade / marking, each with
+ *   (b) "Four detectors"- spoofing / layering / wash_trade / marking, each with
  *                         its cited-metric keys + seed threshold in mono (exact
  *                         from CONTEXT.md §2).
- *   (c) "Deterministic by design" — LLMs debate, the rule engine decides; no
+ *   (c) "Deterministic by design" - LLMs debate, the rule engine decides; no
  *                         LLM overrules.
  *
  * Shared primitives Reveal + MaskLines carry the reduced-motion fallbacks.
@@ -42,7 +42,7 @@ const DESKS: Desk[] = [
     team: "Blue team",
     name: "Surveillance Desk",
     role: "The auditor",
-    body: "Receives only sanitized order flow across the Chinese wall — events, never the adversary's reasoning. An LLM-agent debate proposes contested inputs; the deterministic rule engine renders the authoritative verdict.",
+    body: "Receives only sanitized order flow across the Chinese wall - events, never the adversary's reasoning. An LLM-agent debate proposes contested inputs; the deterministic rule engine renders the authoritative verdict.",
     tone: "--desk-surv",
   },
 ];
@@ -65,7 +65,7 @@ const DETECTORS: Detector[] = [
     title: "Spoofing",
     source: "FINRA 5210",
     catches:
-      "Posting orders you never intend to fill to fake demand, then pulling them — cancel ≥ 80% of posted orders inside the window.",
+      "Posting orders you never intend to fill to fake demand, then pulling them - cancel ≥ 80% of posted orders inside the window.",
     seed: "FINRA-5210-spoofing",
     metric: "cancel_ratio",
     threshold: "≥ 0.8",
@@ -89,7 +89,7 @@ const DETECTORS: Detector[] = [
     title: "Wash trade",
     source: "SEC 10b-5",
     catches:
-      "Trading with yourself to manufacture fake volume — more than half of the filled quantity self-matched.",
+      "Trading with yourself to manufacture fake volume - more than half of the filled quantity self-matched.",
     seed: "SEC-10b-5-wash",
     metric: "self_match_ratio",
     threshold: "> 0.5",
@@ -101,7 +101,7 @@ const DETECTORS: Detector[] = [
     title: "Marking the close",
     source: "SEC 10b-5",
     catches:
-      "Pushing the closing print to mark your own book — moving the end-of-day price by 100 bps or more.",
+      "Pushing the closing print to mark your own book - moving the end-of-day price by 100 bps or more.",
     seed: "SEC-10b-5-marking",
     metric: "eod_print_move_bps",
     threshold: "≥ 100.0",
@@ -224,7 +224,7 @@ export function TwoDesks() {
             style={{ fontSize: 14, lineHeight: 1.6, color: "var(--text-muted)" }}
           >
             The desks never share a model or a memory. They coordinate only
-            through Band — and only the surveillance side ever sees the order
+            through Band - and only the surveillance side ever sees the order
             flow. The wall is what makes the contest honest.
           </p>
         </Reveal>
@@ -234,7 +234,7 @@ export function TwoDesks() {
 }
 
 /**
- * FourDetectors — the rulebook's four seed families (report §06): spoofing &
+ * FourDetectors - the rulebook's four seed families (report §06): spoofing &
  * layering (FINRA 5210), wash trade & marking-the-close (SEC 10b-5), each with
  * its plain-English description + cited-metric threshold.
  */
@@ -358,7 +358,7 @@ export function FourDetectors() {
 }
 
 /**
- * DeterministicClose — "The models debate; the rule engine decides." Pulled out
+ * DeterministicClose - "The models debate; the rule engine decides." Pulled out
  * of StorySections so it can sit AFTER the EvasionStory as the page's closing
  * thesis (the report's §06 boundary: LLMs argue, code decides).
  */

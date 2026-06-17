@@ -3,10 +3,10 @@
 import { motion, useReducedMotion } from "framer-motion";
 
 /**
- * HowItWorksHero — full-height opening frame for /how-it-works.
+ * HowItWorksHero - full-height opening frame for /how-it-works.
  *
  * Editorial light backbone (sits inside the lead's data-section="light" wrap, so
- * tokens resolve to the white theme here — no explicit-hex requirement). Layout:
+ * tokens resolve to the white theme here - no explicit-hex requirement). Layout:
  *   eyebrow "HOW IT WORKS"  →  two-tone headline (ink line + muted line)  →
  *   serif/sans subhead  →  a small self-drawing SVG motif (an order-lane that
  *   runs into a rule-window bracket)  →  a "Scroll" cue (.anim-scroll-cue).
@@ -98,7 +98,7 @@ export function HowItWorksHero() {
         >
           Two desks across a Chinese wall, coordinating through Band. A red team
           engineers evasions; a blue team debates them down to a deterministic
-          verdict — and when a novel tactic slips, the rule book rewrites itself.
+          verdict - and when a novel tactic slips, the rule book rewrites itself.
         </motion.p>
 
         {/* Self-drawing motif: order-lane → rule-window bracket */}
@@ -115,7 +115,7 @@ export function HowItWorksHero() {
             className="w-full"
             style={{ display: "block", overflow: "visible" }}
           >
-            {/* order lane — a baseline the orders ride along */}
+            {/* order lane - a baseline the orders ride along */}
             <motion.line
               x1="6"
               y1="52"

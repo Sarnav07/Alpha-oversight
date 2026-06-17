@@ -1,13 +1,13 @@
 import type { ActivityEvent } from "../types";
 
 /**
- * Beat A — case C-0191. A clean, KNOWN layering pattern: the cancel cluster
+ * Beat A - case C-0191. A clean, KNOWN layering pattern: the cancel cluster
  * sits inside the 100ms seed window, so the deterministic engine FLAGs on the
  * first active rule (FINRA-5210-layering) and the case ends FLAGGED. No
- * escalation, no human — this is the "rules already catch it" lane.
+ * escalation, no human - this is the "rules already catch it" lane.
  *
  * MARKER GRAMMAR (mock == live == replay): the surveillance `pipeline` frames
- * carry the EXACT backend marker strings parseMarker.ts consumes —
+ * carry the EXACT backend marker strings parseMarker.ts consumes -
  *   opened case <id>
  *   suspicious -> UNDER_REVIEW; features={...python repr...}
  *   recruited @layer-spec (layering)
@@ -64,7 +64,7 @@ export const fixtureBeatA: ActivityEvent[] = [
     agent_name: "investigator",
     model_id: "surv-open",
     desk: "surveillance",
-    content: "@layer-spec waiting on band — recruited @layer-spec (layering)",
+    content: "@layer-spec waiting on band - recruited @layer-spec (layering)",
     reasoning: "recruits the layering specialist; round-trips the handoff across the Band",
     tool_calls: [{ kind: "band_handoff", to: "specialist" }],
     created_at: "2026-06-15T11:02:13Z",

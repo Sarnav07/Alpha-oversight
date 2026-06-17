@@ -462,7 +462,7 @@
       "verifiedTick": true,
       "leaves": 5
     },
-    "rnd": "no-new-case (adversary may not have found an evasion — acceptable)",
+    "rnd": "no-new-case (adversary may not have found an evasion - acceptable)",
     "finalStats": {
       "total_cases": 2,
       "by_state": {

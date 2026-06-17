@@ -8,7 +8,7 @@ import Logomark from "@/components/landing/Logomark";
 import { useIsMobile } from "./useIsMobile";
 
 /**
- * HeroScroll — the pinned "device-zoom" scrollytelling hero (AlphaLedger clone,
+ * HeroScroll - the pinned "device-zoom" scrollytelling hero (AlphaLedger clone,
  * themed for A&O). A single PINNED sticky stage drives a scrubbed GSAP timeline
  * across four reference frames:
  *
@@ -45,7 +45,7 @@ export default function HeroScroll() {
 
     // Lazy-load gsap off the landing critical path: dynamically import it (+the
     // ScrollTrigger plugin) inside the effect, then build the SAME pinned
-    // context a tick later — fine for a scroll-triggered animation.
+    // context a tick later - fine for a scroll-triggered animation.
     let cancelled = false;
     let ctx: gsap.Context | undefined;
 
@@ -98,13 +98,13 @@ export default function HeroScroll() {
 
       // Reference choreography = an Apple-style "dive INTO the screen": the app
       // flattens to head-on EARLY and grows OUT of the laptop to full-bleed while
-      // the device frame (keyboard, bezel) sweeps / expands away — NOT a uniform
+      // the device frame (keyboard, bezel) sweeps / expands away - NOT a uniform
       // scale-up with a late bezel fade.
 
-      // FRAME 1 hold: 0.00–0.14 — tilted laptop peeking, headline + cookie.
+      // FRAME 1 hold: 0.00-0.14 - tilted laptop peeking, headline + cookie.
       tl.to({}, { duration: 0.14 });
 
-      // 0.14–0.30 — RISE + FLATTEN: headline + cookie clear; the laptop rises to
+      // 0.14-0.30 - RISE + FLATTEN: headline + cookie clear; the laptop rises to
       // centre and UN-TILTS fully head-on (rotateX → 0) by 0.30, the app filling
       // the bezel. (Reference: the UI is flat & head-on by ~30%.)
       tl.to(cookie, { opacity: 0, y: 24, duration: 0.1 }, 0.14);
@@ -116,21 +116,21 @@ export default function HeroScroll() {
         0.14,
       );
 
-      // 0.30–0.40 — bg crossfades white → obsidian; the play button blinks.
+      // 0.30-0.40 - bg crossfades white → obsidian; the play button blinks.
       tl.to(stage, { backgroundColor: "#020202", duration: 0.18 }, 0.3);
       tl.to(play, { opacity: 1, scale: 1, duration: 0.08 }, 0.31);
       tl.to(play, { opacity: 0, scale: 1.3, duration: 0.1 }, 0.42);
 
-      // 0.30–0.56 — THE BURST: the app grows out of the device to full-bleed. The
+      // 0.30-0.56 - THE BURST: the app grows out of the device to full-bleed. The
       // keyboard slides down & out; the bezel rim EXPANDS outward past the
-      // viewport edges (scale > 1) as it fades — so the app reads as coming OUT of
+      // viewport edges (scale > 1) as it fades - so the app reads as coming OUT of
       // the laptop, not the laptop scaling uniformly. scale 1.0 → 1.3 makes the
       // 78vh screen fill the full viewport height head-on.
       tl.to(keys, { yPercent: 130, opacity: 0, duration: 0.12, ease: "power1.in" }, 0.3);
       tl.to(device, { scale: 1.3, duration: 0.26, ease: "power1.inOut" }, 0.3);
       tl.to(bezel, { scale: 1.14, opacity: 0, duration: 0.16, ease: "power1.in" }, 0.4);
 
-      // 0.56–1.00 — END STATE: The app continues to scale aggressively (diving past
+      // 0.56-1.00 - END STATE: The app continues to scale aggressively (diving past
       // the camera) and fades into the obsidian background before the Overview section appears.
       tl.to(device, { scale: 2.2, duration: 0.44, ease: "power2.in" }, 0.56);
       tl.to(device, { opacity: 0, duration: 0.20, ease: "power1.inOut" }, 0.80);
@@ -174,14 +174,14 @@ export default function HeroScroll() {
   return (
     <>
       <LandingNav />
-      {/* Outer runway — its height creates the scroll distance for the pin. */}
+      {/* Outer runway - its height creates the scroll distance for the pin. */}
       <div ref={rootRef} className="relative h-[330vh]">
-        {/* Sticky stage — pinned for the duration of the scroll. */}
+        {/* Sticky stage - pinned for the duration of the scroll. */}
         <div
           className="hero-stage sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden"
           style={{ backgroundColor: "#ffffff" }}
         >
-          {/* Hero text (FRAME 1) — light, centered, sits above the device. */}
+          {/* Hero text (FRAME 1) - light, centered, sits above the device. */}
           <div
             data-section="light"
             className="hero-text pointer-events-none absolute inset-x-0 top-[18%] z-20 flex justify-center px-6"
@@ -202,7 +202,7 @@ export default function HeroScroll() {
               className="hero-device relative h-full w-full"
               style={{ transformStyle: "preserve-3d", willChange: "transform" }}
             >
-            {/* keyboard base / hinge — a silver aluminium slab hinted just below
+            {/* keyboard base / hinge - a silver aluminium slab hinted just below
                 the lid, giving the tilted laptop a 3D footprint. Fades out as the
                 lid rises upright into full-bleed (frame 2). */}
             <div
@@ -229,7 +229,7 @@ export default function HeroScroll() {
               />
             </div>
 
-            {/* bezel — the laptop lid: thin aluminium rim around a dark screen.
+            {/* bezel - the laptop lid: thin aluminium rim around a dark screen.
                 Fades to 0 in frame 3 so the dashboard reads full-bleed. */}
             <div
               className="hero-bezel absolute inset-0 z-10 rounded-[18px] border bg-[var(--obsidian)]"
@@ -246,14 +246,14 @@ export default function HeroScroll() {
               />
             </div>
 
-            {/* screen — the actual dashboard art, inset inside the bezel */}
+            {/* screen - the actual dashboard art, inset inside the bezel */}
             <div className="absolute inset-[11px] z-20 overflow-hidden rounded-[10px] bg-[var(--obsidian)]">
               <CommandCenterArt />
             </div>
 
-            {/* cookie consent card (FRAME 1) — dark, overlaid low-left on the
+            {/* cookie consent card (FRAME 1) - dark, overlaid low-left on the
                 screen, matching the AlphaLedger reference. Dismisses on the
-                0.16–0.30 beat. `inert` keeps this decorative/satirical card (its
+                0.16-0.30 beat. `inert` keeps this decorative/satirical card (its
                 "Accept all" / "Reject all" buttons are non-functional parody)
                 out of the focus order and a11y tree without touching the scroll
                 animation, layout, or copy. */}
@@ -309,7 +309,7 @@ export default function HeroScroll() {
             </div>
           </div>
 
-          {/* circular play button (FRAME 2) — center */}
+          {/* circular play button (FRAME 2) - center */}
           <div className="hero-play pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
             <span
               className="flex h-16 w-16 items-center justify-center rounded-full border text-white"
@@ -323,7 +323,7 @@ export default function HeroScroll() {
             </span>
           </div>
 
-          {/* scroll cue (FRAME 1) — bottom-right bouncing arrow */}
+          {/* scroll cue (FRAME 1) - bottom-right bouncing arrow */}
           <div
             data-section="light"
             className="hero-arrow anim-scroll-cue pointer-events-none absolute bottom-6 right-6 z-30 flex flex-col items-center gap-1"
@@ -355,7 +355,7 @@ function HeroCopy() {
           lineHeight: 1.06,
           // STORY variant: "Your adversary" sits on its own line and the
           // rotating CLAUSE ("catches the evasion." / "invents the attack." /
-          // "codifies the rule.") drops to a second line below it — the phrases
+          // "codifies the rule.") drops to a second line below it - the phrases
           // are far longer than the old single words, so a single nowrap line
           // would blow past the viewport. Font-size eased down from 72→60px so
           // the longest clause stays clean and centered at desktop widths;
@@ -377,14 +377,14 @@ function HeroCopy() {
         }}
       >
         Alpha &amp; Oversight red-teams the market, detects the evasion, and
-        codifies a new rule live — every handoff crossing the Band.
+        codifies a new rule live - every handoff crossing the Band.
       </p>
     </div>
   );
 }
 
 /**
- * RotatingWord — the headline's trailing CLAUSE, cycling through A&O's three
+ * RotatingWord - the headline's trailing CLAUSE, cycling through A&O's three
  * acts on a ~2s timer: catches the evasion (Beat-A) → invents the attack (R&D)
  * → codifies the rule (Beat-B). Rendered in the muted two-tone gray on its own
  * centered line under "Your adversary". Under prefers-reduced-motion the clause

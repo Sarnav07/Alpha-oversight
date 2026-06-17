@@ -1,5 +1,5 @@
 /**
- * Core data models — faithful to FRONTEND_SPEC.md (backend contracts).
+ * Core data models - faithful to FRONTEND_SPEC.md (backend contracts).
  * Field names mirror the backend verbatim so the live swap is zero-rework.
  */
 
@@ -22,13 +22,13 @@ export interface ActivityEvent {
   reasoning: string | null;
   tool_calls: Record<string, unknown>[];
   created_at: string;
-  /** Q6 — mocked until backend adds it (attributes a frame to a case under concurrency). */
+  /** Q6 - mocked until backend adds it (attributes a frame to a case under concurrency). */
   case_id?: string;
   /** present only in replay streams. */
   replay_ts?: string;
 }
 
-/** state_machine.py CaseState — exact backend enum (5 values; CLOSED terminal). */
+/** state_machine.py CaseState - exact backend enum (5 values; CLOSED terminal). */
 export type CaseState =
   | "OPEN"
   | "UNDER_REVIEW"
@@ -49,7 +49,7 @@ export interface Features {
   depth_levels: number;
   self_match_ratio: number;
   eod_print_spike: boolean;
-  /** added at the terminal transition (FLAGGED/ESCALATED) — the codified family. */
+  /** added at the terminal transition (FLAGGED/ESCALATED) - the codified family. */
   family?: RuleFamily | string;
 }
 
@@ -67,14 +67,14 @@ export interface Case {
   verdict: Verdict | null;
   features: Features | null;
   resolved_inputs: ResolvedInputs | null;
-  /** OrderEvent[] — empty until terminal (FLAGGED/ESCALATED), then the codify sidecar. */
+  /** OrderEvent[] - empty until terminal (FLAGGED/ESCALATED), then the codify sidecar. */
   events: Record<string, unknown>[];
   created_at: string;
   updated_at: string;
 }
 
 export type RuleFamily = "spoofing" | "layering" | "wash_trade" | "marking";
-/** rule_contracts.py Rule.status — default "ACTIVE" at boot. */
+/** rule_contracts.py Rule.status - default "ACTIVE" at boot. */
 export type RuleStatus = "ACTIVE" | "SHADOW" | "RETIRED";
 
 export interface Rule {
@@ -103,7 +103,7 @@ export interface Stats {
 }
 
 /**
- * audit/ledger.py — a Band-handoff ledger leaf. This is the ONLY leaf kind that
+ * audit/ledger.py - a Band-handoff ledger leaf. This is the ONLY leaf kind that
  * GET /cases/{id}/audit returns: agent-step leaves carry no case_id and are
  * filtered out server-side, so the audit drawer shows cross-desk Band messages.
  */
@@ -128,7 +128,7 @@ export interface AuditResponse {
   verified: boolean;
 }
 
-/** band_envelope.py BandKind — edge labels on the topology. */
+/** band_envelope.py BandKind - edge labels on the topology. */
 export type BandKind =
   | "handoff"
   | "evidence"
@@ -144,7 +144,7 @@ export interface ConfirmResponse {
   rule: Rule | null;
 }
 
-/** POST /cases/{id}/reject response (now wrapped — was a bare Case before Phase 5c). */
+/** POST /cases/{id}/reject response (now wrapped - was a bare Case before Phase 5c). */
 export interface RejectResponse {
   case: Case;
   codified: false;
@@ -157,7 +157,7 @@ export interface BeatResponse {
   verdict: Verdict | null;
 }
 
-/** POST /demo/rnd response — union of adversary-failed vs adversary-succeeded. */
+/** POST /demo/rnd response - union of adversary-failed vs adversary-succeeded. */
 export interface RndResponse {
   confirmed: boolean;
   rounds: number;

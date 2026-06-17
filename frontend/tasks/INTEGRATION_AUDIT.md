@@ -12,7 +12,7 @@ backend-vs-doc nuances flagged (no backend edits, per scope).
 ## Fixed (frontend)
 
 1. **Case-id attribution in live mode (critical).** `deriveCase` set the id only from
-   `e.case_id`, but backend `/stream` frames carry **no `case_id` field** — the id lives only in
+   `e.case_id`, but backend `/stream` frames carry **no `case_id` field** - the id lives only in
    the `content` markers. Added `caseId` parsing to `parseMarker` (from `opened case <id>` and
    `case <id> -> <state>`) and used it as the fallback in `lib/desk/model.ts`. Without this, live
    mode could never attribute events to a case.
@@ -20,10 +20,10 @@ backend-vs-doc nuances flagged (no backend edits, per scope).
 
 2. **Audit-leaf `direction` value.** Backend emits `"sent"` / `"recv"`; the type + one fixture
    used `"received"`. Aligned the `LedgerEntry.direction` union and the fixture to `"recv"`.
-   (Display-only in `AuditDrawer`, so no runtime break — but the type and mock now match reality.)
+   (Display-only in `AuditDrawer`, so no runtime break - but the type and mock now match reality.)
    - `lib/types.ts`, `lib/fixtures/audit-C-0187.ts`
 
-## Flagged (backend ↔ doc nuances — not changed)
+## Flagged (backend ↔ doc nuances - not changed)
 
 - **Spoofing trip metric** is `near_fill_cancel_ratio ≥ 0.8` in code (`rules/math_spoofing.py`),
   not the raw `cancel_ratio` the older CLAUDE.md prose implied.

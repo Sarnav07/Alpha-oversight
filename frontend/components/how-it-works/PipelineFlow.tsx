@@ -14,13 +14,13 @@ import { MaskLines } from "@/components/anim/MaskLines";
 import { useIsMobile } from "@/components/landing/useIsMobile";
 
 /**
- * PipelineFlow — "The flow". The opener: one case's journey through the eight
+ * PipelineFlow - "The flow". The opener: one case's journey through the eight
  * agents + rule engine, end to end (report §05, D5/D6). Every handoff that
  * crosses Band is drawn in the sacred blue with its message kind (HANDOFF ·
  * EVIDENCE · VERDICT · ESCALATION · RULE_CODIFIED); the Prosecution⚔Defense
- * debate is marked "off Band" — it runs locally.
+ * debate is marked "off Band" - it runs locally.
  *
- * Desktop: a PINNED stage — the section holds in place while a tall runway gives
+ * Desktop: a PINNED stage - the section holds in place while a tall runway gives
  * scroll distance, so as you scroll the steps build up one at a time (the column
  * advances, the active beat sits centred and bright, the rest dim). Reduced
  * motion / mobile: a plain stacked list, no pin.
@@ -41,7 +41,7 @@ const STEPS: Step[] = [
   {
     node: "Order flow in",
     accent: "var(--desk-rnd)",
-    desc: "Sanitized order events cross the Chinese wall — no reasoning, no model. The case opens.",
+    desc: "Sanitized order events cross the Chinese wall - no reasoning, no model. The case opens.",
     state: "OPEN",
     emit: "HANDOFF",
     emitNote: "order events",
@@ -65,7 +65,7 @@ const STEPS: Step[] = [
     node: "Specialist",
     accent: "var(--desk-surv)",
     tier: "open",
-    desc: "Proposes the contested inputs the engine can't derive — the window, the bona-fide orders, the intent.",
+    desc: "Proposes the contested inputs the engine can't derive - the window, the bona-fide orders, the intent.",
     emit: "EVIDENCE",
     emitNote: "contested inputs",
   },
@@ -73,7 +73,7 @@ const STEPS: Step[] = [
     node: "Prosecution ⚔ Defense",
     accent: "var(--desk-surv)",
     local: true,
-    desc: "Two agents argue manipulation vs. legitimate trading. This debate runs locally — it never touches Band.",
+    desc: "Two agents argue manipulation vs. legitimate trading. This debate runs locally - it never touches Band.",
   },
   {
     node: "Adjudicator",
@@ -85,7 +85,7 @@ const STEPS: Step[] = [
     node: "Rule Engine",
     accent: "var(--verdict-escalate)",
     tier: "deterministic",
-    desc: "Runs the active rules — same inputs, same answer. A FLAG ends the case; a PASS on suspicious flow escalates.",
+    desc: "Runs the active rules - same inputs, same answer. A FLAG ends the case; a PASS on suspicious flow escalates.",
     emit: "VERDICT",
     emitNote: "PASS or FLAG",
   },
@@ -226,7 +226,7 @@ function Heading() {
       <Reveal delay={0.08}>
         <p className="mt-6 max-w-2xl font-sans" style={{ fontSize: 15, lineHeight: 1.6, color: "var(--text-body)" }}>
           Eight agents and one rule engine move a case from raw orders to a
-          sealed verdict — and they never call each other directly. Each drops
+          sealed verdict - and they never call each other directly. Each drops
           its work onto Band; the next picks it up. Scroll to watch the handoffs,
           one by one. (We’ll meet the two desks and every agent just below.)
         </p>
@@ -235,7 +235,7 @@ function Heading() {
   );
 }
 
-/* ── one block in the pinned build — opacity/scale track the active beat ─── */
+/* ── one block in the pinned build - opacity/scale track the active beat ─── */
 function StepBlock({ t, index, step, reduce }: { t: MotionValue<number>; index: number; step: Step; reduce: boolean }) {
   const opacity = useTransform(t, (v) => {
     const d = Math.abs(v * (TOTAL - 1) - index);

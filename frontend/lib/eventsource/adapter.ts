@@ -22,7 +22,7 @@ export interface AdapterOpts {
   replay?: string;
   /** ms between mock frames (mock cadence). */
   stepMs?: number;
-  /** optional desk filter — only surface frames from this desk (rnd | surveillance). */
+  /** optional desk filter - only surface frames from this desk (rnd | surveillance). */
   desk?: import("../types").Desk;
 }
 
@@ -107,7 +107,7 @@ class LiveSSEAdapter implements EventSourceAdapter {
     };
 
     // Browser EventSource auto-reconnects on transient drops, so the FIRST error
-    // is "reconnecting". But a dead backend never recovers — escalate to "error"
+    // is "reconnecting". But a dead backend never recovers - escalate to "error"
     // once the socket is conclusively CLOSED or failures pile up past threshold.
     es.onerror = () => {
       this.failures += 1;

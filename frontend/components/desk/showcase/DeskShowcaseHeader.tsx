@@ -4,7 +4,7 @@ import Link from "next/link";
 import Logomark from "@/components/landing/Logomark";
 
 /**
- * DeskShowcaseHeader — thin sticky brand bar for the /desk showcase (3.5rem, so
+ * DeskShowcaseHeader - thin sticky brand bar for the /desk showcase (3.5rem, so
  * the pinned `top-14` stages tuck below it). Dark glass; links home + to
  * /how-it-works + a jump to the embedded live demo.
  */

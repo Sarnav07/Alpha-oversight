@@ -21,7 +21,7 @@ function ev(overrides: Partial<ActivityEvent> = {}): ActivityEvent {
   };
 }
 
-describe("parseMarker — recognised markers", () => {
+describe("parseMarker - recognised markers", () => {
   it("`opened case <id>` binds the caseId and sets no stage", () => {
     const m = parseMarker(ev({ content: "opened case C-0191" }));
     expect(m.caseId).toBe("C-0191");
@@ -92,7 +92,7 @@ describe("parseMarker — recognised markers", () => {
     const m = parseMarker(
       ev({
         agent_name: "investigator",
-        content: "@layer-spec waiting on band — recruited @layer-spec (layering)",
+        content: "@layer-spec waiting on band - recruited @layer-spec (layering)",
       }),
     );
     expect(m.stage).toBe("recruit");
@@ -135,7 +135,7 @@ describe("parseMarker — recognised markers", () => {
     );
     expect(m.caseId).toBe("C-0191");
     expect(m.finalState).toBe("FLAGGED");
-    // FLAGGED is not the escalate branch — no stage/eventType from the terminal.
+    // FLAGGED is not the escalate branch - no stage/eventType from the terminal.
     expect(m.stage).toBeUndefined();
     expect(m.eventType).toBeUndefined();
   });
@@ -241,7 +241,7 @@ describe("latestCaseId", () => {
   });
 });
 
-describe("parseMarker — DEV warn on unparsed pipeline frames", () => {
+describe("parseMarker - DEV warn on unparsed pipeline frames", () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });

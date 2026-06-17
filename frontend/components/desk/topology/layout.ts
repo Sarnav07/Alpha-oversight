@@ -25,11 +25,11 @@ const Y0 = 24;
 
 /** Per-node absolute position (top-left), keyed by NodeId. */
 export const NODE_POS: Record<NodeId, { x: number; y: number }> = {
-  // R&D desk — left column, top-aligned with the surveillance entry point.
+  // R&D desk - left column, top-aligned with the surveillance entry point.
   adversary: { x: X_RND, y: Y0 + ROW * 0.5 },
   bridge: { x: X_RND, y: Y0 + ROW * 1.5 },
 
-  // Surveillance spine — top → bottom.
+  // Surveillance spine - top → bottom.
   anomaly_detector: { x: X_SURV, y: Y0 },
   investigator: { x: X_SURV, y: Y0 + ROW },
   specialist: { x: X_SURV, y: Y0 + ROW * 2 },
@@ -50,7 +50,7 @@ export const WALL = {
 };
 
 /**
- * Swimlane background panels (flow-space) — a faint desk-toned frame + eyebrow
+ * Swimlane background panels (flow-space) - a faint desk-toned frame + eyebrow
  * label behind each column, so the R&D desk and the Surveillance desk read as two
  * distinct lanes either side of the Chinese wall. Desk tones are tone-only (D3):
  * a low-opacity border + near-invisible fill, never a loud accent.

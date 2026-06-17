@@ -14,7 +14,7 @@ import ContactSection from "@/components/landing/ContactSection";
 import SiteFooter from "@/components/landing/SiteFooter";
 
 /**
- * Public landing page — first-scroll experience.
+ * Public landing page - first-scroll experience.
  *
  * A black <Preloader/> splash plays on every full load (first visit + refresh),
  * skipped only on soft client-side nav back to "/", then the page reveals the

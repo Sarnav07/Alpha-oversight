@@ -1,5 +1,5 @@
 /**
- * useHotkeys — keyboard shortcuts for the desk operator. Mounted once in
+ * useHotkeys - keyboard shortcuts for the desk operator. Mounted once in
  * app/desk/page.tsx.
  *
  *   A      → run Beat A          (mock only)
@@ -9,12 +9,12 @@
  *   R      → reset the desk
  *
  * Ignored when focus is in an input / textarea / contenteditable / select, and
- * when a modifier (⌘/Ctrl/Alt) is held — so it never steals browser shortcuts or
+ * when a modifier (⌘/Ctrl/Alt) is held - so it never steals browser shortcuts or
  * the SearchBar's typing. Clock/beat keys are gated behind IS_MOCK (you can't
  * scrub or re-fire a live LLM run); R always works.
  *
  * When sound is on, a beat hotkey plays a soft "tick" (the AudioContext is
- * already primed by the time the user has toggled sound — both are gestures).
+ * already primed by the time the user has toggled sound - both are gestures).
  */
 "use client";
 
@@ -44,7 +44,7 @@ export function useHotkeys() {
 
       const tick = () => {
         if (useDeskUIStore.getState().soundOn) {
-          // a keypress is a user gesture — safe to lazily prime the context so a
+          // a keypress is a user gesture - safe to lazily prime the context so a
           // rehydrated "on" preference can sound without first clicking the toggle.
           primeAudio();
           playCue("tick");

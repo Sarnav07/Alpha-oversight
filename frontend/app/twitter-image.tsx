@@ -1,9 +1,9 @@
 import { ImageResponse } from "next/og";
 
-// Root Twitter (summary_large_image) card — mirrors the Open Graph card.
+// Root Twitter (summary_large_image) card - mirrors the Open Graph card.
 // Self-contained: the Logomark SVG is inlined (no client-component import).
 export const alt =
-  "Alpha & Oversight — Adversarial trade-surveillance, refereed by a Band of agents";
+  "Alpha & Oversight - Adversarial trade-surveillance, refereed by a Band of agents";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

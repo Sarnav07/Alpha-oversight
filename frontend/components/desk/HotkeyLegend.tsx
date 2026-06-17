@@ -3,9 +3,9 @@
 import { IS_MOCK } from "@/lib/config";
 
 /**
- * HotkeyLegend — a faint, unobtrusive footer strip documenting the desk
+ * HotkeyLegend - a faint, unobtrusive footer strip documenting the desk
  * shortcuts (lib/desk/useHotkeys.ts). Beat/clock keys show only in mock mode
- * (they're gated there); R always works. Plain text — reduced-motion safe.
+ * (they're gated there); R always works. Plain text - reduced-motion safe.
  */
 
 const MOCK_KEYS: { key: string; label: string }[] = [

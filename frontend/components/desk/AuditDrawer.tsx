@@ -11,7 +11,7 @@ import { latestCaseId } from "@/lib/eventsource/parseMarker";
 import { IS_MOCK } from "@/lib/config";
 
 /**
- * AuditDrawer — the compliance system of record. A right slide-over that renders
+ * AuditDrawer - the compliance system of record. A right slide-over that renders
  * the hash-chained audit ledger (GET /cases/{id}/audit) as mono rows. Each row is
  * a Band-handoff leaf: `from → to`, a `kind` badge, the `direction`, and the
  * sha256 / prev_hash → hash links so the chain reads as a chain. The header badge
@@ -33,13 +33,13 @@ const FIXTURE_AUDIT: AuditView = {
 type AuditDrawerProps = {
   open: boolean;
   onClose: () => void;
-  /** MOCK source — the C-0187 fixture view the page passes in. */
+  /** MOCK source - the C-0187 fixture view the page passes in. */
   audit?: AuditView;
 };
 
 const short = (h: string) => (h ? `${h.slice(0, 8)}…${h.slice(-4)}` : "∅");
 
-/** Live case id from the trace store — parsed from markers (live frames omit the
+/** Live case id from the trace store - parsed from markers (live frames omit the
  *  `case_id` field), so GET /cases/{id}/audit actually fires in live mode. */
 function useLiveCaseId(): string | null {
   return useTraceStore((s) => latestCaseId(s.events));
@@ -137,7 +137,7 @@ export default function AuditDrawer({ open, onClose, audit }: AuditDrawerProps) 
 
       const items = focusables();
       if (items.length === 0) {
-        // Nothing focusable but the panel — keep focus pinned inside it.
+        // Nothing focusable but the panel - keep focus pinned inside it.
         e.preventDefault();
         panel?.focus();
         return;
@@ -184,7 +184,7 @@ export default function AuditDrawer({ open, onClose, audit }: AuditDrawerProps) 
             ref={panelRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Case audit — hash chain"
+            aria-label="Case audit - hash chain"
             tabIndex={-1}
             initial={reduce ? false : { x: "100%" }}
             animate={{ x: 0 }}

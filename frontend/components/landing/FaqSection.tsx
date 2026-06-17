@@ -6,11 +6,11 @@ import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-mot
 import Logomark from "./Logomark";
 
 /**
- * FaqSection — the closing "Frequently Asked Questions" accordion (AlphaLedger
+ * FaqSection - the closing "Frequently Asked Questions" accordion (AlphaLedger
  * FAQ clone, themed for A&O). LIGHT section (data-section="light" → white bg,
  * ink text). Left: eyebrow + mark, a light-weight heading, a short blurb, and a
- * black "Launch Desk" pill. Right: a single-open accordion — clicking a question
- * rotates its +→− and slides a 1–2 line answer open. Scroll-reveal + reduced-
+ * black "Launch Desk" pill. Right: a single-open accordion - clicking a question
+ * rotates its +→- and slides a 1-2 line answer open. Scroll-reveal + reduced-
  * motion safe. Prop-less, self-contained, default export.
  */
 
@@ -19,7 +19,7 @@ const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
 const FAQS: { q: string; a: string }[] = [
   {
     q: "How does Alpha & Oversight work?",
-    a: "An open-weight Adversary red-teams the tape, a Surveillance desk catches the evasion and contests a verdict, and each catch is codified into a live rule — every handoff crossing the Band.",
+    a: "An open-weight Adversary red-teams the tape, a Surveillance desk catches the evasion and contests a verdict, and each catch is codified into a live rule - every handoff crossing the Band.",
   },
   {
     q: "Is the audit trail tamper-evident?",
@@ -31,15 +31,15 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "How are verdicts verified?",
-    a: "Prosecution and defense contest each case in a dossier, an adjudicator resolves the debate, and a deterministic rule engine — not any LLM — renders the PASS/FLAG verdict against the live rulebook, sealed with a hash you can replay independently.",
+    a: "Prosecution and defense contest each case in a dossier, an adjudicator resolves the debate, and a deterministic rule engine - not any LLM - renders the PASS/FLAG verdict against the live rulebook, sealed with a hash you can replay independently.",
   },
   {
     q: "Can I connect my own feeds?",
-    a: "Yes — the desk wires to your market feed through a swap-proof seam; bundled fixtures stand in until a live backend is connected.",
+    a: "Yes - the desk wires to your market feed through a swap-proof seam; bundled fixtures stand in until a live backend is connected.",
   },
   {
     q: "What makes it different?",
-    a: "It's adversarial by design — it invents and defends against the next evasion first, then turns every catch into a durable, auditable rule.",
+    a: "It's adversarial by design - it invents and defends against the next evasion first, then turns every catch into a durable, auditable rule.",
   },
 ];
 
@@ -142,7 +142,7 @@ export default function FaqSection() {
         </div>
 
         <div className="mt-14 grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] lg:gap-20">
-          {/* left — heading + blurb + CTA */}
+          {/* left - heading + blurb + CTA */}
           <div>
             <motion.h2
               id="faq-title"
@@ -173,7 +173,7 @@ export default function FaqSection() {
             </Link>
           </div>
 
-          {/* right — accordion */}
+          {/* right - accordion */}
           <div style={{ borderTop: "1px solid var(--hairline)" }}>
             {FAQS.map((item, i) => (
               <FaqRow

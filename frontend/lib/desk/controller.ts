@@ -42,7 +42,7 @@ function toDeskActionError(err: unknown): DeskActionError {
   return new DeskActionError(status, message);
 }
 
-/** Seed registry — the 4 ACTIVE rules at boot (rule_contracts seed_rules). */
+/** Seed registry - the 4 ACTIVE rules at boot (rule_contracts seed_rules). */
 export const SEED_RULES: Rule[] = [
   { id: "FINRA-5210-layering", family: "layering", params: { window_ms: 100, min_depth_levels: 3 }, provenance: "seed", status: "ACTIVE" },
   { id: "FINRA-5210-spoofing", family: "spoofing", params: { window_ms: 100, min_cancel_ratio: 0.8 }, provenance: "seed", status: "ACTIVE" },
@@ -79,11 +79,11 @@ function play(events: ActivityEvent[], stepMs = 900, startDelay = 0) {
   });
 }
 
-/** The codify tail appended on confirm — narrates the regression-gate ✓ + 4→5. */
+/** The codify tail appended on confirm - narrates the regression-gate ✓ + 4→5. */
 function codifyTail(caseId: string): ActivityEvent[] {
   return [
-    { agent_name: "human", model_id: "", desk: "surveillance", content: `confirm ${caseId} — codify the candidate layering rule`, reasoning: null, tool_calls: [{ kind: "band_rule_codified", to: "rule_engine" }], created_at: "2026-06-15T10:23:50Z", case_id: caseId },
-    { agent_name: "rule_engine", model_id: "deterministic", desk: "surveillance", content: `codify: regression gate PASS — rule layering-v2-${caseId} ACTIVE (Active Rules 4 -> 5)`, reasoning: "replayed the original evasion through the new rule; it now FLAGs", tool_calls: [], created_at: "2026-06-15T10:23:51Z", case_id: caseId },
+    { agent_name: "human", model_id: "", desk: "surveillance", content: `confirm ${caseId} - codify the candidate layering rule`, reasoning: null, tool_calls: [{ kind: "band_rule_codified", to: "rule_engine" }], created_at: "2026-06-15T10:23:50Z", case_id: caseId },
+    { agent_name: "rule_engine", model_id: "deterministic", desk: "surveillance", content: `codify: regression gate PASS - rule layering-v2-${caseId} ACTIVE (Active Rules 4 -> 5)`, reasoning: "replayed the original evasion through the new rule; it now FLAGs", tool_calls: [], created_at: "2026-06-15T10:23:51Z", case_id: caseId },
   ];
 }
 
@@ -105,7 +105,7 @@ export function getAuditView(caseId?: string | null): AuditView {
  * fold. The store's connect() builds a LiveSSEAdapter in live mode (no replay
  * param → the live `/stream`); the backend runs one case at a time, so the
  * returned case_id rides in on every frame's `case_id` (Q6). REST failures are
- * logged but non-fatal — the stream is the source of truth.
+ * logged but non-fatal - the stream is the source of truth.
  */
 async function startLive(trigger: () => Promise<{ case_id?: string }>) {
   clearTimers();
@@ -149,7 +149,7 @@ const liveController: DeskController = {
             agent_name: "human",
             model_id: "",
             desk: "surveillance",
-            content: `confirm ${caseId} — codify the candidate layering rule`,
+            content: `confirm ${caseId} - codify the candidate layering rule`,
             reasoning: null,
             tool_calls: [{ kind: "band_rule_codified", to: "rule_engine" }],
             created_at: new Date().toISOString(),
@@ -159,7 +159,7 @@ const liveController: DeskController = {
             agent_name: "rule_engine",
             model_id: "deterministic",
             desk: "surveillance",
-            content: `codify: regression gate PASS — rule ${ruleId} ACTIVE`,
+            content: `codify: regression gate PASS - rule ${ruleId} ACTIVE`,
             reasoning: "replayed the original evasion through the new rule; it now FLAGs",
             tool_calls: [],
             created_at: new Date(Date.now() + 1).toISOString(),
@@ -187,7 +187,7 @@ const liveController: DeskController = {
             agent_name: "human",
             model_id: "",
             desk: "surveillance",
-            content: `reject — case ${caseId} -> ${finalState}, no codify`,
+            content: `reject - case ${caseId} -> ${finalState}, no codify`,
             reasoning: null,
             tool_calls: [],
             created_at: new Date().toISOString(),
@@ -228,7 +228,7 @@ export function mockConfirm() {
 
 /**
  * Mock paths drive the ReplayClock (lib/desk/clock.ts) instead of the old inline
- * `play()` timers — the clock is the single scrubbable player, so Beat A/B/R&D are
+ * `play()` timers - the clock is the single scrubbable player, so Beat A/B/R&D are
  * load+play and the human Confirm/Reject tails are appended onto the loaded
  * sequence (so a later scrub replays them too). The clock owns the trace reset +
  * connection state; we only reset the rule registry alongside.
@@ -245,7 +245,7 @@ const mockController: DeskController = {
     useClockStore.getState().play();
   },
   runRnD: () => {
-    // Real R&D adversarial loop now (fixtureRnD / C-0188) — no longer a stub (Q2).
+    // Real R&D adversarial loop now (fixtureRnD / C-0188) - no longer a stub (Q2).
     useRulesStore.getState().resetRules();
     useClockStore.getState().load("C-0188");
     useClockStore.getState().play();
@@ -258,7 +258,7 @@ const mockController: DeskController = {
         agent_name: "human",
         model_id: "",
         desk: "surveillance",
-        content: "reject — case CLOSED, no codify",
+        content: "reject - case CLOSED, no codify",
         reasoning: null,
         tool_calls: [],
         created_at: "2026-06-15T10:23:50Z",
@@ -277,9 +277,9 @@ export function useDeskController(): DeskController {
 }
 
 /** non-hook read of the current case id from the event stream (NOT a React hook,
- *  despite being called from controller actions — reads the store imperatively). */
+ *  despite being called from controller actions - reads the store imperatively). */
 function currentCaseId(): string | null {
-  // Live `/stream` frames carry no `case_id` field — latestCaseId() parses it from
+  // Live `/stream` frames carry no `case_id` field - latestCaseId() parses it from
   // the `content` markers (the same source lib/desk/model.ts + the audit drawer use).
   return latestCaseId(useTraceStore.getState().events);
 }

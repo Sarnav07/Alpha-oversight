@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 
 /**
- * HITLControls — the human-in-the-loop verdict panel. Visible ONLY while the
+ * HITLControls - the human-in-the-loop verdict panel. Visible ONLY while the
  * case is ESCALATED; Confirm/Reject delegate to the DeskController and surface a
  * status-mapped inline reason on failure. The model, controller, and
  * framer-motion are all mocked so the test drives pure component behaviour.
@@ -68,14 +68,14 @@ import { DeskActionError } from "@/lib/desk/controller";
 
 beforeEach(() => {
   // vitest globals are OFF, so testing-library's auto-cleanup afterEach is not
-  // registered — unmount the previous tree by hand to avoid duplicate DOM.
+  // registered - unmount the previous tree by hand to avoid duplicate DOM.
   cleanup();
   caseState = "ESCALATED";
   confirm.mockReset();
   reject.mockReset();
 });
 
-describe("HITLControls — visibility gating", () => {
+describe("HITLControls - visibility gating", () => {
   it("renders nothing when the case is not ESCALATED", () => {
     caseState = "FLAGGED";
     const { container } = render(<HITLControls />);
@@ -89,7 +89,7 @@ describe("HITLControls — visibility gating", () => {
   });
 });
 
-describe("HITLControls — Confirm path", () => {
+describe("HITLControls - Confirm path", () => {
   it("goes busy (aria-busy + disabled) then settles to the codified label on success", async () => {
     const user = userEvent.setup();
     // Hold the promise so we can observe the pending state mid-flight.
@@ -131,7 +131,7 @@ describe("HITLControls — Confirm path", () => {
   });
 });
 
-describe("HITLControls — Reject path", () => {
+describe("HITLControls - Reject path", () => {
   it("calls controller.reject and settles to the closed label", async () => {
     const user = userEvent.setup();
     reject.mockResolvedValue(undefined);

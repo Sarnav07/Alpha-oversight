@@ -5,10 +5,10 @@ import { useReducedMotion } from "framer-motion";
 import { useDeskModel } from "@/lib/desk/model";
 
 /**
- * StatsBar — the horizontal tile row at the head of the /desk Command Center.
+ * StatsBar - the horizontal tile row at the head of the /desk Command Center.
  *
  * Stays DARK to match the command-center backbone (no data-section="light"
- * wrapper). Every tile is folded from real `model.stats` (GET /stats — case
+ * wrapper). Every tile is folded from real `model.stats` (GET /stats - case
  * counts by state + active-rule count); nothing is scripted.
  *
  * Numbers are font-mono; uppercase tracked eyebrow labels in `--text-muted`. The
@@ -16,7 +16,7 @@ import { useDeskModel } from "@/lib/desk/model";
  * prefers-reduced-motion (final values, no roll).
  */
 
-/** Active Rules tile — rolls 4→5 when codified flips. */
+/** Active Rules tile - rolls 4→5 when codified flips. */
 function ActiveRulesNumber({
   count,
   codified,
@@ -59,7 +59,7 @@ function ActiveRulesNumber({
 
 type Tile = {
   label: string;
-  /** when true, this tile is sourced from a failed REST query — show "—". */
+  /** when true, this tile is sourced from a failed REST query - show "-". */
   errored: boolean;
   render: (reduce: boolean) => React.ReactNode;
 };
@@ -67,8 +67,8 @@ type Tile = {
 /** A dimmed em-dash placeholder for a tile whose REST source is unavailable. */
 function Unavailable() {
   return (
-    <span style={{ color: "var(--verdict-flag)" }} title="Unavailable — backend unreachable">
-      —
+    <span style={{ color: "var(--verdict-flag)" }} title="Unavailable - backend unreachable">
+      -
     </span>
   );
 }
@@ -79,7 +79,7 @@ export default function StatsBar() {
 
   // Active Rules is folded from the rules list (GET /rules); the count + by-state
   // tiles come from GET /stats. Surface each query's failure on its own tiles so
-  // a dead backend reads as "—"/unavailable instead of silent seed/zero numbers.
+  // a dead backend reads as "-"/unavailable instead of silent seed/zero numbers.
   const { statsError, rulesError } = model;
 
   const tiles: Tile[] = [

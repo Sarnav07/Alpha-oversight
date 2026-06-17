@@ -1,13 +1,13 @@
 import type { ActivityEvent } from "../types";
 
 /**
- * Beat B — case C-0187. The headline demo: a NOVEL 400ms layering evasion the
+ * Beat B - case C-0187. The headline demo: a NOVEL 400ms layering evasion the
  * adversary invents to slip the 100ms seed rule. Surveillance debates it, the
  * deterministic engine returns verdict=PASS (the evasion worked), the escalation
  * manager kicks it to a human, and the case ESCALATES awaiting confirmation.
  *
  * MARKER GRAMMAR (mock == live == replay): the surveillance `pipeline` frames
- * carry the EXACT backend marker strings parseMarker.ts consumes —
+ * carry the EXACT backend marker strings parseMarker.ts consumes -
  *   opened case <id>
  *   suspicious -> UNDER_REVIEW; features={...python repr...}
  *   recruited @layer-spec (layering)   (+ "waiting on band" → blue pulse)
@@ -64,7 +64,7 @@ export const fixtureBeatB: ActivityEvent[] = [
     agent_name: "investigator",
     model_id: "surv-open",
     desk: "surveillance",
-    content: "@layer-spec waiting on band — recruited @layer-spec (layering)",
+    content: "@layer-spec waiting on band - recruited @layer-spec (layering)",
     reasoning: "needs a layering specialist; round-trips the recruit handoff across the Band",
     tool_calls: [{ kind: "band_handoff", to: "specialist" }],
     created_at: "2026-06-15T10:23:44Z",
@@ -115,7 +115,7 @@ export const fixtureBeatB: ActivityEvent[] = [
     model_id: "deterministic",
     desk: "surveillance",
     content: "verdict=PASS rule=None",
-    reasoning: "seed window too tight — gap_ms=400 sits outside window_ms=100",
+    reasoning: "seed window too tight - gap_ms=400 sits outside window_ms=100",
     tool_calls: [],
     created_at: "2026-06-15T10:23:48Z",
     case_id: "C-0187",

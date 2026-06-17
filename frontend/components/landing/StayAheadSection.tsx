@@ -5,11 +5,11 @@ import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 
 /**
- * StayAheadSection — the terminal sign-off CTA band (AlphaLedger "Stay Ahead in
+ * StayAheadSection - the terminal sign-off CTA band (AlphaLedger "Stay Ahead in
  * Trading" clone, themed for A&O). A LIGHT section (data-section="light" → white
  * bg, ink text) over a faint diagonal "market-tick" texture: a centered two-tone
  * two-line heading, a short blurb, and a black "Launch Desk" pill. Sits last so
- * the page closes light after the dark UnlockSection — a clean dark→light cut.
+ * the page closes light after the dark UnlockSection - a clean dark→light cut.
  *
  * Heading + blurb + pill rise in on scroll. Reduced-motion / SSR render the final
  * state immediately. Prop-less, self-contained, default export.
@@ -17,7 +17,7 @@ import { motion, useInView, useReducedMotion } from "framer-motion";
 
 const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
 
-/** Faint scattered diagonal tick marks — the "market noise" backdrop. A tiled
+/** Faint scattered diagonal tick marks - the "market noise" backdrop. A tiled
  *  SVG <pattern> of two short strokes per cell, low opacity, denser-feeling via
  *  a soft vertical fade. Monochrome (hairline gray), never an accent. */
 function TickField() {

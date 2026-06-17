@@ -9,7 +9,7 @@ import Logomark from "@/components/landing/Logomark";
 import { useIsMobile } from "./useIsMobile";
 
 /**
- * FeaturesCarousel — the pinned "Our Features" horizontal-scroll carousel
+ * FeaturesCarousel - the pinned "Our Features" horizontal-scroll carousel
  * (AlphaLedger clone, themed for A&O). A DARK section with a hard cut from the
  * light <ManifestoSection/> above it.
  *
@@ -28,7 +28,7 @@ import { useIsMobile } from "./useIsMobile";
  * pin; return ctx.revert() cleanup.
  *
  * Reduced-motion / no-pin fallback: the track renders as a NATIVE
- * overflow-x-auto scroller (no pinning) with the same cards — still usable.
+ * overflow-x-auto scroller (no pinning) with the same cards - still usable.
  *
  * Prop-less, self-contained, default export.
  */
@@ -45,7 +45,7 @@ type Card = {
   full?: boolean;
 };
 
-/* ── bare line icons (no bordered box) — match the 9-correct top-left mark ── */
+/* ── bare line icons (no bordered box) - match the 9-correct top-left mark ── */
 const il = {
   fill: "none",
   stroke: "currentColor",
@@ -86,7 +86,7 @@ function CodifyIc() {
 
 /**
  * A circular ▶ play affordance overlaid on the device art (centered). Purely
- * decorative — mirrors the AlphaLedger feature-card play button.
+ * decorative - mirrors the AlphaLedger feature-card play button.
  */
 function PlayButton() {
   return (
@@ -110,7 +110,7 @@ function PlayButton() {
 }
 
 /**
- * LaptopFrame — a reusable angled MacBook-style device frame (bezel + base)
+ * LaptopFrame - a reusable angled MacBook-style device frame (bezel + base)
  * wrapping a card's art region, with an optional ▶ play overlay. The screen is
  * tilted slightly to read as a real device rising into the card, matching the
  * AlphaLedger reference. `play` toggles the centered play affordance.
@@ -133,7 +133,7 @@ function LaptopFrame({
           transformOrigin: "left center",
         }}
       >
-        {/* Lid — bezel + screen */}
+        {/* Lid - bezel + screen */}
         <div
           className="relative overflow-hidden"
           style={{
@@ -169,7 +169,7 @@ function LaptopFrame({
             {play ? <PlayButton /> : null}
           </div>
         </div>
-        {/* Base / hinge — a thin slab beneath the lid */}
+        {/* Base / hinge - a thin slab beneath the lid */}
         <div
           aria-hidden="true"
           className="relative mx-auto"
@@ -202,11 +202,11 @@ function LaptopFrame({
   );
 }
 
-/** Inline art for card 3 — two dossier mini-cards across the two model tiers. */
+/** Inline art for card 3 - two dossier mini-cards across the two model tiers. */
 function CrossModelArt() {
   return (
     <div className="flex h-full w-full items-center justify-center gap-4 p-6 sm:gap-6 sm:p-10">
-      {/* Prosecution — frontier (gold) */}
+      {/* Prosecution - frontier (gold) */}
       <DossierCard
         badge="▸ frontier"
         badgeColor="var(--tier-frontier)"
@@ -221,7 +221,7 @@ function CrossModelArt() {
       >
         ⚔
       </span>
-      {/* Defense — open (gray) */}
+      {/* Defense - open (gray) */}
       <DossierCard
         badge="▸ open"
         badgeColor="var(--tier-open)"
@@ -293,7 +293,7 @@ const CARDS: Card[] = [
     no: "01",
     icon: <TraceIc />,
     title: "Live Trace Analytics",
-    body: "Every agent step streams in real time — topology, model badges, verdicts, the blue waiting-on-Band node.",
+    body: "Every agent step streams in real time - topology, model badges, verdicts, the blue waiting-on-Band node.",
     art: <CommandCenterArt />,
     cta: { label: "Open the Live Desk", href: "/desk" },
   },
@@ -301,7 +301,7 @@ const CARDS: Card[] = [
     no: "02",
     icon: <AuditIc />,
     title: "Verified & Audited Lineage",
-    body: "Every decision sealed in a hash-chained ledger. verify_chain ✓ — tamper-evident, audit-ready.",
+    body: "Every decision sealed in a hash-chained ledger. verify_chain ✓ - tamper-evident, audit-ready.",
     art: <AuditChainArt />,
     cta: { label: "Verify a chain", href: "/desk" },
   },
@@ -316,7 +316,7 @@ const CARDS: Card[] = [
 ];
 
 /**
- * A single wide, landscape feature card — matches the 9-correct AlphaLedger
+ * A single wide, landscape feature card - matches the 9-correct AlphaLedger
  * layout: a deep-black gradient panel; a BARE line icon top-left; the title,
  * body and a frosted translucent CTA pill anchored to the LOWER-left; and an
  * angled <LaptopFrame/> on the right that BLEEDS off the card's right edge (the
@@ -355,7 +355,7 @@ function FeatureCard({ card }: { card: Card }) {
         }}
       />
 
-      {/* LEFT — text column. Bare icon top-left; title + body + frosted pill
+      {/* LEFT - text column. Bare icon top-left; title + body + frosted pill
           anchored to the lower-left. */}
       <div className="relative z-10 flex flex-col p-8 sm:p-10 md:h-full">
         <span aria-hidden="true" className="text-[var(--text-primary)]">
@@ -404,7 +404,7 @@ function FeatureCard({ card }: { card: Card }) {
         </div>
       </div>
 
-      {/* RIGHT (md+) — laptop bleeding off the right edge, clipped by the card. */}
+      {/* RIGHT (md+) - laptop bleeding off the right edge, clipped by the card. */}
       <div className="relative hidden md:block">
         <div
           className="absolute top-1/2 left-[7%] w-[132%] -translate-y-1/2"
@@ -413,7 +413,7 @@ function FeatureCard({ card }: { card: Card }) {
         </div>
       </div>
 
-      {/* Laptop (mobile stacked) — normal sizing beneath the text. */}
+      {/* Laptop (mobile stacked) - normal sizing beneath the text. */}
       <div className="relative z-10 px-8 pb-9 md:hidden">
         <LaptopFrame play>{card.art}</LaptopFrame>
       </div>
@@ -424,7 +424,7 @@ function FeatureCard({ card }: { card: Card }) {
 function FeaturesHeader() {
   // data-section="light" remaps the monochrome tokens to their light-theme
   // values, so the eyebrow / heading / hairline / logomark read DARK on the
-  // white section (the cards below stay dark — they sit outside this wrapper).
+  // white section (the cards below stay dark - they sit outside this wrapper).
   return (
     <div data-section="light" className="px-6 pt-16 sm:px-10 pb-8">
       <div
@@ -460,7 +460,7 @@ function FeaturesHeader() {
               color: "var(--text-muted)",
             }}
           >
-            Alpha & Oversight reinvents surveillance as an adversarial craft. One desk invents the manipulation; another detects it, proves the catch, and codifies a new rule live — every handoff crossing the Band, every verdict sealed in an immutable ledger.
+            Alpha & Oversight reinvents surveillance as an adversarial craft. One desk invents the manipulation; another detects it, proves the catch, and codifies a new rule live - every handoff crossing the Band, every verdict sealed in an immutable ledger.
           </p>
           <span className="hidden font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--text-muted)] sm:inline mt-6">
             ← Scroll
@@ -491,7 +491,7 @@ export default function FeaturesCarousel() {
 
     // Lazy-load gsap off the landing critical path: dynamically import it (+the
     // ScrollTrigger plugin) inside the effect, then build the SAME pinned
-    // context a tick later — fine for a scroll-triggered animation.
+    // context a tick later - fine for a scroll-triggered animation.
     let cancelled = false;
     let ctx: gsap.Context | undefined;
 
@@ -561,7 +561,7 @@ export default function FeaturesCarousel() {
         <div className="mx-auto" style={{ maxWidth: "var(--maxw-content)" }}>
           <FeaturesHeader />
         </div>
-        {/* Native horizontal scroller — same cards, no pinning. Cards auto-size
+        {/* Native horizontal scroller - same cards, no pinning. Cards auto-size
             their height on mobile (stacked content) and take the cinematic tall
             frame from sm+ (side-by-side grid). */}
         <div
@@ -591,7 +591,7 @@ export default function FeaturesCarousel() {
         backgroundColor: "#ffffff",
       }}
     >
-      {/* Sticky stage — pinned for the duration of the horizontal scroll. */}
+      {/* Sticky stage - pinned for the duration of the horizontal scroll. */}
       <div
         className="feat-stage sticky top-0 flex h-screen w-full flex-col overflow-hidden"
         style={{
@@ -603,7 +603,7 @@ export default function FeaturesCarousel() {
           <FeaturesHeader />
         </div>
 
-        {/* Horizontal track — translated on x by the scrubbed timeline. */}
+        {/* Horizontal track - translated on x by the scrubbed timeline. */}
         <div className="relative flex-1">
           <div
             ref={trackRef}

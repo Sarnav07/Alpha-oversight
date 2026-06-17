@@ -3,7 +3,7 @@ import LegalPage from "@/components/legal/LegalPage";
 import doc from "@/content/legal/terms";
 
 /**
- * /terms — Terms & Conditions of Service. Landing nav + footer wrap a readable
+ * /terms - Terms & Conditions of Service. Landing nav + footer wrap a readable
  * legal column; content is the A&O-rebranded copy in content/legal/terms.ts.
  */
 export const metadata: Metadata = {

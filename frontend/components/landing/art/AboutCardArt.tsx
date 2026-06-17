@@ -3,13 +3,13 @@
 import { motion } from "framer-motion";
 
 /**
- * AboutCardArt — the four bespoke monochrome visuals for <MoreAboutSection/>'s
+ * AboutCardArt - the four bespoke monochrome visuals for <MoreAboutSection/>'s
  * bento cards. Each now carries a CONTINUOUS, subtle background animation (so the
  * cards feel alive like the AlphaLedger reference):
- *   RadarSearch  · 01 Adversarial R&D     — radar rings + a slowly SWEEPING wedge
- *   DetectRing   · 02 Surveillance Desk    — a segmented agent ring that ROTATES
- *   AuditShield  · 03 Tamper-evident Audit — a diagonal hatch field that DRIFTS
- *   BandScan     · 04 Cross-desk Band      — concentric arcs that PULSE outward
+ *   RadarSearch  · 01 Adversarial R&D     - radar rings + a slowly SWEEPING wedge
+ *   DetectRing   · 02 Surveillance Desk    - a segmented agent ring that ROTATES
+ *   AuditShield  · 03 Tamper-evident Audit - a diagonal hatch field that DRIFTS
+ *   BandScan     · 04 Cross-desk Band      - concentric arcs that PULSE outward
  *
  * Monochrome (white/gray); the only accent is --verdict-complete on the audit
  * chip. Deterministic (no Math.random) → SSR == client. `start` reveals on view;
@@ -134,7 +134,7 @@ export function DetectRing({ start, reduce }: { start: boolean; reduce: boolean 
           );
         })}
       </motion.g>
-      {/* center stat — stays upright */}
+      {/* center stat - stays upright */}
       <motion.g
         initial={reduce ? false : { opacity: 0 }}
         animate={start ? { opacity: 1 } : { opacity: reduce ? 1 : 0 }}
@@ -210,7 +210,7 @@ export function BandScan({ start, reduce }: { start: boolean; reduce: boolean })
           transition={{ duration: 0.9, delay: reduce ? 0 : 0.1 + i * 0.1, ease: EASE }}
         />
       ))}
-      {/* outward pulse — an arc that expands + fades, forever */}
+      {/* outward pulse - an arc that expands + fades, forever */}
       {!reduce &&
         [0, 1].map((k) => (
           <motion.path

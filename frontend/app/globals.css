@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================
-   ALPHA & OVERSIGHT — DESIGN TOKENS
+   ALPHA & OVERSIGHT - DESIGN TOKENS
    Backbone: AlphaLedger monochrome. Accents are SEMANTIC ONLY.
    See FRONTEND_BUILD_PLAN.md §1 / §1b.
    ============================================================ */
@@ -36,12 +36,12 @@
   --text-faint: #5f5f5f;
   --text-on-light: #14161c;
 
-  /* semantic accents — the ONLY chroma */
+  /* semantic accents - the ONLY chroma */
   --band-blue: #3b82f6;
   --band-blue-glow: #3b82f655;
   --band-blue-dim: #1e3a5f;
-  --desk-rnd: #6b7280; /* graphite — tone-only (D3) */
-  --desk-surv: #9aa6c4; /* light slate — tone-only (D3) */
+  --desk-rnd: #6b7280; /* graphite - tone-only (D3) */
+  --desk-surv: #9aa6c4; /* light slate - tone-only (D3) */
   --verdict-pass: #34d399;
   --verdict-flag: #ef4444;
   --verdict-escalate: #f59e0b;
@@ -64,7 +64,7 @@
   --dur-count: 1400ms;
 }
 
-/* Hard LIGHT-section inversion (AlphaLedger signature — §1b) */
+/* Hard LIGHT-section inversion (AlphaLedger signature - §1b) */
 [data-section="light"] {
   --bg-page: #ffffff;
   --bg-card: #fbfbfb;
@@ -78,7 +78,7 @@
   --hairline: #e7e7e7;
 }
 
-/* DARK reset — restores the root (dark) token values so a dark panel nested
+/* DARK reset - restores the root (dark) token values so a dark panel nested
    INSIDE a [data-section="light"] frame (e.g. the /how-it-works story stage)
    renders frost text on obsidian instead of inheriting the white-theme inks.
    Mirrors exactly the tokens [data-section="light"] remaps. */
@@ -132,7 +132,7 @@ body {
    scrollbar. Per-element native scrollers (FeaturesCarousel swipe track,
    AuditChain ladder) opt back in with their own `overflow-x-auto`.
    `overflow-x: clip` (not `hidden`) so it does NOT establish a scroll container
-   — that would break the GSAP/`position: sticky` pins. */
+   - that would break the GSAP/`position: sticky` pins. */
 body {
   max-width: 100%;
   overflow-x: clip;
@@ -196,7 +196,7 @@ body {
   animation: codify-flash 1.2s var(--ease-out) 0.4s both;
 }
 
-/* accessibility — respect reduced motion (ui-ux-pro-max priority #7) */
+/* accessibility - respect reduced motion (ui-ux-pro-max priority #7) */
 @media (prefers-reduced-motion: reduce) {
   .anim-band-pulse,
   .anim-fade-up,

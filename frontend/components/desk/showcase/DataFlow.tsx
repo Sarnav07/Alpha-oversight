@@ -14,7 +14,7 @@ import { useIsMobile } from "@/components/landing/useIsMobile";
 import { DeskBackdrop } from "./DeskBackdrop";
 
 /**
- * DataFlow — report §12 / D12. How live data reaches the screen, as a PINNED
+ * DataFlow - report §12 / D12. How live data reaches the screen, as a PINNED
  * scroll-scrub: the section holds while a token walks the pipeline stage by
  * stage (Event bus → /stream → traceStore → useDeskModel → Panels), each
  * lighting up with its caption as you scroll. Reduced motion / mobile fall back
@@ -24,9 +24,9 @@ import { DeskBackdrop } from "./DeskBackdrop";
 type Stage = { key: string; title: string; sub: string; body: string; tone: string };
 const STAGES: Stage[] = [
   { key: "bus", title: "Backend · :8000", sub: "event bus", body: "Every agent action and REST mutation originates here. One case runs at a time.", tone: "var(--desk-rnd)" },
-  { key: "sse", title: "/stream", sub: "SSE", body: "A single JSON ActivityEvent frame per action — desk-tagged, reasoning stripped — streamed to the browser.", tone: "var(--desk-surv)" },
+  { key: "sse", title: "/stream", sub: "SSE", body: "A single JSON ActivityEvent frame per action - desk-tagged, reasoning stripped - streamed to the browser.", tone: "var(--desk-surv)" },
   { key: "store", title: "traceStore", sub: "events", body: "An append-only zustand log of raw events. The honest record of exactly what crossed the wire.", tone: "var(--desk-surv)" },
-  { key: "model", title: "useDeskModel", sub: "fold", body: "One step folds the raw events into a single tidy DeskModel every panel reads from — and emits markers (verdict · escalate · codify).", tone: "var(--verdict-escalate)" },
+  { key: "model", title: "useDeskModel", sub: "fold", body: "One step folds the raw events into a single tidy DeskModel every panel reads from - and emits markers (verdict · escalate · codify).", tone: "var(--verdict-escalate)" },
   { key: "panels", title: "Panels", sub: "topology · timeline · dossiers · rules · audit", body: "Each panel renders from the model. A marker also triggers a TanStack Query refetch of /stats · /rules · /audit.", tone: "var(--band-blue)" },
 ];
 

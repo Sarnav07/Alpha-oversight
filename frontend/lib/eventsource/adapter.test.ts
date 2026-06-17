@@ -15,7 +15,7 @@ import type { ActivityEvent, ConnectionState } from "../types";
  * NEXT_PUBLIC_DATA_MODE once at import time. We flip it to "live" via vi.hoisted
  * (runs BEFORE the hoisted static import) so the default createAdapter yields
  * the LiveSSEAdapter under test. Neither adapter class is exported, so the
- * MockAdapter is reached the same way — by flipping the env to "mock" and
+ * MockAdapter is reached the same way - by flipping the env to "mock" and
  * re-importing the module (vi.resetModules) inside its own describe block.
  */
 
@@ -241,11 +241,11 @@ describe("MockAdapter (createAdapter in mock mode)", () => {
    * createAdapter is bound to the live branch for this whole module (env set in
    * vi.hoisted). To cover the MockAdapter without a second module, build one
    * directly off the same public surface by re-importing the module with the
-   * mock branch — done here by constructing through createAdapter after
+   * mock branch - done here by constructing through createAdapter after
    * temporarily flipping DATA_MODE is not possible (config.ts memoised it). So
    * instead we exercise the mock cadence via a fresh dynamic import that
    * re-reads the env. This keeps the FakeEventSource untouched (the mock never
-   * uses EventSource — it is pure setTimeout).
+   * uses EventSource - it is pure setTimeout).
    */
   it("advancing timers yields replay/connected then frames at the stepMs cadence", async () => {
     process.env.NEXT_PUBLIC_DATA_MODE = "mock";

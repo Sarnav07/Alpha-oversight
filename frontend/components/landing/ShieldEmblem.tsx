@@ -4,7 +4,7 @@ import { useId } from "react";
 import Logomark from "@/components/landing/Logomark";
 
 /**
- * ShieldEmblem — the shared A&O frosted shield badge. A SYMMETRIC shield:
+ * ShieldEmblem - the shared A&O frosted shield badge. A SYMMETRIC shield:
  * rounded top corners, vertical sides, then a chamfer to a flat bottom point; a
  * frosted silver gradient face with a field of diagonal tick marks; a light top
  * rim + a soft white halo lift it off the obsidian. The brand name sits top-left
@@ -38,7 +38,7 @@ export default function ShieldEmblem({
 
   return (
     <div className={`relative ${className}`}>
-      {/* soft white halo behind the badge — separates it from the obsidian */}
+      {/* soft white halo behind the badge - separates it from the obsidian */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
@@ -78,14 +78,14 @@ export default function ShieldEmblem({
         <path d={SHIELD} fill="none" stroke={`url(#${rim})`} strokeWidth="1.5" />
       </svg>
 
-      {/* brand name — top-left */}
+      {/* brand name - top-left */}
       {showLabel ? (
         <span className="absolute left-[10%] top-[8%] font-sans text-[clamp(9px,0.95vw,15px)] font-medium tracking-[-0.01em] text-[var(--frost)]">
           Alpha&nbsp;&amp;&nbsp;Oversight
         </span>
       ) : null}
 
-      {/* logomark — bottom-right, above the flat point */}
+      {/* logomark - bottom-right, above the flat point */}
       <span className="absolute bottom-[15%] right-[13%] text-[var(--frost)]">
         <Logomark size={logoSize} />
       </span>

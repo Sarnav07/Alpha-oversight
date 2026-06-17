@@ -6,7 +6,7 @@ import { Reveal } from "@/components/anim/Reveal";
 import { MaskLines } from "@/components/anim/MaskLines";
 
 /**
- * HighImpact — report §13. The three interactive "wow" demos, playable right on
+ * HighImpact - report §13. The three interactive "wow" demos, playable right on
  * the page: a tamper-test on the hash chain (verified ✓→✗), Band-envelope
  * tooltips, and the co-evolution ladder climbing as the rulebook grows. These
  * mirror the real desk affordances so the demo reads even before the live desk.
@@ -93,7 +93,7 @@ function TamperTest() {
       </button>
       <p className="mt-3 font-sans text-[12px]" style={{ color: "var(--text-muted)", lineHeight: 1.5 }}>
         Each leaf folds in the hash before it. Edit one byte and every link after
-        it disagrees with the stored chain — the verified badge flips on the spot.
+        it disagrees with the stored chain - the verified badge flips on the spot.
       </p>
     </div>
   );
@@ -150,7 +150,7 @@ function BandEnvelope() {
       </div>
       <p className="mt-3 font-sans text-[12px]" style={{ color: "var(--text-muted)", lineHeight: 1.5 }}>
         Every edge in the topology is a real Band message. Hovering it surfaces
-        the exact envelope — the proof that Band is the record, not a notification.
+        the exact envelope - the proof that Band is the record, not a notification.
       </p>
     </div>
   );
@@ -250,7 +250,7 @@ export function HighImpact() {
       <Reveal delay={0.08}>
         <p className="mt-6 max-w-2xl font-sans" style={{ fontSize: 15, lineHeight: 1.6, color: "var(--text-body)" }}>
           A few specific touches make the desk feel alive and unlike a generic
-          dashboard. Try them right here — they behave exactly as they do on the
+          dashboard. Try them right here - they behave exactly as they do on the
           live desk below.
         </p>
       </Reveal>

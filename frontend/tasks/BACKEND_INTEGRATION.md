@@ -1,6 +1,6 @@
-# Backend integration — shared reference (live wiring)
+# Backend integration - shared reference (live wiring)
 
-> Current as of 2026-06-16 (live contract). The frontend backlog is now fully implemented — see FRONTEND_IMPROVEMENTS.md + VERIFICATION_GUIDE.md.
+> Current as of 2026-06-16 (live contract). The frontend backlog is now fully implemented - see FRONTEND_IMPROVEMENTS.md + VERIFICATION_GUIDE.md.
 
 Ground truth from a fresh backend recon (2026-06-16). The backend was updated; this
 supersedes CONTEXT.md §3/§7 where they differ. **Goal:** make `NEXT_PUBLIC_DATA_MODE=live`
@@ -11,21 +11,21 @@ work end-to-end against the FastAPI server, one case at a time, swap-proof with 
   `.env` (AIML/FEATHERLESS/BAND_*), so `/demo/*` + live `/stream` work. Recorded replays
   exist at `data/events/events-<case_id>.jsonl` (e.g. `events-case-57191e5e.jsonl`, a full
   case) → keyless `?replay=<case_id>` verification.
-- **CORS: DONE by lead** — `CORSMiddleware` allows `http://(localhost|127.0.0.1):<port>`.
+- **CORS: DONE by lead** - `CORSMiddleware` allows `http://(localhost|127.0.0.1):<port>`.
   So the frontend can hit REST + EventSource directly at `API_BASE=http://localhost:8000`.
 - **`ActivityEvent` has NO `case_id`, NO `stage`** (7 fields only). One case at a time stays.
 
 ## Real REST contract (field names verbatim)
-- `GET /stats` → `{ total_cases, by_state:{<UPPERCASE_STATE>:n}, flagged, escalated, active_rules }` — COUNTS ONLY (narrative tiles 847/72%/41.2h stay hard-coded).
+- `GET /stats` → `{ total_cases, by_state:{<UPPERCASE_STATE>:n}, flagged, escalated, active_rules }` - COUNTS ONLY (narrative tiles 847/72%/41.2h stay hard-coded).
 - `GET /rules` → `Rule[]` = `{ id, family(lowercase: spoofing|layering|wash_trade|marking), params, provenance, status:"ACTIVE" }`.
 - `GET /cases` / `GET /cases/{id}` → `Case` = `{ case_id, room_id, state, features, verdict, events[], resolved_inputs, created_at, updated_at }`. `events` empty until terminal. `features` gains a `family` key at FLAGGED/ESCALATED. 404 → `{detail}`.
 - `GET /cases/{id}/audit` → `{ case_id, entries: LedgerEntry[], verified }`. **`entries` are Band-handoff leaves ONLY**: `{ band_message_id, bmid, case_id, direction:"sent"|"received", from, to, kind, sha256, prev_hash, hash }` (agent-step leaves have no case_id → filtered out).
 - `POST /cases/{id}/confirm` → `{ case, codified:true, regression_passed:true, rule:{id:"layering-v2-…", family, params, provenance:"human:…", status:"ACTIVE"} }`. Errors 404/409/422.
-- `POST /cases/{id}/reject` → **`{ case, codified:false }`** (CHANGED — was bare Case). Read `.case`.
+- `POST /cases/{id}/reject` → **`{ case, codified:false }`** (CHANGED - was bare Case). Read `.case`.
 - `POST /demo/beat-a|beat-b` → `{ case_id, state, verdict }` (beat-b → state ESCALATED, verdict null).
 - `POST /demo/rnd` → NOW BUILT, union: fail `{ confirmed:false, rounds, note }` | ok `{ confirmed:true, rounds, params, case_id, state, verdict }`.
 
-(All mirrored in `lib/types.ts` — reconciled by lead: `Case`, `LedgerEntry`, `RejectResponse`,
+(All mirrored in `lib/types.ts` - reconciled by lead: `Case`, `LedgerEntry`, `RejectResponse`,
 `RndResponse`, `BeatResponse`, `Features.family?`.)
 
 ## Real SSE `/stream` markers (parseMarker inputs)
@@ -39,9 +39,9 @@ debate complete
 verdict=<PASS|FLAG> rule=<rule_id|None>
 case <case_id> -> <FINAL_STATE>
 ```
-**GOTCHA:** the `features={...}` is Python `repr` (`True`/`False`, single quotes) — NOT JSON. Parse per-key with regex, never `JSON.parse`.
+**GOTCHA:** the `features={...}` is Python `repr` (`True`/`False`, single quotes) - NOT JSON. Parse per-key with regex, never `JSON.parse`.
 Replay frames add `replay_ts`. Band-handoff events: `agent_name` = sender (`investigator`, `@layer-spec`, `adjudicator`, `escalation`), content = `@mention + json`.
-**Agent-name casing:** real agents emit CLASS NAMES — `AnomalyDetector, Investigator, Specialist, Prosecution, Defense, Adjudicator, EscalationManager` — while Band-handoff/pipeline use lowercase (`investigator`, `@layer-spec`, `pipeline`). `nodeIdForAgent` must map BOTH.
+**Agent-name casing:** real agents emit CLASS NAMES - `AnomalyDetector, Investigator, Specialist, Prosecution, Defense, Adjudicator, EscalationManager` - while Band-handoff/pipeline use lowercase (`investigator`, `@layer-spec`, `pipeline`). `nodeIdForAgent` must map BOTH.
 
 ## Frozen `lib/api/queries.ts` public API (RestLive implements, DeskLive consumes)
 ```ts
@@ -53,7 +53,7 @@ export function useAudit(caseId: string | null): UseQueryResult<AuditResponse>;
 export function useInvalidateOnMarkers(): void; // mount once in /desk; watches trace store, invalidates stats/rules/cases on verdict|escalate|codify|"-> FINAL" markers
 ```
 
-## Verification (2026-06-16 — DONE, against the LIVE backend)
+## Verification (2026-06-16 - DONE, against the LIVE backend)
 Built by a 3-teammate team (RestLive / SseLive / DeskLive) against the frozen contracts above.
 - `npx tsc --noEmit` exit 0 · `npm run build` exit 0 (4 routes).
 - Backend run on :8010 (ours, with the new CORS) and verified:
@@ -71,7 +71,7 @@ Built by a 3-teammate team (RestLive / SseLive / DeskLive) against the frozen co
 - Browser-only (can't verify headless): the live topology lighting from real SSE, React-Query stats/rules refetch, and the codify 4→5 on a live Confirm. Run a live Beat B (keys present) and watch.
 
 ## Keep stable (so parallel teammates don't break each other)
-- `parseMarker` returns the SAME `Marker.stage` union values (anomaly|recruit|waiting_on_band|propose|debate|verdict|escalate|codify) — only fix the regexes to the real strings above.
+- `parseMarker` returns the SAME `Marker.stage` union values (anomaly|recruit|waiting_on_band|propose|debate|verdict|escalate|codify) - only fix the regexes to the real strings above.
 - `nodeIdForAgent`, `NODE_META`, `EDGES` keep their signatures.
 - `DeskModel` / `DeskController` contracts (lib/desk/contract.ts) DO NOT change.
 

@@ -67,7 +67,7 @@ const doc: LegalDoc = {
       "heading": "International Data Transfers",
       "id": "international-data-transfers",
       "blocks": [
-        "Your information, including personal data, may be transferred to — and maintained on — computers located outside of your state, province, country or other governmental jurisdiction where the data protection laws may differ than those from your jurisdiction.",
+        "Your information, including personal data, may be transferred to - and maintained on - computers located outside of your state, province, country or other governmental jurisdiction where the data protection laws may differ than those from your jurisdiction.",
         "If you are located outside the United Kingdom and choose to provide information to us, please note that we transfer the data, including personal data, to the United Kingdom and process it there."
       ]
     },

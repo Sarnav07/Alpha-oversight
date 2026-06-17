@@ -1,15 +1,15 @@
 /**
- * useDeskUIStore — desk-local UI state that is NOT part of the data fold
+ * useDeskUIStore - desk-local UI state that is NOT part of the data fold
  * (useTraceStore/useDeskModel) seam: the click-to-filter node selection, the
  * free-text search query, and the sound-cue on/off toggle.
  *
- * Kept deliberately OUT of the DeskModel/DeskController contract — these are pure
+ * Kept deliberately OUT of the DeskModel/DeskController contract - these are pure
  * presentation concerns the components own, so they never touch the swap-proof
  * data seam. Components subscribe with selectors.
  *
  * `soundOn` is persisted to localStorage (key `desk:soundOn`) and rehydrated
  * lazily on the client; it MUST default OFF (browser autoplay policy + good
- * manners — no audio until a user gesture flips it).
+ * manners - no audio until a user gesture flips it).
  */
 "use client";
 
@@ -66,7 +66,7 @@ export const useDeskUIStore = create<DeskUIState>((set, get) => ({
     try {
       window.localStorage.setItem(SOUND_KEY, on ? "1" : "0");
     } catch {
-      // ignore quota / privacy-mode failures — in-memory state still flips.
+      // ignore quota / privacy-mode failures - in-memory state still flips.
     }
     set({ soundOn: on });
   },

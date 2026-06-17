@@ -1,9 +1,9 @@
 import { ImageResponse } from "next/og";
 
-// Root Open Graph card — 1200×630, AlphaLedger monochrome.
+// Root Open Graph card - 1200×630, AlphaLedger monochrome.
 // Self-contained: the Logomark SVG is inlined (no client-component import).
 export const alt =
-  "Alpha & Oversight — Adversarial trade-surveillance, refereed by a Band of agents";
+  "Alpha & Oversight - Adversarial trade-surveillance, refereed by a Band of agents";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -46,7 +46,7 @@ export default function Image() {
           fontFamily: "sans-serif",
         }}
       >
-        {/* Top row — mark + eyebrow */}
+        {/* Top row - mark + eyebrow */}
         <div
           style={{
             display: "flex",

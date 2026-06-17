@@ -23,8 +23,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Alpha & Oversight — Command Center",
-    template: "%s — Alpha & Oversight",
+    default: "Alpha & Oversight - Command Center",
+    template: "%s - Alpha & Oversight",
   },
   description:
     "Adversarial AI trade-surveillance, refereed by a Band of agents. A read-only trace viewer over the Band.",
@@ -40,14 +40,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Alpha & Oversight",
-    title: "Alpha & Oversight — Command Center",
+    title: "Alpha & Oversight - Command Center",
     description:
       "Adversarial trade-surveillance, refereed by a Band of agents.",
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Alpha & Oversight — Command Center",
+    title: "Alpha & Oversight - Command Center",
     description:
       "Adversarial trade-surveillance, refereed by a Band of agents.",
   },

@@ -1,15 +1,15 @@
 /**
- * sound.ts — subtle SYNTHESIZED desk cues via the Web Audio API. No audio asset
+ * sound.ts - subtle SYNTHESIZED desk cues via the Web Audio API. No audio asset
  * files: every cue is an oscillator + gain envelope built on the fly.
  *
  * Gating (non-negotiable, browser autoplay policy):
  *   - The AudioContext is created LAZILY on the first user gesture (the sound
  *     toggle calls `primeAudio()`), never at import/mount.
- *   - Callers must check `useDeskUIStore.getState().soundOn` before triggering —
+ *   - Callers must check `useDeskUIStore.getState().soundOn` before triggering -
  *     this module just synthesizes; it does not read the toggle itself.
  *   - If the context is suspended (tab backgrounded / pre-gesture), cues no-op.
  *
- * Cue vocabulary (kept tasteful — short, low-velocity blips, never a jingle):
+ * Cue vocabulary (kept tasteful - short, low-velocity blips, never a jingle):
  *   flag      → a tense two-note minor drop (alert)
  *   escalate  → a rising two-note prompt (attention / hand-off to human)
  *   codify    → a soft resolved major third (success / rule written)
@@ -47,7 +47,7 @@ function blip(freq: number, when: number, dur: number, peak: number): void {
   const gain = ctx.createGain();
   osc.type = "sine";
   osc.frequency.setValueAtTime(freq, t0);
-  // fast attack, exponential-ish decay — a soft pluck, not a beep.
+  // fast attack, exponential-ish decay - a soft pluck, not a beep.
   gain.gain.setValueAtTime(0.0001, t0);
   gain.gain.linearRampToValueAtTime(peak, t0 + 0.012);
   gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
@@ -57,7 +57,7 @@ function blip(freq: number, when: number, dur: number, peak: number): void {
 }
 
 /**
- * Play a cue. No-ops unless the context exists AND is running — so it stays
+ * Play a cue. No-ops unless the context exists AND is running - so it stays
  * silent before the user has primed audio via the toggle (a gesture).
  */
 export function playCue(kind: CueKind): void {

@@ -3,7 +3,7 @@ import LegalPage from "@/components/legal/LegalPage";
 import doc from "@/content/legal/privacy";
 
 /**
- * /privacy — Privacy Policy. Landing nav + footer wrap a readable legal column;
+ * /privacy - Privacy Policy. Landing nav + footer wrap a readable legal column;
  * content is the A&O-rebranded copy in content/legal/privacy.ts.
  */
 export const metadata: Metadata = {

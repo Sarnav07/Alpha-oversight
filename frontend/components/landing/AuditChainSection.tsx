@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * AuditChainSection — the `#audit` section: the tamper-evident ledger as a COMPACT
+ * AuditChainSection - the `#audit` section: the tamper-evident ledger as a COMPACT
  * diagonal STAIRCASE that fits in a single viewport (no internal scroll).
  *   • nine steps (one per role in the Overview nonagon) descend left→right,
  *     each block offset down + right so it reads as literal stairs;
  *   • the demo control + the verify_chain result sit on ONE row at opposite ends,
  *     so clicking "simulate an edit" visibly flips verify_chain ✓ → ✗ and recolours
  *     the staircase, all without scrolling;
- *   • no accidental hover-tamper — one clearly-labelled button drives the demo.
+ *   • no accidental hover-tamper - one clearly-labelled button drives the demo.
  *
  * Semantic colour only: --verdict-complete ✓, --verdict-flag for the edit,
  * --band-blue on Band-handoff steps. Reduced-motion renders the full staircase.
@@ -25,9 +25,9 @@ const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
 
 type Block = { i: number; agent: string; title: string; band?: boolean; prev: string; hash: string };
 
-/* nine blocks — one per Band hop, mirroring the Overview nonagon */
+/* nine blocks - one per Band hop, mirroring the Overview nonagon */
 const BLOCKS: Block[] = [
-  { i: 0, agent: "adversary", title: "Order flow crossed", band: true, prev: "— genesis", hash: "0x8b1e…a3f9" },
+  { i: 0, agent: "adversary", title: "Order flow crossed", band: true, prev: "- genesis", hash: "0x8b1e…a3f9" },
   { i: 1, agent: "anomaly_detector", title: "Anomaly flagged", prev: "0x8b1e…a3f9", hash: "0x2c4a…11de" },
   { i: 2, agent: "investigator", title: "Recruited specialist", band: true, prev: "0x2c4a…11de", hash: "0x4d77…7c10" },
   { i: 3, agent: "specialist", title: "Evidence assembled", prev: "0x4d77…7c10", hash: "0x7a02…9b3c" },
@@ -40,7 +40,7 @@ const BLOCKS: Block[] = [
 
 const TAMPER_AT = 3;
 
-/* ── compact staircase geometry — sized to fit one viewport ────────────────── */
+/* ── compact staircase geometry - sized to fit one viewport ────────────────── */
 const W = 212;
 const H = 46;
 const STEP_X = 104;
@@ -161,13 +161,13 @@ export default function AuditChainSection() {
         {/* one-line how-it-works */}
         <Reveal delay={0.1}>
           <p className="mt-3 max-w-3xl font-sans text-[14px] leading-relaxed text-[var(--text-body)]">
-            The same nine steps from the loop above, sealed into a logbook — each block stamped with a{" "}
+            The same nine steps from the loop above, sealed into a logbook - each block stamped with a{" "}
             <span className="text-[var(--text-primary)]">fingerprint</span> of the one before it. Change any record and every
             fingerprint below it stops matching.
           </p>
         </Reveal>
 
-        {/* control bar — simulate (left) ⟷ verify_chain (right), one row */}
+        {/* control bar - simulate (left) ⟷ verify_chain (right), one row */}
         <Reveal delay={0.16}>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-[var(--r-card)] border px-4 py-3" style={{ borderColor: "var(--border-subtle)", backgroundColor: "color-mix(in srgb, var(--bg-card) 60%, transparent)" }}>
             <button
@@ -203,8 +203,8 @@ export default function AuditChainSection() {
         <Reveal delay={0.2}>
           <p className="mt-3 font-sans text-[12.5px] text-[var(--text-muted)]">
             {edited
-              ? `Block #${String(TAMPER_AT).padStart(2, "0")} changed — its fingerprint no longer matches, so every block below it (in red) fails the check.`
-              : "All 9 blocks re-hashed end to end — nothing has been altered. Try the button to see a tamper get caught."}
+              ? `Block #${String(TAMPER_AT).padStart(2, "0")} changed - its fingerprint no longer matches, so every block below it (in red) fails the check.`
+              : "All 9 blocks re-hashed end to end - nothing has been altered. Try the button to see a tamper get caught."}
           </p>
         </Reveal>
 

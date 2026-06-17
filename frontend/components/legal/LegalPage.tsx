@@ -4,14 +4,14 @@ import SiteFooter from "@/components/landing/SiteFooter";
 import type { LegalDoc } from "@/content/legal/types";
 
 /**
- * LegalPage — shared layout for the /terms and /privacy routes. Opens with the
+ * LegalPage - shared layout for the /terms and /privacy routes. Opens with the
  * landing navbar, closes with the landing footer, and renders a readable legal
  * column in between (light theme). Sections carry a mono index + anchor id; a
  * sticky table-of-contents rail appears on large screens. Content is sourced
  * from the committed, A&O-rebranded modules under content/legal/.
  */
 
-const ALL_CAPS = /^[^a-z]*$/; // address lines etc. — rendered as a tight block.
+const ALL_CAPS = /^[^a-z]*$/; // address lines etc. - rendered as a tight block.
 
 /** Linkify bare emails inside a paragraph so contact addresses are clickable. */
 function renderText(text: string) {

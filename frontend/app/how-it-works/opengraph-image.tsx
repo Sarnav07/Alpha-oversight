@@ -1,8 +1,8 @@
 import { ImageResponse } from "next/og";
 
-// /how-it-works Open Graph card — distinct title for the explainer.
+// /how-it-works Open Graph card - distinct title for the explainer.
 // Self-contained: the Logomark SVG is inlined (no client-component import).
-export const alt = "Alpha & Oversight — How it works: The Evasion";
+export const alt = "Alpha & Oversight - How it works: The Evasion";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

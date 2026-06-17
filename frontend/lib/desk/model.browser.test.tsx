@@ -8,8 +8,8 @@ import type { ActivityEvent, Rule, Stats } from "../types";
 /**
  * useDeskModel folds the raw ActivityEvent stream (useTraceStore) + the rule/
  * stats sources into the frozen DeskModel view. These suites pin LIVE mode
- * (config mocked → IS_MOCK=false) so the REST-driven branches — rules.length>4
- * codified, GET /stats counts, and the statsError/rulesError health flags — are
+ * (config mocked → IS_MOCK=false) so the REST-driven branches - rules.length>4
+ * codified, GET /stats counts, and the statsError/rulesError health flags - are
  * exercised; the SSE fold (case/nodes/state) runs identically in both modes.
  */
 
@@ -21,7 +21,7 @@ vi.mock("../config", () => ({
   IS_MOCK: false,
 }));
 
-// Drive rules/stats deterministically — model.ts reads useRules()/useStats().
+// Drive rules/stats deterministically - model.ts reads useRules()/useStats().
 const useRulesMock = vi.fn();
 const useStatsMock = vi.fn();
 vi.mock("../api/queries", () => ({
@@ -33,7 +33,7 @@ import { useDeskModel } from "./model";
 import { useTraceStore } from "../store/useTraceStore";
 import { SEED_RULES } from "./controller";
 
-/** Minimal UseQueryResult shim — only the fields useDeskModel reads. */
+/** Minimal UseQueryResult shim - only the fields useDeskModel reads. */
 function q<T>(over: { data?: T; isError?: boolean } = {}): UseQueryResult<T> {
   return {
     data: over.data,
@@ -88,7 +88,7 @@ beforeEach(() => {
   useStatsMock.mockReturnValue(q<Stats>({ data: undefined }));
 });
 
-describe("useDeskModel — empty stream", () => {
+describe("useDeskModel - empty stream", () => {
   it("renders the full topology with no case selected", () => {
     const { result } = render();
     expect(result.current.case.id).toBeNull();
@@ -103,7 +103,7 @@ describe("useDeskModel — empty stream", () => {
   });
 });
 
-describe("useDeskModel — case lifecycle from markers", () => {
+describe("useDeskModel - case lifecycle from markers", () => {
   it("binds the case id from `opened case <id>`", () => {
     const { result, rerender } = render();
     useTraceStore.getState().pushEvent(ev({ content: "opened case C-0191" }));
@@ -131,7 +131,7 @@ describe("useDeskModel — case lifecycle from markers", () => {
   });
 });
 
-describe("useDeskModel — live rules / stats / codify reveal", () => {
+describe("useDeskModel - live rules / stats / codify reveal", () => {
   it("codified is false with exactly the 4 seed rules", () => {
     const { result } = render();
     expect(result.current.rules).toHaveLength(4);
@@ -156,7 +156,7 @@ describe("useDeskModel — live rules / stats / codify reveal", () => {
           by_state: { FLAGGED: 3 },
           flagged: 3,
           escalated: 1,
-          active_rules: 99, // intentionally wrong — rules.length must win.
+          active_rules: 99, // intentionally wrong - rules.length must win.
         },
       }),
     );
@@ -167,7 +167,7 @@ describe("useDeskModel — live rules / stats / codify reveal", () => {
   });
 });
 
-describe("useDeskModel — REST health flags (live)", () => {
+describe("useDeskModel - REST health flags (live)", () => {
   it("surfaces statsError when GET /stats errors", () => {
     useStatsMock.mockReturnValue(q<Stats>({ isError: true }));
     const { result } = render();

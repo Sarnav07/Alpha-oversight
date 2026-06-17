@@ -1,10 +1,10 @@
 /**
- * BandEdge — one custom xyflow edge = one pipeline/Band hop.
+ * BandEdge - one custom xyflow edge = one pipeline/Band hop.
  *
  * - Cross-Band edges (data.kind != null) carry a small mono BandKind label.
  * - `active` lights the stroke (frost). Cross-Band active edges tint --band-blue.
  * - The investigator→specialist edge carries a TRAVELING blue pulse dot while
- *   `data.bandPulse` is true (model.bandWaiting) — the "blue is not a for-loop"
+ *   `data.bandPulse` is true (model.bandWaiting) - the "blue is not a for-loop"
  *   signal that a real round-trip is in flight.
  * - Reduced-motion (`data.staticMode`): no traveling dot; the edge renders its
  *   final lit/dim stroke only.
@@ -87,7 +87,7 @@ function BandEdgeImpl({
         }}
       />
 
-      {/* Traveling Band pulse — animated dot riding the path. */}
+      {/* Traveling Band pulse - animated dot riding the path. */}
       {bandPulse && !staticMode && (
         <circle r={3.5} fill="var(--band-blue)">
           <animateMotion dur="1.4s" repeatCount="indefinite" path={path} />

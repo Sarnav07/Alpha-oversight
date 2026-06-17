@@ -1,5 +1,5 @@
 /**
- * useDeskModel — folds the raw ActivityEvent stream (useTraceStore) into the
+ * useDeskModel - folds the raw ActivityEvent stream (useTraceStore) into the
  * view-models in contract.ts: node status, case state, verdict, debate, timeline,
  * plus the rule/stats derivation (incl. the codify 4→5 reveal) sourced from the
  * mock registry in mock mode and GET /rules + /stats when live. Components must
@@ -33,9 +33,9 @@ import type { ActivityEvent, Verdict, Stats, Rule } from "../types";
  * meaningful only in live mode; mock mode reports them false.
  */
 export interface DeskModelView extends DeskModel {
-  /** GET /stats failed (live mode) — tiles should show "—", not silent zeros. */
+  /** GET /stats failed (live mode) - tiles should show "-", not silent zeros. */
   statsError: boolean;
-  /** GET /rules failed (live mode) — Active Rules count is unavailable. */
+  /** GET /rules failed (live mode) - Active Rules count is unavailable. */
   rulesError: boolean;
 }
 
@@ -65,7 +65,7 @@ function latestForNode(
   return best;
 }
 
-/** lowercase RuleFamily set — used to sniff the family out of free-text content. */
+/** lowercase RuleFamily set - used to sniff the family out of free-text content. */
 const FAMILIES = ["spoofing", "layering", "wash_trade", "marking"] as const;
 function sniffFamily(content: string | null): string | null {
   if (!content) return null;
@@ -77,7 +77,7 @@ function deriveCase(events: ActivityEvent[]): CaseView {
   const view: CaseView = { id: null, state: null, verdict: null, family: null };
   for (const e of events) {
     const m = parseMarker(e);
-    // case id: live SSE frames carry no case_id field — fall back to the id the
+    // case id: live SSE frames carry no case_id field - fall back to the id the
     // pipeline prints in `opened case <id>` / `case <id> -> <state>` markers.
     const cid = e.case_id ?? m.caseId;
     if (cid) view.id = cid;
@@ -109,7 +109,7 @@ function deriveNodes(
   const activeNode = last ? nodeIdForAgent(last.agent_name) : null;
   const seen = new Set(events.map((e) => nodeIdForAgent(e.agent_name)).filter(Boolean));
   // Investigator goes blue ("waiting on Band") from when it emits its recruit
-  // handoff until the next desk node — the specialist — responds. parseMarker
+  // handoff until the next desk node - the specialist - responds. parseMarker
   // overwrites stage to "recruit" when both tokens are present, so we read the
   // raw "waiting on band" text instead, then gate on the specialist not yet seen.
   const invEvent = latestForNode(latestByAgent, "investigator");
@@ -166,7 +166,7 @@ function deriveTimeline(events: ActivityEvent[]): TimelineDot[] {
   const dots: TimelineDot[] = [];
   events.forEach((e, i) => {
     const m = parseMarker(e);
-    // raw "waiting on band" text — parseMarker overwrites stage to "recruit"
+    // raw "waiting on band" text - parseMarker overwrites stage to "recruit"
     // when the same frame also carries the recruit handoff tokens.
     const waiting = /waiting on band/i.test(e.content ?? "");
     let tone: TimelineDot["tone"] | null = null;
@@ -186,12 +186,12 @@ export function useDeskModel(): DeskModelView {
   const events = useTraceStore((s) => s.events);
   const latestByAgent = useTraceStore((s) => s.latestByAgent);
 
-  // Mock rule registry — the source of truth ONLY in mock mode (the controller's
+  // Mock rule registry - the source of truth ONLY in mock mode (the controller's
   // codify(4→5) mutates it). Subscribed unconditionally so hook order is stable.
   const mockRules = useRulesStore((s) => s.rules);
   const mockCodified = useRulesStore((s) => s.codified);
 
-  // Live REST sources — always called (Rules of Hooks), consumed only when live.
+  // Live REST sources - always called (Rules of Hooks), consumed only when live.
   // RestLive returns the bundled MOCK_RULES/MOCK_STATS in mock mode, so these are
   // harmless to subscribe to; we still branch on IS_MOCK for the seam to be explicit.
   const liveRulesQ = useRules();
@@ -202,7 +202,7 @@ export function useDeskModel(): DeskModelView {
   const rules: Rule[] = IS_MOCK ? mockRules : liveRulesQ.data ?? SEED_RULES;
   const liveStats = liveStatsQ.data;
 
-  // REST health — live-only. Surfaced so StatsBar can show "—"/"unavailable"
+  // REST health - live-only. Surfaced so StatsBar can show "-"/"unavailable"
   // instead of silently rendering seed/zero data when the backend is down.
   const statsError = !IS_MOCK && liveStatsQ.isError;
   const rulesError = !IS_MOCK && liveRulesQ.isError;

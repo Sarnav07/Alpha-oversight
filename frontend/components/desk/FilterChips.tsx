@@ -5,7 +5,7 @@ import { useFilterActive } from "@/lib/desk/filter";
 import { NODE_META } from "@/lib/desk/nodes";
 
 /**
- * FilterChips — dismissible chips for the active node filter + search query.
+ * FilterChips - dismissible chips for the active node filter + search query.
  * Renders nothing when no filter is active. A neutral selection look (NOT
  * --band-blue, which is SACRED = waiting-on-Band); we use --text-primary /
  * --border-strong for the active node chip per the desk design rules.

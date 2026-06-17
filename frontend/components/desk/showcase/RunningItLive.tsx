@@ -4,7 +4,7 @@ import { Reveal } from "@/components/anim/Reveal";
 import { MaskLines } from "@/components/anim/MaskLines";
 
 /**
- * RunningItLive — report §14 / D13. The runtime layout (browser · Next.js :4100 ·
+ * RunningItLive - report §14 / D13. The runtime layout (browser · Next.js :4100 ·
  * FastAPI :8000 · Band + model providers) and the exact commands to run it,
  * keyless or full-live. Reveal-on-scroll; terminal-styled command blocks.
  */
@@ -77,7 +77,7 @@ export function RunningItLive() {
       <Reveal delay={0.08}>
         <p className="mt-6 max-w-2xl font-sans" style={{ fontSize: 15, lineHeight: 1.6, color: "var(--text-body)" }}>
           The browser, the backend, and the outside services it calls. For a quick
-          demo you can skip the outside services entirely — mock Band + recorded
+          demo you can skip the outside services entirely - mock Band + recorded
           fixtures look identical to a live replay.
         </p>
       </Reveal>
@@ -136,7 +136,7 @@ export function RunningItLive() {
       <Reveal delay={0.05}>
         <div className="mt-6 flex flex-col gap-3 rounded-[var(--r-card)] border p-5 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: "var(--hairline)", backgroundColor: "var(--bg-card)" }}>
           <p className="font-sans text-[13.5px]" style={{ color: "var(--text-body)", lineHeight: 1.55 }}>
-            <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>Mock mode needs nothing but the frontend</span> — it
+            <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>Mock mode needs nothing but the frontend</span> - it
             replays bundled fixtures and looks identical to a live replay. Full
             adversary runs additionally need the model-provider keys.
           </p>

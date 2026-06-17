@@ -7,12 +7,12 @@ import { useEffect, useState } from "react";
 import Logomark from "@/components/landing/Logomark";
 
 /**
- * LandingNav — AlphaLedger-style floating top navigation for the A&O landing page.
+ * LandingNav - AlphaLedger-style floating top navigation for the A&O landing page.
  *
  * Sits fixed at the top, full width, over a transparent background so it floats
  * across the alternating light/dark scrollytelling frames of the page.
  *
- * LEGIBILITY — deterministic scroll-spy (NOT mix-blend-mode).
+ * LEGIBILITY - deterministic scroll-spy (NOT mix-blend-mode).
  * ----------------------------------------------------------
  * The prior implementation relied on `mix-blend-mode: difference`. That is only
  * correct when the blended ink is PURE #fff with no isolating/opaque ancestor;
@@ -28,7 +28,7 @@ import Logomark from "@/components/landing/Logomark";
  *     mid-scroll (no scroll delta), because we also poll on rAF, not just scroll.
  *   • It needs no agreement from sibling sections about their theme attrs.
  *   • Default state is INK (the page opens white at the top), so the brand is
- *     visible on first paint before any listener fires — no flash of invisible text.
+ *     visible on first paint before any listener fires - no flash of invisible text.
  *
  * The "Band: connected" pill and the solid dark CTA already carry their own
  * self-contained contrast and are left untouched by the theme flip.
@@ -58,7 +58,7 @@ function luminanceOf(color: string): number | null {
 export default function LandingNav() {
   // true ⇒ frame behind the nav is dark ⇒ paint brand/links white.
   const [onDark, setOnDark] = useState(false);
-  // mobile slide-down menu (md and below — the centered link row is hidden there)
+  // mobile slide-down menu (md and below - the centered link row is hidden there)
   const [menuOpen, setMenuOpen] = useState(false);
   // On sub-routes (e.g. /terms), in-page hash links must point back to the home
   // page; on "/" they stay bare so the browser scrolls without a reload.
@@ -68,7 +68,7 @@ export default function LandingNav() {
 
   useEffect(() => {
     let raf = 0;
-    let last = -1; // -1 unknown, 0 light, 1 dark — avoids redundant setState churn.
+    let last = -1; // -1 unknown, 0 light, 1 dark - avoids redundant setState churn.
 
     const sample = () => {
       raf = 0;
@@ -144,8 +144,8 @@ export default function LandingNav() {
 
   // Ink on light frames (default), white on dark frames.
   // NOTE: this fixed header is NOT inside a [data-section="light"] wrapper, so
-  // var(--text-primary)/--text-body resolve to the ROOT (dark-theme) values —
-  // i.e. near-white — which made the brand invisible + links faint over the
+  // var(--text-primary)/--text-body resolve to the ROOT (dark-theme) values -
+  // i.e. near-white - which made the brand invisible + links faint over the
   // white hero. Use EXPLICIT dark hex on light frames instead.
   const inkColor = onDark ? "#ffffff" : "#14161c";
   const linkColor = onDark ? "rgba(255,255,255,0.82)" : "#52525b";
@@ -157,7 +157,7 @@ export default function LandingNav() {
         {/* brand: shared Logomark + editorial uppercase wordmark */}
         <Link
           href="/"
-          aria-label="Alpha &amp; Oversight — home"
+          aria-label="Alpha &amp; Oversight - home"
           className="group inline-flex items-center gap-2.5"
           style={{ color: inkColor, transition: "color 200ms ease" }}
         >
@@ -215,7 +215,7 @@ export default function LandingNav() {
             </span>
           </span>
 
-          {/* Launch Desk CTA — dark pill, fixed contrast */}
+          {/* Launch Desk CTA - dark pill, fixed contrast */}
           <Link
             href="/desk"
             className="group inline-flex items-center gap-1.5 rounded-[var(--r-pill)] border border-white/12 bg-[var(--obsidian)] px-4 py-2 font-sans text-[12px] font-medium tracking-wide text-white shadow-[0_1px_0_rgba(255,255,255,0.08)_inset,0_2px_10px_rgba(0,0,0,0.35)] transition-all duration-200 hover:border-white/20 hover:bg-[#0c0c0c]"
@@ -229,7 +229,7 @@ export default function LandingNav() {
             </span>
           </Link>
 
-          {/* Hamburger — only below md, where the centered link row is hidden. */}
+          {/* Hamburger - only below md, where the centered link row is hidden. */}
           <button
             type="button"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -263,7 +263,7 @@ export default function LandingNav() {
         </div>
       </nav>
 
-      {/* Mobile menu sheet — full-width dark panel under the bar (md and below).
+      {/* Mobile menu sheet - full-width dark panel under the bar (md and below).
           Self-contained dark contrast so it reads over any frame; not nested in
           a [data-section="light"] wrap, so explicit colors are used. */}
       {menuOpen && (

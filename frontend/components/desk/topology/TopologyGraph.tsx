@@ -1,5 +1,5 @@
 /**
- * TopologyGraph — the /desk CENTERPIECE.
+ * TopologyGraph - the /desk CENTERPIECE.
  *
  * An @xyflow/react graph of the adversarial trade-surveillance pipeline, driven
  * entirely by `useDeskModel()` (NodeView[] / EdgeView[]). R&D desk on the LEFT,
@@ -13,7 +13,7 @@
  * Reduced motion: a `useReducedMotion()` fallback renders the final/static node
  * and edge states with NO animation (passed down as `staticMode`).
  *
- * Takes NO props — it reads the model itself.
+ * Takes NO props - it reads the model itself.
  */
 "use client";
 
@@ -164,7 +164,7 @@ export function TopologyGraph() {
 }
 
 /**
- * Swimlane panels — a faint desk-toned frame + eyebrow label behind each column,
+ * Swimlane panels - a faint desk-toned frame + eyebrow label behind each column,
  * rendered in flow-space (ViewportPortal) so they pan/zoom with the graph. zIndex
  * -1 keeps them behind the nodes; pointer-events off. Desk tones stay tone-only.
  */
@@ -210,7 +210,7 @@ function Swimlanes() {
 
 /**
  * The Chinese-wall divider rendered in flow-space via a ViewportPortal so it
- * pans/zooms with the graph. Pure decoration — no handles, no pointer events.
+ * pans/zooms with the graph. Pure decoration - no handles, no pointer events.
  */
 function ChineseWall() {
   return (

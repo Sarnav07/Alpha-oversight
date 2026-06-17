@@ -9,7 +9,7 @@ import {
 } from "framer-motion";
 
 /**
- * Preloader — full-screen black splash shown once on first site load.
+ * Preloader - full-screen black splash shown once on first site load.
  *
  * Sequence: animated "ALPHA & OVERSIGHT" wordmark with a drawn-in ◢ anchor,
  * two-clause stagger reveal, a thin scan-line underline sweep, and a
@@ -18,7 +18,7 @@ import {
  *
  * Prop-less, self-contained. Respects prefers-reduced-motion (static
  * wordmark, shorter beat). A module-scoped guard plays the splash on every
- * full document load (first visit AND refresh — a hard load is a fresh JS
+ * full document load (first visit AND refresh - a hard load is a fresh JS
  * context, so the flag resets) while skipping replay on soft client-side
  * navigation back to "/" within the same session (module state survives
  * soft navs but not a reload).
@@ -29,7 +29,7 @@ import {
 // this client session. Survives App-Router soft navigations; reset by reload.
 let hasPlayedThisDocument = false;
 
-// Two clauses: "ALPHA" / "& OVERSIGHT" — each splits into letters for stagger.
+// Two clauses: "ALPHA" / "& OVERSIGHT" - each splits into letters for stagger.
 const CLAUSE_A = "ALPHA".split("");
 const CLAUSE_B = "& OVERSIGHT".split("");
 
@@ -45,7 +45,7 @@ export default function Preloader() {
     setMounted(true);
 
     if (hasPlayedThisDocument) {
-      return; // already played in this session's JS context — skip on soft nav
+      return; // already played in this session's JS context - skip on soft nav
     }
 
     // Claim the play immediately so a soft nav away mid-splash won't replay it.
@@ -62,7 +62,7 @@ export default function Preloader() {
     };
   }, [reduceMotion]);
 
-  // Nothing to render until the client decides — avoids SSR/CSR mismatch.
+  // Nothing to render until the client decides - avoids SSR/CSR mismatch.
   if (!mounted) return null;
 
   // ---- Motion variants -----------------------------------------------------
@@ -142,7 +142,7 @@ export default function Preloader() {
                 }}
               />
 
-              {/* Wordmark — two-clause letter stagger */}
+              {/* Wordmark - two-clause letter stagger */}
               <motion.div
                 variants={reduceMotion ? undefined : container}
                 initial={reduceMotion ? false : "hidden"}

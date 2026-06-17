@@ -7,15 +7,15 @@ import { parseMarker } from "@/lib/eventsource/parseMarker";
 import type { ActivityEvent } from "@/lib/types";
 
 /**
- * ReplayTransport — the mock-only playback transport strip under the StatsBar.
+ * ReplayTransport - the mock-only playback transport strip under the StatsBar.
  *
- * A real scrubber over the loaded fixture: play/pause, reset, 0.5×–4× speed, a
+ * A real scrubber over the loaded fixture: play/pause, reset, 0.5×-4× speed, a
  * draggable seek rail (with verdict/escalate/codify tick marks), a live
  * playhead + current-marker readout, and the replay case picker (Beat A / Beat B
  * / R&D loop). Everything drives the ReplayClock (lib/desk/clock.ts); the rest of
  * the desk just reacts to useTraceStore as usual.
  *
- * Reduced-motion safe: it's plain controls + a native range input — no animation.
+ * Reduced-motion safe: it's plain controls + a native range input - no animation.
  * Live mode never renders this (you can't scrub a live LLM stream); the page
  * gates it behind IS_MOCK.
  */
@@ -207,7 +207,7 @@ export default function ReplayTransport() {
               key={c.id}
               type="button"
               onClick={() => load(c.id)}
-              title={`${c.id} — ${c.blurb}`}
+              title={`${c.id} - ${c.blurb}`}
               className="rounded-[var(--r-chip)] border px-2 py-1 font-mono text-[10px] uppercase tracking-wide transition-colors"
               style={{
                 borderColor: on ? "var(--border-strong)" : "var(--border-subtle)",

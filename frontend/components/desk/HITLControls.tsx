@@ -6,7 +6,7 @@ import { useDeskModel } from "@/lib/desk/model";
 import { useDeskController, DeskActionError } from "@/lib/desk/controller";
 
 /**
- * HITLControls — the human-in-the-loop verdict. Visible ONLY while the case is
+ * HITLControls - the human-in-the-loop verdict. Visible ONLY while the case is
  * ESCALATED (renders null otherwise). Confirm is the demo money-moment: it
  * codifies the 5th rule (ESCALATED → FLAGGED). Reject closes the case, codifies
  * nothing (ESCALATED → CLOSED).
@@ -15,7 +15,7 @@ import { useDeskController, DeskActionError } from "@/lib/desk/controller";
  * awaits the POST. On success we flash success and the model re-renders
  * ESCALATED → false, unmounting this panel once the codify tail lands. On
  * failure we hold the panel and surface an inline reason mapped from the HTTP
- * status (see reasonForStatus) — the button no longer claims success on a reject.
+ * status (see reasonForStatus) - the button no longer claims success on a reject.
  */
 
 const SPRING = { type: "spring" as const, stiffness: 520, damping: 24 };
@@ -33,13 +33,13 @@ type Phase =
 function reasonForStatus(status: number | null): string {
   switch (status) {
     case 422:
-      return "regression gate failed — rule not codified";
+      return "regression gate failed - rule not codified";
     case 409:
       return "case no longer awaiting review";
     case 404:
       return "case not found";
     default:
-      return "action failed — try again";
+      return "action failed - try again";
   }
 }
 
@@ -52,7 +52,7 @@ export default function HITLControls() {
 
   // Only the human decides on an ESCALATED case. Hidden in every other state.
   // Note: once confirm/reject resolves, the model leaves ESCALATED and this
-  // unmounts — so we never linger in a stale success phase.
+  // unmounts - so we never linger in a stale success phase.
   if (state !== "ESCALATED") return null;
 
   const busy = phase === "confirming" || phase === "rejecting";
@@ -69,7 +69,7 @@ export default function HITLControls() {
     setPhase("confirming");
     try {
       await controller.confirm();
-      // Only on success — the model flips ESCALATED → FLAGGED and unmounts us.
+      // Only on success - the model flips ESCALATED → FLAGGED and unmounts us.
       setPhase("confirmed");
     } catch (err) {
       onError(err);
@@ -143,7 +143,7 @@ export default function HITLControls() {
             ? "codifying…"
             : phase === "confirmed"
               ? "✓ codified"
-              : "Confirm — codify rule"}
+              : "Confirm - codify rule"}
         </motion.button>
 
         <motion.button
@@ -173,7 +173,7 @@ export default function HITLControls() {
             ? "closing…"
             : phase === "rejected"
               ? "✓ closed"
-              : "Reject — close case"}
+              : "Reject - close case"}
         </motion.button>
       </div>
 

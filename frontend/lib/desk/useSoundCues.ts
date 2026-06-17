@@ -1,5 +1,5 @@
 /**
- * useSoundCues — watches the trace stream for newly-arrived terminal/verdict
+ * useSoundCues - watches the trace stream for newly-arrived terminal/verdict
  * markers and fires a synthesized cue (lib/desk/sound.ts) when sound is ON.
  *
  * Gating: cues only fire when `useDeskUIStore.soundOn` is true AND the audio
@@ -30,12 +30,12 @@ function cueForEvent(e: ActivityEvent): "flag" | "escalate" | "codify" | null {
 
 export function useSoundCues() {
   const events = useTraceStore((s) => s.events);
-  // how many events we've already evaluated — only the tail is "new".
+  // how many events we've already evaluated - only the tail is "new".
   const seen = useRef(0);
 
   useEffect(() => {
     const len = events.length;
-    // backward jump (seek/reset) — re-baseline silently, no cue replay.
+    // backward jump (seek/reset) - re-baseline silently, no cue replay.
     if (len < seen.current) {
       seen.current = len;
       return;
@@ -45,7 +45,7 @@ export function useSoundCues() {
     const soundOn = useDeskUIStore.getState().soundOn;
     if (soundOn) {
       // fire a cue for the most relevant new frame (the newest wins if several
-      // arrive in one batch — mock pushes one at a time, so this is usually one).
+      // arrive in one batch - mock pushes one at a time, so this is usually one).
       for (let i = len - 1; i >= seen.current; i--) {
         const cue = cueForEvent(events[i]);
         if (cue) {

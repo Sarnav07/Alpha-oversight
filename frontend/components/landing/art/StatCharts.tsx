@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 /**
- * StatCharts — the three monochrome proof-charts under each <WhySection/> stat,
+ * StatCharts - the three monochrome proof-charts under each <WhySection/> stat,
  * rebuilt to match the AlphaLedger reference: white-capped gradient bars, a
  * filled trend with a dashed comparison line, and an axis chart with floating
  * readout tooltips. Pure white/gray on obsidian (no colour accents).
@@ -41,7 +41,7 @@ function smooth(pts: ReadonlyArray<readonly [number, number]>): string {
   return d + ` L${last[0].toFixed(1)} ${last[1].toFixed(1)}`;
 }
 
-/* ── 1 · detection bars — white-capped, gradient body ──────────────────────── */
+/* ── 1 · detection bars - white-capped, gradient body ──────────────────────── */
 const BARS = [0.46, 0.66, 0.4, 0.74, 0.56, 0.88, 0.5, 0.64, 0.8, 0.54, 0.92, 0.7, 0.84];
 
 export function BarSignal({ start, reduce }: P) {
@@ -82,7 +82,7 @@ export function BarSignal({ start, reduce }: P) {
   );
 }
 
-/* ── 2 · defense trend — filled area, white line, dashed comparison ────────── */
+/* ── 2 · defense trend - filled area, white line, dashed comparison ────────── */
 const MAIN = [0.34, 0.5, 0.42, 0.46, 0.7, 0.58, 0.64, 0.56, 0.72, 0.62, 0.8, 0.74, 0.96];
 const COMP = [0.3, 0.4, 0.5, 0.44, 0.58, 0.66, 0.54, 0.62, 0.6, 0.7, 0.68, 0.82, 0.86];
 
@@ -138,7 +138,7 @@ export function AreaRamp({ start, reduce, active }: P) {
         animate={start ? { pathLength: 1 } : reduce ? { pathLength: 1 } : { pathLength: 0 }}
         transition={{ duration: 1.1, ease: EASE }}
       />
-      {/* readout marker — fades up when the column is active/expanded */}
+      {/* readout marker - fades up when the column is active/expanded */}
       <motion.g initial={false} animate={{ opacity: active ? 1 : 0 }} transition={{ duration: 0.3, ease: EASE }}>
         <line x1={X(mk)} y1={Y(MAIN[mk])} x2={X(mk)} y2={baseY} stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
         <circle cx={X(mk)} cy={Y(MAIN[mk])} r="3.4" fill="var(--obsidian)" stroke="var(--frost)" strokeWidth="1.6" />
@@ -147,7 +147,7 @@ export function AreaRamp({ start, reduce, active }: P) {
   );
 }
 
-/* ── 3 · verdict proof — axis grid, line, floating readout tooltips ────────── */
+/* ── 3 · verdict proof - axis grid, line, floating readout tooltips ────────── */
 const PROOF = [0.18, 0.3, 0.4, 0.36, 0.3, 0.34, 0.46, 0.5, 0.6, 0.56, 0.7, 0.82, 0.94];
 
 export function AreaProof({ start, reduce, active }: P) {
@@ -224,7 +224,7 @@ export function AreaProof({ start, reduce, active }: P) {
         animate={start ? { pathLength: 1 } : reduce ? { pathLength: 1 } : { pathLength: 0 }}
         transition={{ duration: 0.9, delay: 0.5, ease: EASE }}
       />
-      {/* latest readout — always shown */}
+      {/* latest readout - always shown */}
       <motion.g
         initial={reduce ? false : { opacity: 0 }}
         animate={start ? { opacity: 1 } : reduce ? { opacity: 1 } : { opacity: 0 }}
@@ -234,7 +234,7 @@ export function AreaProof({ start, reduce, active }: P) {
         <circle cx={X(b)} cy={Y(PROOF[b])} r="3.4" fill="var(--obsidian)" stroke="var(--frost)" strokeWidth="1.6" />
         <Tip i={b} label="verified ✓" x={X(b)} y={Y(PROOF[b])} dx={-64} />
       </motion.g>
-      {/* earlier readout — only when active/expanded */}
+      {/* earlier readout - only when active/expanded */}
       <motion.g initial={false} animate={{ opacity: active ? 1 : 0 }} transition={{ duration: 0.3, ease: EASE }}>
         <line x1={X(a)} y1={Y(PROOF[a])} x2={X(a)} y2={baseY} stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
         <circle cx={X(a)} cy={Y(PROOF[a])} r="3" fill="var(--obsidian)" stroke="var(--frost)" strokeWidth="1.4" />

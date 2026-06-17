@@ -3,7 +3,7 @@
 import { motion, useTransform, type MotionValue } from "framer-motion";
 
 /**
- * PhaseRail — two coupled affordances:
+ * PhaseRail - two coupled affordances:
  *  • PHASE INDICATOR (top-left): the six chapter labels stacked; the active one
  *    lifts to frost + a band-tone marker, the rest sit faint. Driven by `t`.
  *  • PROGRESS RAIL (right edge): a thin vertical track with a fill that grows
@@ -76,7 +76,7 @@ export function PhaseRail({ t, staticActive }: PhaseRailProps) {
 
   return (
     <>
-      {/* Phase indicator — top-left */}
+      {/* Phase indicator - top-left */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute left-5 top-5 hidden flex-col gap-2 sm:left-7 sm:top-7 sm:flex"
@@ -89,7 +89,7 @@ export function PhaseRail({ t, staticActive }: PhaseRailProps) {
         ))}
       </div>
 
-      {/* Progress rail — right edge */}
+      {/* Progress rail - right edge */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute bottom-7 right-2.5 top-7 hidden w-[2px] sm:block"

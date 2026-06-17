@@ -22,7 +22,7 @@ vi.mock("../eventsource/adapter", () => ({
 }));
 
 // Import AFTER the mock is registered (vi.mock is hoisted, so a static import is
-// safe — the store sees the mocked factory).
+// safe - the store sees the mocked factory).
 import { createAdapter } from "../eventsource/adapter";
 import { useTraceStore } from "./useTraceStore";
 
@@ -87,7 +87,7 @@ describe("useTraceStore", () => {
     connect();
 
     // The module-scoped `if (adapter) return` guard means exactly one adapter is
-    // created and connected — one long-lived EventSource, not abort+reopen.
+    // created and connected - one long-lived EventSource, not abort+reopen.
     expect(createAdapterMock).toHaveBeenCalledTimes(1);
     expect(fakeAdapter.connect).toHaveBeenCalledTimes(1);
   });

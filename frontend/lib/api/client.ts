@@ -53,7 +53,7 @@ export const api = {
   rules: () => (IS_MOCK ? Promise.resolve(MOCK_RULES) : get<Rule[]>("/rules")),
   stats: () => (IS_MOCK ? Promise.resolve(MOCK_STATS) : get<Stats>("/stats")),
   confirm: (id: string) => post<ConfirmResponse>(`/cases/${id}/confirm`),
-  // reject is wrapped now: { case, codified:false } — callers read .case.
+  // reject is wrapped now: { case, codified:false } - callers read .case.
   reject: (id: string) => post<RejectResponse>(`/cases/${id}/reject`),
   // demo triggers (parameterless POSTs)
   beatA: () => post<BeatResponse>("/demo/beat-a"),

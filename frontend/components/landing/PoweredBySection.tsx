@@ -4,18 +4,18 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { useIsMobile } from "./useIsMobile";
 
 /**
- * PoweredBySection — the "Powered by…" scroll-pinned reveal (AlphaLedger clone,
+ * PoweredBySection - the "Powered by…" scroll-pinned reveal (AlphaLedger clone,
  * themed for A&O). One PINNED dark stage drives a scrubbed GSAP timeline:
  *
- *   start  — the headline sits DEAD-CENTER on obsidian; the board is offscreen-right.
- *   reveal — the headline translates to its LEFT rest position while the compute
+ *   start  - the headline sits DEAD-CENTER on obsidian; the board is offscreen-right.
+ *   reveal - the headline translates to its LEFT rest position while the compute
  *            board slides in from the right (xPercent 120 → 0, fades up).
- *   labels — four frosted callout cards stagger in over the board.
- *   hold   — the composed state holds, then scrolls on to <UnlockSection/>.
+ *   labels - four frosted callout cards stagger in over the board.
+ *   hold   - the composed state holds, then scrolls on to <UnlockSection/>.
  *
  * Reduced-motion OR mobile (<768px): the pin/scrub is skipped entirely and a
  * static stacked layout (headline, then the panel with its rows shown) renders
- * instead — the same gate HeroScroll uses.
+ * instead - the same gate HeroScroll uses.
  *
  * The right column is a "why we're different" panel (DifferencePanel) stating the
  * A&O differentiators. Prop-less, self-contained, default export.
@@ -34,7 +34,7 @@ export default function PoweredBySection() {
 
     // Lazy-load gsap off the landing critical path: dynamically import it (+the
     // ScrollTrigger plugin) inside the effect, then build the SAME pinned
-    // timeline a tick later — fine for a scroll-triggered animation.
+    // timeline a tick later - fine for a scroll-triggered animation.
     let cancelled = false;
     let ctx: gsap.Context | undefined;
 
@@ -71,14 +71,14 @@ export default function PoweredBySection() {
           },
         });
 
-        // 0.00–0.08 — headline slides left AND board slides in simultaneously.
+        // 0.00-0.08 - headline slides left AND board slides in simultaneously.
         tl.to(head, { x: 0, duration: 0.08, ease: "power2.out" }, 0.00);
         tl.to(board, { xPercent: 0, opacity: 1, duration: 0.08, ease: "power2.out" }, 0.00);
 
-        // 0.04–0.12 — the four callout cards stagger in over the board.
+        // 0.04-0.12 - the four callout cards stagger in over the board.
         tl.to(labels, { opacity: 1, x: 0, duration: 0.04, stagger: 0.01, ease: "none" }, 0.04);
 
-        // 0.08–1.00 — gentle continued drift so the pin releases with life.
+        // 0.08-1.00 - gentle continued drift so the pin releases with life.
         tl.to(board, { xPercent: -2, duration: 0.92 }, 0.08);
 
         ScrollTrigger.refresh();
@@ -109,12 +109,12 @@ export default function PoweredBySection() {
     <div ref={rootRef} className="relative h-[260vh] bg-[var(--obsidian)]">
       <div className="pb-stage sticky top-0 flex h-screen w-full items-center overflow-hidden bg-[var(--obsidian)]">
         <div className="mx-auto grid w-full max-w-[var(--maxw-content)] grid-cols-1 items-center gap-10 px-6 lg:grid-cols-2">
-          {/* left — headline (starts viewport-centered via measured x offset) */}
+          {/* left - headline (starts viewport-centered via measured x offset) */}
           <div className="pb-head">
             <Headline />
           </div>
 
-          {/* right — the "why we're different" panel (slides in; rows stagger) */}
+          {/* right - the "why we're different" panel (slides in; rows stagger) */}
           <DifferencePanel boardClass="pb-board" labelClass="pb-label" />
         </div>
       </div>
@@ -149,7 +149,7 @@ function Headline() {
         style={{ fontSize: "clamp(14px, 1.5vw, 17px)", lineHeight: 1.5, color: "var(--text-body)" }}
       >
         Frontier and open-weight referees, an open-weight adversary, and a
-        deterministic rule engine — coordinated across the Band, every handoff
+        deterministic rule engine - coordinated across the Band, every handoff
         hash-chained.
       </p>
     </div>
@@ -158,18 +158,18 @@ function Headline() {
 
 type Diff = { t: string; lead: string; detail: string; tone: string };
 
-/** the four differentiators — "X, not Y" framing answers "why us, not them". */
+/** the four differentiators - "X, not Y" framing answers "why us, not them". */
 const DIFFS: Diff[] = [
   {
     t: "Adversarial by design",
     lead: "Proactive, not reactive",
-    detail: "An open-weight red-team invents the next evasion before the market does — Surveillance trains on tomorrow's attack.",
+    detail: "An open-weight red-team invents the next evasion before the market does - Surveillance trains on tomorrow's attack.",
     tone: "var(--tier-open)",
   },
   {
     t: "Deterministic verdicts",
     lead: "Explainable, not a black box",
-    detail: "A rule engine makes the PASS / FLAG call — not an opaque model. Every verdict is reproducible.",
+    detail: "A rule engine makes the PASS / FLAG call - not an opaque model. Every verdict is reproducible.",
     tone: "var(--tier-frontier)",
   },
   {
@@ -181,7 +181,7 @@ const DIFFS: Diff[] = [
   {
     t: "Coordinated, not wrapped",
     lead: "A real system, not a wrapper",
-    detail: "Nine roles hand off real evidence across a Chinese wall over Band — visible end to end.",
+    detail: "Nine roles hand off real evidence across a Chinese wall over Band - visible end to end.",
     tone: "var(--desk-surv)",
   },
 ];

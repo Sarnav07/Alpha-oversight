@@ -11,7 +11,7 @@ import {
 import Logomark from "@/components/landing/Logomark";
 
 /**
- * ManifestoSection — the centered "statement" block that follows the
+ * ManifestoSection - the centered "statement" block that follows the
  * <KeyFigures/> stats band (AlphaLedger clone, themed for A&O).
  *
  * A LIGHT section (data-section="light", white bg, hard cut from the band
@@ -32,7 +32,7 @@ import Logomark from "@/components/landing/Logomark";
  */
 
 const STATEMENT =
-  "Alpha & Oversight reinvents surveillance as an adversarial craft. One desk invents the manipulation; another detects it, proves the catch, and codifies a new rule live — every handoff crossing the Band, every verdict sealed in an immutable ledger.";
+  "Alpha & Oversight reinvents surveillance as an adversarial craft. One desk invents the manipulation; another detects it, proves the catch, and codifies a new rule live - every handoff crossing the Band, every verdict sealed in an immutable ledger.";
 
 const GRAY = "var(--text-faint)"; // #9a9a9a in the light theme
 const INK = "var(--text-primary)"; // #14161c in the light theme
@@ -93,7 +93,7 @@ export default function ManifestoSection() {
           paddingBottom: "20vh",
         }}
       >
-        {/* Brand logomark — small, muted, centered above the statement.
+        {/* Brand logomark - small, muted, centered above the statement.
             Color is taken from --text-faint via currentColor. */}
         <span
           className="mb-8 inline-block"

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 
 /**
- * KeyFigures — the closing "Key Figures" stats band (frame-4 reveal).
+ * KeyFigures - the closing "Key Figures" stats band (frame-4 reveal).
  *
  * AlphaLedger-style LIGHT section (data-section="light", white bg, ink text)
  * with a hard cut from the dark Command Center dashboard above it. A centered
@@ -181,7 +181,7 @@ export default function KeyFigures() {
           ))}
         </motion.div>
 
-        {/* Eyebrow strip with hairline top border — left-aligned, tight under
+        {/* Eyebrow strip with hairline top border - left-aligned, tight under
             the line (matches 11.png "VERIFY YOUR TRACK RECORD. ATTRACT CAPITAL."). */}
         <div
           className="mt-12 pt-1.5 text-left lg:mt-14"

@@ -8,7 +8,7 @@ import { nodeIdForAgent } from "@/lib/desk/nodes";
 import type { TimelineDot } from "@/lib/desk/contract";
 
 /**
- * VerdictTimeline — vertical dot timeline of the case lifecycle.
+ * VerdictTimeline - vertical dot timeline of the case lifecycle.
  *
  * Renders `model.timeline` (TimelineDot[]). Dot color maps from `tone`:
  *   pass → --verdict-pass · flag → --verdict-flag · escalate → --verdict-escalate
@@ -48,7 +48,7 @@ export default function VerdictTimeline() {
     });
   }, [model.timeline, nodeFilter, query]);
 
-  // Track whether a FLAG has appeared after a PASS — drives the segment re-shade.
+  // Track whether a FLAG has appeared after a PASS - drives the segment re-shade.
   const [flipped, setFlipped] = useState(false);
   const sawFlag = useRef(false);
 

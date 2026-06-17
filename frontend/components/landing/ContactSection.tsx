@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 
 /**
- * ContactSection — the "Contact Alpha & Oversight" block (AlphaLedger contact
+ * ContactSection - the "Contact Alpha & Oversight" block (AlphaLedger contact
  * clone, themed for A&O). LIGHT section (data-section="light"). A shield-shaped
- * badge card (rounded top, pointed bottom — the A&O emblem motif) holds a heading,
+ * badge card (rounded top, pointed bottom - the A&O emblem motif) holds a heading,
  * two lines of copy, and a Name / Phone / Email / Message form with a black
  * full-width Submit pill. Submissions POST to NEXT_PUBLIC_CONTACT_ENDPOINT when
  * set (e.g. a Formspree/Getform URL); without it the form is demo-only (nothing
@@ -70,7 +70,7 @@ export default function ContactSection() {
     setError(null);
     const payload = Object.fromEntries(new FormData(e.currentTarget).entries());
     if (!ENDPOINT) {
-      setSent(true); // demo mode — no backend configured
+      setSent(true); // demo mode - no backend configured
       return;
     }
     try {
@@ -83,7 +83,7 @@ export default function ContactSection() {
       if (!res.ok) throw new Error(String(res.status));
       setSent(true);
     } catch {
-      setError("Couldn't send right now — please try again.");
+      setError("Couldn't send right now - please try again.");
     } finally {
       setSending(false);
     }
@@ -134,7 +134,7 @@ export default function ContactSection() {
                 style={{ backgroundColor: "var(--bg-card-2)", border: "1px solid var(--border-subtle)" }}
               >
                 <span className="font-sans" style={{ fontSize: 16, fontWeight: 500, color: "var(--text-primary)" }}>
-                  Thanks — we&apos;ll be in touch.
+                  Thanks - we&apos;ll be in touch.
                 </span>
                 <span className="mt-2 font-sans" style={{ fontSize: 13.5, color: "var(--text-muted)" }}>
                   Your message is queued. The desk will reach out shortly.

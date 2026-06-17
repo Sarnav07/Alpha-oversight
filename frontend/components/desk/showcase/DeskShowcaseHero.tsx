@@ -12,7 +12,7 @@ const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
 function HeroHeading({ reduce }: { reduce: boolean }) {
   const lines = [
     { t: "Watch the system", color: "var(--text-primary)" },
-    { t: "think — live.", color: "var(--text-faint)" },
+    { t: "think - live.", color: "var(--text-faint)" },
   ];
   if (reduce) {
     return (
@@ -49,9 +49,9 @@ function HeroHeading({ reduce }: { reduce: boolean }) {
 }
 
 /**
- * DeskShowcaseHero — the opening pinned stage of the /desk showcase. Dark
+ * DeskShowcaseHero - the opening pinned stage of the /desk showcase. Dark
  * Command-Center backbone with the ambient backdrop; a live pulse, a two-tone
- * heading (report §11 — "the live operations view that matters for a demo"), and
+ * heading (report §11 - "the live operations view that matters for a demo"), and
  * a faint always-running trace motif (agent dots + a Band token sweeping the
  * spine) to set the tone. CTAs jump to the embedded live desk or back to /how.
  */
@@ -115,46 +115,27 @@ export function DeskShowcaseHero() {
 
         <HeroHeading reduce={reduce} />
 
-        <Reveal delay={0.1}>
-          <p className="mx-auto mt-7 max-w-2xl font-sans" style={{ fontSize: "clamp(15px,1.6vw,18px)", lineHeight: 1.6, color: "var(--text-body)" }}>
-            Every agent action streams in real time, every handoff crosses Band,
-            every verdict is sealed into a hash-chained ledger you can verify on
-            the spot. Scroll through how the desk is wired — then run the real
-            Beat-B demo at the end.
-          </p>
-        </Reveal>
 
-        <Reveal delay={0.18}>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href="#live-desk"
-              className="inline-flex items-center gap-2 rounded-[var(--r-pill)] px-6 py-3 font-sans text-[14px] font-medium transition-transform hover:-translate-y-0.5"
-              style={{ backgroundColor: "var(--frost)", color: "var(--obsidian)" }}
-            >
-              Jump to the live desk <span aria-hidden="true">↓</span>
-            </a>
-            <Link
-              href="/how-it-works"
-              className="inline-flex items-center gap-2 rounded-[var(--r-pill)] border px-6 py-3 font-sans text-[14px] font-medium transition-colors hover:bg-[var(--bg-card)]"
-              style={{ borderColor: "var(--border-default)", color: "var(--text-primary)" }}
-            >
-              How it works
-            </Link>
-          </div>
-        </Reveal>
 
         <TraceMotif reduce={reduce} />
 
         <Reveal delay={0.25}>
-          <div className="mt-14 flex items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em]" style={{ color: "var(--text-faint)" }}>
-            <span>Scroll</span>
-            <motion.span
-              aria-hidden="true"
-              animate={reduce ? undefined : { y: [0, 5, 0] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+          <div className="mt-14">
+            <span className="font-mono text-[11px] uppercase tracking-[0.22em]" style={{ color: "var(--desk-surv)" }}>
+              ▼ The live desk
+            </span>
+            <h2
+              className="mx-auto mt-4 max-w-2xl font-sans"
+              style={{ fontSize: "clamp(24px,3.4vw,38px)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.1 }}
             >
-              ↓
-            </motion.span>
+              <span style={{ color: "var(--text-primary)" }}>The real thing.</span>{" "}
+              <span style={{ color: "var(--text-faint)" }}>A novel evasion is already waiting on your Confirm.</span>
+            </h2>
+            <p className="mx-auto mt-5 max-w-xl font-sans" style={{ fontSize: 14, lineHeight: 1.6, color: "var(--text-muted)" }}>
+              Beat B runs out of the box: the rules miss it, the case escalates. Confirm
+              it and watch the rulebook grow 4 ▸ 5 - then open the audit drawer and
+              verify the chain.
+            </p>
           </div>
         </Reveal>
       </div>

@@ -3,7 +3,7 @@
 import { motion, useTransform, type MotionValue } from "framer-motion";
 
 /**
- * Caption — a single dark-glass caption card crossfaded into view across a
+ * Caption - a single dark-glass caption card crossfaded into view across a
  * 4-point scroll window (in → hold → hold → out). One card per chapter; all
  * six are absolutely stacked in the same corner of the stage and only the
  * active one is opaque. Eyebrow is mono uppercase tracked + numbered "NN / 06".
@@ -14,7 +14,7 @@ import { motion, useTransform, type MotionValue } from "framer-motion";
 
 export type CaptionProps = {
   t: MotionValue<number>;
-  /** [enter, settled, leaveStart, leaveEnd] — opacity ramps in then out. */
+  /** [enter, settled, leaveStart, leaveEnd] - opacity ramps in then out. */
   range: [number, number, number, number];
   no: number; // 1..6
   eyebrow: string;
