@@ -6,14 +6,24 @@ import { useReducedMotion } from "framer-motion";
 import Logomark from "@/components/landing/Logomark";
 
 /**
- * DeskShowcaseHeader - thin sticky brand bar for the /desk showcase (3.5rem, so
- * the pinned `top-14` stages tuck below it). Dark glass; links home + to
- * /how-it-works + a jump to the embedded live demo.
+ * DeskShowcaseHeader - sticky brand bar for the /desk showcase. Matches the
+ * LANDING nav exactly: 72px tall, the shared Logomark + uppercase wordmark, and
+ * font-sans links. The pinned `top-[72px]` stages tuck below it.
+ *
+ * TOKEN GOTCHA (the invisible-navbar bug): this bar is `sticky` and is NOT
+ * nested in a `[data-section="light"]` scope, so `var(--text-*)` would resolve to
+ * the ROOT (dark) palette and render near-white on the light bar. So it uses
+ * EXPLICIT HEX (ink on light), mirroring HiwHeader / the landing nav identity.
  *
  * Auto-hides once the live Command Center (#live-desk) scrolls into the top of
  * the viewport, so the dashboard gets the full screen height. Slides back in on
  * scroll-up. Reduced-motion toggles instantly (no slide).
  */
+const INK = "#14161c";
+const MUTED = "#646464";
+const BORDER = "#ececec";
+const BG = "#fefefe";
+
 export function DeskShowcaseHeader() {
   const reduce = useReducedMotion() ?? false;
   const [hidden, setHidden] = useState(false);
@@ -34,13 +44,12 @@ export function DeskShowcaseHeader() {
 
   return (
     <header
-      className="sticky top-0 z-40 flex items-center justify-between border-b px-5 sm:px-8"
+      className="sticky top-0 z-40 flex h-[72px] items-center justify-between border-b px-6 sm:px-10"
       style={{
-        height: "3.5rem",
-        borderColor: "var(--hairline)",
-        backgroundColor: "rgba(255,255,255,0.82)",
+        borderColor: BORDER,
+        backgroundColor: `${BG}f2`,
         backdropFilter: "blur(10px)",
-        color: "var(--text-primary)",
+        color: INK,
         transform: hidden ? "translateY(-100%)" : "translateY(0)",
         opacity: hidden ? 0 : 1,
         pointerEvents: hidden ? "none" : "auto",
@@ -49,18 +58,30 @@ export function DeskShowcaseHeader() {
           : "transform 0.35s var(--ease-out), opacity 0.35s var(--ease-out)",
       }}
     >
-      <Link href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
-        <Logomark size={18} />
-        <span className="font-sans text-[14px] font-medium tracking-[-0.01em]">Alpha &amp; Oversight</span>
+      {/* brand: identical to the landing nav (logomark + uppercase wordmark), home */}
+      <Link
+        href="/"
+        aria-label="Alpha & Oversight - home"
+        className="group inline-flex items-center gap-2.5"
+        style={{ color: INK }}
+      >
+        <Logomark size={22} className="transition-opacity duration-300 group-hover:opacity-80" />
+        <span className="font-sans text-[13px] font-semibold uppercase tracking-[0.16em]">Alpha &amp; Oversight</span>
       </Link>
-      <nav className="flex items-center gap-5 font-sans text-[13px]" style={{ color: "var(--text-muted)" }}>
-        <Link href="/how-it-works" className="transition-colors hover:text-[color:var(--text-primary)]">
+      <nav className="flex items-center gap-6">
+        <Link
+          href="/how-it-works"
+          className="font-sans text-[12.5px] tracking-wide transition-colors"
+          style={{ color: MUTED }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = INK)}
+          onMouseLeave={(e) => (e.currentTarget.style.color = MUTED)}
+        >
           How it works
         </Link>
         <a
           href="#live-desk"
-          className="rounded-[var(--r-pill)] px-3.5 py-1.5 text-[12.5px] font-medium"
-          style={{ backgroundColor: "var(--obsidian)", color: "var(--frost)" }}
+          className="rounded-[var(--r-pill)] px-4 py-2 font-sans text-[12px] font-medium tracking-wide"
+          style={{ backgroundColor: "#020202", color: "#fefefe" }}
         >
           Live demo
         </a>

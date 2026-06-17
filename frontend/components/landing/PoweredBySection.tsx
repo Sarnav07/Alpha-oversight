@@ -68,18 +68,31 @@ export default function PoweredBySection() {
             start: "top top",
             end: "bottom bottom",
             scrub: true,
+            // Pin via GSAP (position:fixed pin-spacer), NOT CSS `position:sticky`.
+            // The sticky pin was silently failing here, so the stage scrolled away
+            // while the board slid in - i.e. the panel only appeared as you left
+            // for the next section. GSAP pin (same as HeroScroll/FeaturesCarousel)
+            // holds the stage reliably for the scrub. pinSpacing:false → the 150vh
+            // runway supplies the scroll distance.
+            pin: stage,
+            pinSpacing: false,
+            anticipatePin: 1,
           },
         });
 
-        // 0.00-0.08 - headline slides left AND board slides in simultaneously.
-        tl.to(head, { x: 0, duration: 0.08, ease: "power2.out" }, 0.00);
-        tl.to(board, { xPercent: 0, opacity: 1, duration: 0.08, ease: "power2.out" }, 0.00);
+        // 0.00-0.50 - headline settles to its left rest position while the
+        // "why we're different" board slides in from the right. The reveal is
+        // spread across half the (now-halved) scroll so it reads as a deliberate
+        // reveal, not a snap-then-stall.
+        tl.to(head, { x: 0, duration: 0.5, ease: "power2.out" }, 0.00);
+        tl.to(board, { xPercent: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.00);
 
-        // 0.04-0.12 - the four callout cards stagger in over the board.
-        tl.to(labels, { opacity: 1, x: 0, duration: 0.04, stagger: 0.01, ease: "none" }, 0.04);
+        // 0.35-0.60 - the four callout cards stagger in over the board.
+        tl.to(labels, { opacity: 1, x: 0, duration: 0.25, stagger: 0.05, ease: "none" }, 0.35);
 
-        // 0.08-1.00 - gentle continued drift so the pin releases with life.
-        tl.to(board, { xPercent: -2, duration: 0.92 }, 0.08);
+        // 0.65-1.00 - a small settle so the pin releases with a beat (no long
+        // dead hold; the runway was cut 260vh → 150vh to keep this section short).
+        tl.to(board, { xPercent: -2, duration: 0.35 }, 0.65);
 
         ScrollTrigger.refresh();
       }, rootRef);
@@ -106,8 +119,8 @@ export default function PoweredBySection() {
 
   // ── Motion (and pre-measure) render ─────────────────────────────────────
   return (
-    <div ref={rootRef} className="relative h-[260vh] bg-[var(--obsidian)]">
-      <div className="pb-stage sticky top-0 flex h-screen w-full items-center overflow-hidden bg-[var(--obsidian)]">
+    <div ref={rootRef} className="relative h-[150vh] bg-[var(--obsidian)]">
+      <div className="pb-stage flex h-screen w-full items-center overflow-hidden bg-[var(--obsidian)]">
         <div className="mx-auto grid w-full max-w-[var(--maxw-content)] grid-cols-1 items-center gap-10 px-6 lg:grid-cols-2">
           {/* left - headline (starts viewport-centered via measured x offset) */}
           <div className="pb-head">

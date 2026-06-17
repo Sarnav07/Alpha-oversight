@@ -1,17 +1,18 @@
 "use client";
 
 /**
- * AuditChainSection - the `#audit` section: the tamper-evident ledger as a COMPACT
- * diagonal STAIRCASE that fits in a single viewport (no internal scroll).
- *   • nine steps (one per role in the Overview nonagon) descend left→right,
- *     each block offset down + right so it reads as literal stairs;
+ * AuditChainSection - the `#audit` section: the tamper-evident ledger as a COMPLETE
+ * 3×3 grid (nine blocks, tic-tac-toe layout) that fits in a single viewport.
+ *   • nine steps (one per role in the Overview nonagon) fill a balanced 3×3 grid,
+ *     chained in order by a fingerprint link that SNAKES through the cells
+ *     (row 0 →, row 1 ←, row 2 →) so every hop lands on an adjacent block;
  *   • the demo control + the verify_chain result sit on ONE row at opposite ends,
  *     so clicking "simulate an edit" visibly flips verify_chain ✓ → ✗ and recolours
- *     the staircase, all without scrolling;
+ *     every block downstream of the edit, all without scrolling;
  *   • no accidental hover-tamper - one clearly-labelled button drives the demo.
  *
  * Semantic colour only: --verdict-complete ✓, --verdict-flag for the edit,
- * --band-blue on Band-handoff steps. Reduced-motion renders the full staircase.
+ * --band-blue on Band-handoff steps. Reduced-motion renders the full grid.
  * id="audit".
  */
 
@@ -40,20 +41,31 @@ const BLOCKS: Block[] = [
 
 const TAMPER_AT = 3;
 
-/* ── compact staircase geometry - sized to fit one viewport ────────────────── */
+/* ── 3×3 grid geometry (tic-tac-toe) - nine blocks snaked in chain order ─────── */
 const W = 212;
-const H = 46;
-const STEP_X = 104;
-const STEP_Y = 50;
-const PAD = 8;
-const VB_W = PAD * 2 + (BLOCKS.length - 1) * STEP_X + W; // 1052
-const VB_H = PAD * 2 + (BLOCKS.length - 1) * STEP_Y + H; // 584
-const px = (i: number) => PAD + i * STEP_X;
-const py = (i: number) => PAD + i * STEP_Y;
+const H = 50;
+const COLS = 3;
+const GAP_X = 54;
+const GAP_Y = 60;
+const COL = W + GAP_X; // horizontal stride = 266
+const ROW = H + GAP_Y; // vertical stride   = 110
+const PAD = 10;
+const VB_W = PAD * 2 + (COLS - 1) * COL + W; // 764
+const VB_H = PAD * 2 + 2 * ROW + H; //          290
+/** chain index → grid cell, snaked (boustrophedon): row 0 →, row 1 ←, row 2 →,
+ *  so each consecutive block is orthogonally adjacent to the previous one. */
+const cell = (i: number) => {
+  const row = Math.floor(i / COLS);
+  const within = i % COLS;
+  return { row, col: row % 2 === 0 ? within : COLS - 1 - within };
+};
+const gx = (col: number) => PAD + col * COL;
+const gy = (row: number) => PAD + row * ROW;
 
 function SvgBlock({ b, broken, edited, show, reduce }: { b: Block; broken: boolean; edited: boolean; show: boolean; reduce: boolean }) {
-  const x = px(b.i);
-  const y = py(b.i);
+  const c = cell(b.i);
+  const x = gx(c.col);
+  const y = gy(c.row);
   const accent = broken ? "var(--verdict-flag)" : "var(--verdict-pass)";
   return (
     <motion.g
@@ -89,11 +101,33 @@ function SvgBlock({ b, broken, edited, show, reduce }: { b: Block; broken: boole
 }
 
 function SvgConnector({ i, broken, show, reduce }: { i: number; broken: boolean; show: boolean; reduce: boolean }) {
-  const sx = px(i) + 46;
-  const sy = py(i) + H;
-  const ex = px(i + 1) + 46;
-  const ey = py(i + 1);
-  const midY = sy + (ey - sy) / 2;
+  const a = cell(i);
+  const z = cell(i + 1);
+  const ax = gx(a.col);
+  const ay = gy(a.row);
+  const zx = gx(z.col);
+  const zy = gy(z.row);
+
+  // Same row → horizontal hop (its direction follows the snake parity).
+  // Different row → vertical drop to the cell directly below (same column).
+  let d: string;
+  let mx: number;
+  let my: number;
+  if (a.row === z.row) {
+    const rightward = z.col > a.col;
+    const sx = rightward ? ax + W : ax;
+    const ex = rightward ? zx : zx + W;
+    const yy = ay + H / 2;
+    d = `M ${sx} ${yy} H ${ex}`;
+    mx = (sx + ex) / 2;
+    my = yy;
+  } else {
+    const sx = ax + W / 2;
+    d = `M ${sx} ${ay + H} V ${zy}`;
+    mx = sx;
+    my = (ay + H + zy) / 2;
+  }
+
   const c = broken ? "var(--verdict-flag)" : "var(--verdict-pass)";
   return (
     <motion.g
@@ -101,9 +135,9 @@ function SvgConnector({ i, broken, show, reduce }: { i: number; broken: boolean;
       animate={show ? { opacity: 1 } : reduce ? { opacity: 1 } : undefined}
       transition={{ duration: 0.4, delay: 0.16 + i * 0.08, ease: EASE }}
     >
-      <path d={`M ${sx} ${sy} V ${midY} H ${ex} V ${ey}`} fill="none" stroke={c} strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={broken ? "4 4" : undefined} opacity={0.85} />
-      <circle cx={ex} cy={midY} r={7} fill="var(--bg-page)" stroke={broken ? "var(--verdict-flag)" : "var(--border-subtle)"} strokeWidth={1} />
-      <g stroke={c} strokeWidth={1.3} fill="none" strokeLinecap="round" transform={`translate(${ex - 4.5} ${midY - 4.5}) scale(0.38)`}>
+      <path d={d} fill="none" stroke={c} strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={broken ? "4 4" : undefined} opacity={0.85} />
+      <circle cx={mx} cy={my} r={7} fill="var(--bg-page)" stroke={broken ? "var(--verdict-flag)" : "var(--border-subtle)"} strokeWidth={1} />
+      <g stroke={c} strokeWidth={1.3} fill="none" strokeLinecap="round" transform={`translate(${mx - 4.5} ${my - 4.5}) scale(0.38)`}>
         <path d="M9 12h6" />
         <path d="M10 8.5h-1a3.5 3.5 0 0 0 0 7h1" />
         <path d="M14 8.5h1a3.5 3.5 0 0 1 0 7h-1" />
@@ -210,7 +244,7 @@ export default function AuditChainSection() {
 
         {/* desktop staircase */}
         <div className="mt-5 hidden md:block">
-          <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="mx-auto h-auto w-full" style={{ maxWidth: 1000 }} role="img" aria-label="A descending staircase of nine ledger blocks, each linked to the one above by a fingerprint.">
+          <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="mx-auto h-auto w-full" style={{ maxWidth: 820 }} role="img" aria-label="A 3x3 grid of nine ledger blocks, chained in order by a fingerprint link that snakes through the cells.">
             {BLOCKS.slice(0, -1).map((b) => (
               <SvgConnector key={`c-${b.i}`} i={b.i} broken={isBroken(b.i)} show={show} reduce={reduce} />
             ))}

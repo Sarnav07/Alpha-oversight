@@ -103,8 +103,8 @@ export function EvasionStory() {
     <section aria-label="The Evasion" className="relative">
       {/* Runway - its height is the scroll distance the story plays over. */}
       <div ref={runwayRef} className="relative h-[620vh]">
-        {/* Sticky stage - pinned below the 3.5rem header for the duration. */}
-        <div className="sticky top-14 h-[calc(100vh-3.5rem)] w-full">
+        {/* Sticky stage - pinned below the 72px header for the duration. */}
+        <div className="sticky top-[72px] h-[calc(100vh-72px)] w-full">
           <div className="mx-auto flex h-full w-full max-w-[var(--maxw-content)] items-center px-4 sm:px-8">
             <SplitFrame
               narrative={<NarrativeColumn t={t} />}

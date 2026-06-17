@@ -23,6 +23,13 @@
   --bg-card-hover: #1b1e23;
   --bg-inset: #0a0b0d;
 
+  /* ambient decorative glow (DeskBackdrop) — monochrome, theme-aware.
+     White on the dark backbone; flipped to a faint dark tint on light sections
+     so the glow still reads (white-on-white would vanish). band-blue is NEVER
+     used for decoration. */
+  --ambient-glow: rgba(255, 255, 255, 0.06);
+  --ambient-glow-2: rgba(255, 255, 255, 0.045);
+
   /* borders / hairlines */
   --border-subtle: #2a2a2a;
   --border-default: #3a3a3a;
@@ -83,6 +90,8 @@
   --border-strong: #d4d6da;
   --band-blue-glow: #3b82f633;
   --status-idle: #9aa0aa;
+  --ambient-glow: rgba(20, 22, 28, 0.05);
+  --ambient-glow-2: rgba(20, 22, 28, 0.035);
 }
 
 /* DARK reset - restores the root (dark) token values so a dark panel nested

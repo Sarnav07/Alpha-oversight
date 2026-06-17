@@ -1,0 +1,75 @@
+<mxfile host="alpha-oversight" type="device">
+  <diagram name="beat-a" id="beata-1">
+    <mxGraphModel dx="1300" dy="800" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1200" pageHeight="430" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- input -->
+        <mxCell id="in" value="Sanitized&#10;order events" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6B76A0;strokeWidth=1.5;fontSize=12;fontColor=#14161C;" vertex="1" parent="1">
+          <mxGeometry x="24" y="92" width="120" height="62" as="geometry" />
+        </mxCell>
+
+        <!-- phase 1 -->
+        <mxCell id="p1" value="1 · Triage" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#FCFCFD;strokeColor=#AAB2BD;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontSize=12;fontStyle=1;fontColor=#6B7280;" vertex="1" parent="1">
+          <mxGeometry x="190" y="56" width="244" height="332" as="geometry" />
+        </mxCell>
+        <mxCell id="anom" value="Anomaly Detector&#10;computes features; flags suspicious flow" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#AAB2BD;strokeWidth=1.25;fontSize=11;fontColor=#14161C;" vertex="1" parent="1">
+          <mxGeometry x="210" y="92" width="204" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="inv" value="Investigator&#10;recruits the right specialist" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#AAB2BD;strokeWidth=1.25;fontSize=11;fontColor=#14161C;" vertex="1" parent="1">
+          <mxGeometry x="210" y="178" width="204" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="spec" value="Specialist&#10;proposes contested inputs:&#10;window · bona-fide orders · intent" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#AAB2BD;strokeWidth=1.25;fontSize=11;fontColor=#14161C;" vertex="1" parent="1">
+          <mxGeometry x="210" y="258" width="204" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="e_an_in" value="" style="endArrow=classic;html=1;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#AAB2BD;strokeWidth=1.25;" edge="1" parent="1" source="anom" target="inv"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_in_sp" value="@mention recruit" style="endArrow=classic;html=1;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#3B82F6;strokeWidth=1.5;fontSize=9;fontColor=#2C6FE0;" edge="1" parent="1" source="inv" target="spec"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- phase 2 -->
+        <mxCell id="p2" value="2 · Debate &amp; resolve" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#FCFCFD;strokeColor=#AAB2BD;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontSize=12;fontStyle=1;fontColor=#6B7280;" vertex="1" parent="1">
+          <mxGeometry x="486" y="56" width="288" height="332" as="geometry" />
+        </mxCell>
+        <mxCell id="debate" value="" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#F7F8FA;strokeColor=#AAB2BD;strokeWidth=1.25;dashed=1;dashPattern=6 4;" vertex="1" parent="1">
+          <mxGeometry x="506" y="98" width="250" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="deblbl" value="local debate — off Band" style="text;html=1;align=center;fontSize=10;fontStyle=2;fontColor=#6B7280;" vertex="1" parent="1">
+          <mxGeometry x="506" y="174" width="250" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="pros" value="Prosecution" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#AAB2BD;strokeWidth=1.25;fontSize=11;fontColor=#14161C;" vertex="1" parent="1">
+          <mxGeometry x="518" y="116" width="110" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="def" value="Defense" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#AAB2BD;strokeWidth=1.25;fontSize=11;fontColor=#14161C;" vertex="1" parent="1">
+          <mxGeometry x="636" y="116" width="110" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="pd" value="vs." style="endArrow=none;html=1;strokeColor=#6B7280;strokeWidth=1.25;fontSize=10;fontColor=#6B7280;" edge="1" parent="1" source="pros" target="def"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="adj" value="Adjudicator&#10;resolves one conservative&#10;set of engine inputs" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#AAB2BD;strokeWidth=1.25;fontSize=11;fontColor=#14161C;" vertex="1" parent="1">
+          <mxGeometry x="506" y="286" width="250" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e_deb_adj" value="" style="endArrow=classic;html=1;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#AAB2BD;strokeWidth=1.25;" edge="1" parent="1" source="debate" target="adj"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- phase 3 -->
+        <mxCell id="p3" value="3 · Verdict" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#FCFCFD;strokeColor=#AAB2BD;strokeWidth=1.5;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontSize=12;fontStyle=1;fontColor=#6B7280;" vertex="1" parent="1">
+          <mxGeometry x="826" y="56" width="330" height="332" as="geometry" />
+        </mxCell>
+        <mxCell id="engine" value="RULE ENGINE&#10;runs the active rules —&#10;same inputs, same answer" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#14161C;strokeColor=#C9A227;strokeWidth=2.5;fontSize=12;fontStyle=1;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="846" y="92" width="292" height="74" as="geometry" />
+        </mxCell>
+        <mxCell id="flag" value="FLAG · rule_id + cited metric&#10;→ case FLAGGED" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FDECEC;strokeColor=#EF4444;strokeWidth=1.5;fontSize=11;fontStyle=1;fontColor=#B42318;" vertex="1" parent="1">
+          <mxGeometry x="846" y="196" width="292" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="escmgr" value="Escalation Manager&#10;packages the brief, recommends an action" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#AAB2BD;strokeWidth=1.25;fontSize=11;fontColor=#14161C;" vertex="1" parent="1">
+          <mxGeometry x="846" y="288" width="292" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_eng_flag" value="VERDICT" style="endArrow=classic;html=1;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#EF4444;strokeWidth=1.5;fontSize=9;fontColor=#B42318;" edge="1" parent="1" source="engine" target="flag"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_flag_esc" value="" style="endArrow=classic;html=1;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#AAB2BD;strokeWidth=1.25;" edge="1" parent="1" source="flag" target="escmgr"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- inter-phase -->
+        <mxCell id="e_in_an" value="HANDOFF" style="endArrow=classic;html=1;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#3B82F6;strokeWidth=1.5;fontSize=9;fontColor=#2C6FE0;" edge="1" parent="1" source="in" target="anom"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_sp_deb" value="EVIDENCE" style="endArrow=classic;html=1;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#3B82F6;strokeWidth=1.5;fontSize=9;fontColor=#2C6FE0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="spec" target="debate"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_adj_eng" value="resolved inputs" style="endArrow=classic;html=1;edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#6B7280;strokeWidth=1.25;fontSize=10;fontColor=#3A3A3A;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="adj" target="engine"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

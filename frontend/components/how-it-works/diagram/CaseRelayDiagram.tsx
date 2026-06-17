@@ -89,10 +89,17 @@ const leftMid = (r: { x: number; y: number; w: number; h: number }): Pt => ({ x:
 const topMid = (r: { x: number; y: number; w: number; h: number }): Pt => ({ x: r.x + r.w / 2, y: r.y });
 const bottomMid = (r: { x: number; y: number; w: number; h: number }): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h });
 
-export function CaseRelayDiagram({ className = "" }: { className?: string }) {
+export function CaseRelayDiagram({
+  className = "",
+  staticMode = false,
+}: {
+  className?: string;
+  staticMode?: boolean;
+}) {
   return (
     <DiagramFrame
       className={className}
+      staticMode={staticMode}
       viewBox="0 0 1200 520"
       amount={0.25}
       label="Following one surveillance case end to end across three phases. Phase 1 Triage: sanitized order events arrive on Band as a HANDOFF; the Anomaly Detector computes features and flags suspicious flow; the Investigator @mention-recruits the right Specialist, who proposes the contested inputs the engine cannot derive - time window, bona-fide orders, intent. Phase 2 Debate and resolve runs locally off Band: Prosecution and Defense argue, and the Adjudicator resolves one conservative set of engine inputs; the Specialist's contribution reaches the debate as a Band EVIDENCE message. Phase 3 Verdict: the deterministic rule engine runs the active rules on the resolved inputs and renders FLAG with the rule id and cited metric, flagging the case; the Escalation Manager packages the brief and recommends an action, emitted on Band as a VERDICT. Agents never call each other - each drops its work on Band and the next picks it up; the rule engine is the sole PASS/FLAG authority."

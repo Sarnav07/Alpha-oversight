@@ -25,6 +25,7 @@ function MethodBlock({
   lead,
   children,
   delay = 0,
+  bare = false,
 }: {
   step: string;
   headPrimary: string;
@@ -32,6 +33,10 @@ function MethodBlock({
   lead: ReactNode;
   children: ReactNode;
   delay?: number;
+  /** When true, render `children` RAW - no <Reveal> wrapper. Required for a
+   *  child that pins via position:sticky (e.g. EvasionStory): a motion transform
+   *  ancestor establishes a containing block that breaks the sticky pin. */
+  bare?: boolean;
 }) {
   return (
     <article className="border-t border-[color:var(--border-subtle)] pt-12 first:border-t-0 first:pt-0 sm:pt-16">
@@ -57,7 +62,7 @@ function MethodBlock({
           {lead}
         </p>
       </Reveal>
-      <Reveal delay={delay + 0.08}>{children}</Reveal>
+      {bare ? children : <Reveal delay={delay + 0.08}>{children}</Reveal>}
     </article>
   );
 }
@@ -217,14 +222,15 @@ export function Methodology({ evasionSlot }: { evasionSlot?: ReactNode }) {
                 something new.
               </>
             }
+            bare
           >
-            <div
-              data-section="dark"
-              className="ops-grain relative overflow-hidden rounded-2xl border border-[color:var(--border-default)] bg-[var(--obsidian)] p-5 sm:p-8"
-            >
-              <div className="ops-grid ops-grid-fade pointer-events-none absolute inset-0" aria-hidden />
-              <div className="relative z-[1]">{evasionSlot}</div>
-            </div>
+            {/* EvasionStory carries its OWN dark-glass stage (SplitFrame: bg-inset
+                + hairline border + shadow), so the INNER story reads dark while the
+                OUTER Methodology page stays light - which is what we want. No
+                full-bleed black wrapper (that made the outer dark too), and no
+                `overflow-hidden`/`transform` ancestor (either re-bases its
+                position:sticky pin). Mounted raw via MethodBlock `bare`. */}
+            {evasionSlot}
           </MethodBlock>
 
           {/* (e) why you can trust it */}

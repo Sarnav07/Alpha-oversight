@@ -2,8 +2,8 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import CommandCenterArt from "./CommandCenterArt";
-import AuditChainArt from "./art/AuditChainArt";
+import CaseRelayDiagram from "@/components/how-it-works/diagram/CaseRelayDiagram";
+import Image from "next/image";
 import ThreatLeaderboardArt from "./art/ThreatLeaderboardArt";
 import Logomark from "@/components/landing/Logomark";
 import { useIsMobile } from "./useIsMobile";
@@ -85,42 +85,16 @@ function CodifyIc() {
 }
 
 /**
- * A circular ▶ play affordance overlaid on the device art (centered). Purely
- * decorative - mirrors the AlphaLedger feature-card play button.
- */
-function PlayButton() {
-  return (
-    <span
-      aria-hidden="true"
-      className="pointer-events-none absolute left-1/2 top-1/2 z-20 flex items-center justify-center rounded-full backdrop-blur-sm"
-      style={{
-        width: 56,
-        height: 56,
-        transform: "translate(-50%, -50%)",
-        backgroundColor: "rgba(254,254,254,0.14)",
-        border: "1px solid rgba(254,254,254,0.4)",
-        boxShadow: "0 8px 30px rgba(0,0,0,0.45)",
-      }}
-    >
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M5 3.5L14 9L5 14.5V3.5Z" fill="var(--frost)" />
-      </svg>
-    </span>
-  );
-}
-
-/**
  * LaptopFrame - a reusable angled MacBook-style device frame (bezel + base)
- * wrapping a card's art region, with an optional ▶ play overlay. The screen is
- * tilted slightly to read as a real device rising into the card, matching the
- * AlphaLedger reference. `play` toggles the centered play affordance.
+ * wrapping a card's art region. The screen is tilted slightly to read as a real
+ * device rising into the card, matching the AlphaLedger reference. The art is a
+ * real, fully-drawn product schematic (no video / play affordance - these are
+ * static screens, not clips).
  */
 function LaptopFrame({
   children,
-  play = false,
 }: {
   children: React.ReactNode;
-  play?: boolean;
 }) {
   return (
     <div className="relative flex h-full w-full items-center justify-center">
@@ -166,7 +140,6 @@ function LaptopFrame({
             }}
           >
             <div className="absolute inset-0">{children}</div>
-            {play ? <PlayButton /> : null}
           </div>
         </div>
         {/* Base / hinge - a thin slab beneath the lid */}
@@ -288,13 +261,42 @@ function DossierCard({
   );
 }
 
+/** Card 01 art - the real CaseRelay schematic (the native Fig-2 case relay we
+ *  ship on /how-it-works), rendered fully-drawn as a static "screen". */
+function RelayArt() {
+  return (
+    <div
+      data-section="dark"
+      className="flex h-full w-full items-center justify-center bg-[var(--obsidian)] px-5 py-4 sm:px-7"
+    >
+      <CaseRelayDiagram staticMode className="w-full" />
+    </div>
+  );
+}
+
+/** Card 02 art - a screenshot of the real #audit hash-chain section (stair.png),
+ *  shown as the card's device "screen". */
+function StairArt() {
+  return (
+    <div className="relative h-full w-full bg-[var(--obsidian)]">
+      <Image
+        src="/stair.png"
+        alt="Hash-chained audit ledger - nine blocks, each sealed with a fingerprint of the one before"
+        fill
+        sizes="(max-width: 768px) 86vw, 40vw"
+        className="object-cover object-left-top"
+      />
+    </div>
+  );
+}
+
 const CARDS: Card[] = [
   {
     no: "01",
     icon: <TraceIc />,
     title: "Live Trace Analytics",
     body: "Every agent step streams in real time - topology, model badges, verdicts, the blue waiting-on-Band node.",
-    art: <CommandCenterArt />,
+    art: <RelayArt />,
     cta: { label: "Open the Live Desk", href: "/desk" },
   },
   {
@@ -302,8 +304,8 @@ const CARDS: Card[] = [
     icon: <AuditIc />,
     title: "Verified & Audited Lineage",
     body: "Every decision sealed in a hash-chained ledger. verify_chain ✓ - tamper-evident, audit-ready.",
-    art: <AuditChainArt />,
-    cta: { label: "Verify a chain", href: "/desk" },
+    art: <StairArt />,
+    cta: { label: "See the audit ledger", href: "/#audit" },
   },
   {
     no: "03",
@@ -311,7 +313,7 @@ const CARDS: Card[] = [
     title: "Cross-Model Contest",
     body: "Prosecution (frontier) ⚔ Defense (open) argue the same evidence across two model tiers.",
     art: <CrossModelArt />,
-    cta: { label: "Watch the debate", href: "/desk" },
+    cta: { label: "See the model lineup", href: "/how-it-works#different" },
   },
 ];
 
@@ -320,7 +322,7 @@ const CARDS: Card[] = [
  * layout: a deep-black gradient panel; a BARE line icon top-left; the title,
  * body and a frosted translucent CTA pill anchored to the LOWER-left; and an
  * angled <LaptopFrame/> on the right that BLEEDS off the card's right edge (the
- * card clips it with overflow-hidden), with a centered ▶ play affordance.
+ * card clips it with overflow-hidden), showing a real, fully-drawn schematic.
  *
  * Below md the card stacks: text block, then the laptop beneath it.
  */
@@ -409,13 +411,13 @@ function FeatureCard({ card }: { card: Card }) {
         <div
           className="absolute top-1/2 left-[7%] w-[132%] -translate-y-1/2"
         >
-          <LaptopFrame play>{card.art}</LaptopFrame>
+          <LaptopFrame>{card.art}</LaptopFrame>
         </div>
       </div>
 
       {/* Laptop (mobile stacked) - normal sizing beneath the text. */}
       <div className="relative z-10 px-8 pb-9 md:hidden">
-        <LaptopFrame play>{card.art}</LaptopFrame>
+        <LaptopFrame>{card.art}</LaptopFrame>
       </div>
     </article>
   );

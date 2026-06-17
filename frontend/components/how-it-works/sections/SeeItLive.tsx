@@ -79,13 +79,18 @@ export function SeeItLive() {
               </span>
             </Link>
 
-            {/* secondary - read the report */}
-            <Link
+            {/* secondary - read the report. Plain <a> (NOT next/link): the PDF is
+                a static /public asset, not an app route, so the App Router router
+                can't navigate to it - a Link silently does nothing. Open in a new
+                tab. */}
+            <a
               href="/alpha-oversight-report.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border-default)] px-7 py-3.5 font-mono text-sm font-semibold tracking-[0.02em] text-[color:var(--text-primary)] transition-colors duration-200 hover:border-[color:var(--text-muted)]"
             >
               Read the full report (PDF)
-            </Link>
+            </a>
           </div>
         </Reveal>
 

@@ -96,7 +96,7 @@ export function DeskShowcaseHero() {
   return (
     <section
       aria-labelledby="desk-hero-title"
-      className="relative flex min-h-[calc(100vh-3.5rem)] items-center overflow-hidden"
+      className="relative flex min-h-[calc(100vh-72px)] items-center overflow-hidden"
       style={{ backgroundColor: "var(--bg-page)", color: "var(--text-primary)" }}
     >
       <DeskBackdrop />

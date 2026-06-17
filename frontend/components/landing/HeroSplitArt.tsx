@@ -69,12 +69,15 @@ export default function HeroSplitArt() {
         </div>
       </div>
 
-      {/* two panes split by the band-blue "wall" seam */}
-      <div className="relative z-10 grid flex-1 grid-cols-2">
-        {/* the wall seam (vertical band-blue line down the centre) */}
+      {/* two panes split by the band-blue "wall" seam. The split is asymmetric:
+          the architecture (Fig 1) is a wide 1200×612 schematic with ~25 labelled
+          nodes, so it gets the majority of the screen to stay legible; the
+          square nonagon reads fine in the slimmer left pane. */}
+      <div className="relative z-10 grid flex-1 grid-cols-[33%_67%]">
+        {/* the wall seam (vertical band-blue line at the pane boundary) */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-[6%] left-1/2 w-px -translate-x-1/2"
+          className="pointer-events-none absolute inset-y-[6%] left-[33%] w-px"
           style={{
             background:
               "linear-gradient(to bottom, transparent, color-mix(in srgb, var(--band-blue) 40%, transparent) 18%, color-mix(in srgb, var(--band-blue) 40%, transparent) 82%, transparent)",
@@ -82,7 +85,7 @@ export default function HeroSplitArt() {
         />
 
         {/* LEFT - the Band topology */}
-        <figure className="flex min-w-0 flex-col px-[3.4%] py-[2.6%]">
+        <figure className="flex min-w-0 flex-col pl-[2.6%] pr-[2.2%] py-[2.6%]">
           <figcaption className="mb-[2%] font-mono text-[9.5px] uppercase tracking-[0.18em]" style={{ color: "var(--text-muted)" }}>
             <span style={{ color: "var(--band-blue)" }}>01</span>&nbsp;&nbsp;coordination topology — nine roles, one loop
           </figcaption>
@@ -91,13 +94,14 @@ export default function HeroSplitArt() {
           </div>
         </figure>
 
-        {/* RIGHT - the architecture (report Fig 1) */}
-        <figure className="flex min-w-0 flex-col px-[3.4%] py-[2.6%]">
+        {/* RIGHT - the architecture (report Fig 1). Slim padding so the wide
+            schematic claims the full width of its (larger) pane. */}
+        <figure className="flex min-w-0 flex-col pl-[2.2%] pr-[1.6%] py-[2.6%]">
           <figcaption className="mb-[2%] font-mono text-[9.5px] uppercase tracking-[0.18em]" style={{ color: "var(--text-muted)" }}>
             <span style={{ color: "var(--band-blue)" }}>02</span>&nbsp;&nbsp;architecture — two desks, one wall
           </figcaption>
           <div className="flex min-h-0 flex-1 items-center justify-center">
-            <ArchitectureDiagram staticMode />
+            <ArchitectureDiagram staticMode className="w-full" />
           </div>
         </figure>
       </div>

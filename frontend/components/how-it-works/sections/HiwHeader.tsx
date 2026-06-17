@@ -1,5 +1,7 @@
 "use client";
 
+import Logomark from "@/components/landing/Logomark";
+
 /**
  * HiwHeader - sticky top bar for /how-it-works.
  *
@@ -34,22 +36,19 @@ export function HiwHeader() {
       style={{ backgroundColor: `${BG}f2`, borderBottom: `1px solid ${BORDER}` }}
     >
       <div
-        className="mx-auto flex h-14 max-w-[var(--maxw-content)] items-center justify-between gap-6 px-5 sm:px-8"
+        className="mx-auto flex h-[72px] max-w-[var(--maxw-content)] items-center justify-between gap-6 px-5 sm:px-8"
       >
-        {/* Left - wordmark */}
+        {/* Left - brand: the SAME logomark + wordmark as the landing nav, linking
+            HOME (/) so it carries you back to the landing page. */}
         <a
-          href="/how-it-works"
-          className="group flex items-baseline gap-2 whitespace-nowrap"
+          href="/"
+          aria-label="Alpha & Oversight - home"
+          className="group inline-flex items-center gap-2.5 whitespace-nowrap"
           style={{ color: INK }}
         >
-          <span className="font-mono text-[13px] font-semibold tracking-tight">
-            Alpha
-          </span>
-          <span className="font-display text-[15px] leading-none" style={{ color: MUTED }}>
-            &amp;
-          </span>
-          <span className="font-mono text-[13px] font-semibold tracking-tight">
-            Oversight
+          <Logomark size={22} className="transition-opacity duration-300 group-hover:opacity-80" />
+          <span className="font-sans text-[13px] font-semibold uppercase tracking-[0.16em]">
+            Alpha &amp; Oversight
           </span>
         </a>
 
@@ -59,7 +58,7 @@ export function HiwHeader() {
             <a
               key={l.href}
               href={l.href}
-              className="font-mono text-[11px] uppercase tracking-[0.16em] transition-colors hover:opacity-100"
+              className="font-sans text-[12.5px] tracking-wide transition-colors"
               style={{ color: MUTED }}
               onMouseEnter={(e) => (e.currentTarget.style.color = INK)}
               onMouseLeave={(e) => (e.currentTarget.style.color = MUTED)}
@@ -73,7 +72,9 @@ export function HiwHeader() {
         <div className="flex items-center gap-4 whitespace-nowrap sm:gap-5">
           <a
             href="/alpha-oversight-report.pdf"
-            className="font-mono text-[11px] uppercase tracking-[0.14em] transition-opacity hover:opacity-70"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-sans text-[12.5px] tracking-wide transition-opacity hover:opacity-70"
             style={{ color: INK }}
           >
             Read the report
@@ -83,7 +84,7 @@ export function HiwHeader() {
           </span>
           <a
             href="/"
-            className="font-mono text-[11px] uppercase tracking-[0.14em] transition-opacity hover:opacity-70"
+            className="font-sans text-[12.5px] tracking-wide transition-opacity hover:opacity-70"
             style={{ color: MUTED }}
           >
             &larr; Home

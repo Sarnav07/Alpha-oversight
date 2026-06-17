@@ -77,10 +77,17 @@ function Leaf({
   );
 }
 
-export function TrustDiagram({ className = "" }: { className?: string }) {
+export function TrustDiagram({
+  className = "",
+  staticMode = false,
+}: {
+  className?: string;
+  staticMode?: boolean;
+}) {
   return (
     <DiagramFrame
       className={className}
+      staticMode={staticMode}
       viewBox={VB}
       amount={0.25}
       label="Two trust mechanisms shown side by side. On the left, the Chinese wall: an R&D order carrying symbol, side, qty, limit_price, timestamps plus the adversary's reasoning and model_key passes through the SanitizedBridge, which strips reasoning and model_key so Surveillance receives only the bare order; the active rulebook flows back to R&D read-only. On the right, the hash-chained audit ledger: three Band leaves (HANDOFF, EVIDENCE, VERDICT) where each leaf's hash is sha256 of the previous hash plus the canonical body and binds the real band_message_id; tamper any byte and the recomputed hash no longer matches the stored hash, so verify_chain() returns False."

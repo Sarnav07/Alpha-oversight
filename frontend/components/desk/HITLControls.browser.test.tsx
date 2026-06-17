@@ -76,10 +76,14 @@ beforeEach(() => {
 });
 
 describe("HITLControls - visibility gating", () => {
-  it("renders nothing when the case is not ESCALATED", () => {
+  it("renders the idle review frame (no action buttons) when the case is not ESCALATED", () => {
+    // The right column always keeps its box frame; in a non-escalated state that
+    // frame is the idle hint, with NO Confirm/Reject actions (see component note).
     caseState = "FLAGGED";
-    const { container } = render(<HITLControls />);
-    expect(container.firstChild).toBeNull();
+    render(<HITLControls />);
+    expect(screen.getByText(/no case awaiting review/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /codify rule/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /close case/i })).toBeNull();
   });
 
   it("renders Confirm + Reject when the case is ESCALATED", () => {

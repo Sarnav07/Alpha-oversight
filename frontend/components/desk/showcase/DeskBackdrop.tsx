@@ -34,7 +34,7 @@ export function DeskBackdrop({ glow = true }: { glow?: boolean }) {
               height: 560,
               left: "6%",
               top: "4%",
-              background: "radial-gradient(circle, rgba(255,255,255,0.06), transparent 64%)",
+              background: "radial-gradient(circle, var(--ambient-glow), transparent 64%)",
               filter: "blur(46px)",
             }}
             animate={reduce ? undefined : { x: [0, 44, 0], y: [0, 30, 0] }}
@@ -47,7 +47,7 @@ export function DeskBackdrop({ glow = true }: { glow?: boolean }) {
               height: 440,
               right: "5%",
               top: "34%",
-              background: "radial-gradient(circle, rgba(255,255,255,0.045), transparent 66%)",
+              background: "radial-gradient(circle, var(--ambient-glow-2), transparent 66%)",
               filter: "blur(54px)",
             }}
             animate={reduce ? undefined : { x: [0, -32, 0], y: [0, 38, 0] }}
