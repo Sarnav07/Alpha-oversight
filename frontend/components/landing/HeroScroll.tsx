@@ -130,10 +130,10 @@ export default function HeroScroll() {
       tl.to(device, { scale: 1.3, duration: 0.26, ease: "power1.inOut" }, 0.3);
       tl.to(bezel, { scale: 1.14, opacity: 0, duration: 0.16, ease: "power1.in" }, 0.4);
 
-      // 0.56–1.00 — END STATE: full-bleed head-on dashboard with a slow continued
-      // scale for life. Kept OPAQUE (no fade to black) so the pin releases on a
-      // readable frame and <KeyFigures/> hard-cuts to white directly below.
-      tl.to(device, { scale: 1.42, duration: 0.44, ease: "none" }, 0.56);
+      // 0.56–1.00 — END STATE: The app continues to scale aggressively (diving past
+      // the camera) and fades into the obsidian background before the Overview section appears.
+      tl.to(device, { scale: 2.2, duration: 0.44, ease: "power2.in" }, 0.56);
+      tl.to(device, { opacity: 0, duration: 0.20, ease: "power1.inOut" }, 0.80);
 
       ScrollTrigger.refresh();
       }, rootRef);
@@ -337,6 +337,8 @@ export default function HeroScroll() {
           </div>
         </div>
       </div>
+      {/* Pull the next section up to cover the empty 100vh stage when it unpins, eliminating the black void. */}
+      <div className="hidden md:block -mt-[100vh]" />
     </>
   );
 }

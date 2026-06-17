@@ -68,24 +68,18 @@ export default function PoweredBySection() {
             start: "top top",
             end: "bottom bottom",
             scrub: true,
-            pin: stage,
-            pinSpacing: false,
-            anticipatePin: 1,
           },
         });
 
-        // 0.00–0.15 — hold: headline centered, board offscreen.
-        tl.to({}, { duration: 0.15 });
+        // 0.00–0.08 — headline slides left AND board slides in simultaneously.
+        tl.to(head, { x: 0, duration: 0.08, ease: "power2.out" }, 0.00);
+        tl.to(board, { xPercent: 0, opacity: 1, duration: 0.08, ease: "power2.out" }, 0.00);
 
-        // 0.15–0.55 — headline slides to its left rest; board slides in from right.
-        tl.to(head, { x: 0, duration: 0.4, ease: "power2.out" }, 0.15);
-        tl.to(board, { xPercent: 0, opacity: 1, duration: 0.42, ease: "power2.out" }, 0.17);
+        // 0.04–0.12 — the four callout cards stagger in over the board.
+        tl.to(labels, { opacity: 1, x: 0, duration: 0.04, stagger: 0.01, ease: "none" }, 0.04);
 
-        // 0.55–0.84 — the four callout cards stagger in over the board.
-        tl.to(labels, { opacity: 1, x: 0, duration: 0.1, stagger: 0.07, ease: "power1.out" }, 0.56);
-
-        // 0.84–1.00 — gentle continued drift so the pin releases with life.
-        tl.to(board, { xPercent: -2, duration: 0.16 }, 0.84);
+        // 0.08–1.00 — gentle continued drift so the pin releases with life.
+        tl.to(board, { xPercent: -2, duration: 0.92 }, 0.08);
 
         ScrollTrigger.refresh();
       }, rootRef);
@@ -133,7 +127,7 @@ const EYEBROW = "Infrastructure";
 /** The two-tone "Powered by…" headline + sub (shared by both render paths). */
 function Headline() {
   return (
-    <div className="max-w-xl">
+    <div className="w-full max-w-xl lg:max-w-none lg:pr-8 xl:pr-12">
       <span className="mb-5 inline-block font-mono text-[11px] uppercase tracking-[0.24em] text-[var(--text-faint)]">
         {EYEBROW}
       </span>

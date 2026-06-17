@@ -313,16 +313,6 @@ const CARDS: Card[] = [
     art: <CrossModelArt />,
     cta: { label: "Watch the debate", href: "/desk" },
   },
-  {
-    no: "04",
-    icon: <CodifyIc />,
-    title: "The Codify Engine",
-    body: "A confirmed evasion becomes a deterministic rule on human confirm — regression-gated.",
-    // full-bleed centred leaderboard panel (10-correct) — its own title, four
-    // corner metrics, the dead-centred ShieldEmblem and a caption.
-    art: <ThreatLeaderboardArt />,
-    full: true,
-  },
 ];
 
 /**
@@ -431,13 +421,12 @@ function FeatureCard({ card }: { card: Card }) {
   );
 }
 
-/** The section-anchor header — shared by both render paths. */
 function FeaturesHeader() {
   // data-section="light" remaps the monochrome tokens to their light-theme
   // values, so the eyebrow / heading / hairline / logomark read DARK on the
   // white section (the cards below stay dark — they sit outside this wrapper).
   return (
-    <div data-section="light" className="px-6 pt-16 sm:px-10">
+    <div data-section="light" className="px-6 pt-16 sm:px-10 pb-8">
       <div
         className="flex items-center justify-between pt-4"
         style={{ borderTop: "1px solid var(--hairline)" }}
@@ -449,9 +438,9 @@ function FeaturesHeader() {
           <Logomark size={16} className="text-[var(--text-faint)]" />
         </span>
       </div>
-      <div className="mt-14 flex items-end justify-between gap-6">
+      <div className="mt-14 flex flex-col md:flex-row md:items-center justify-between gap-8 md:gap-16">
         <h2
-          className="font-sans"
+          className="font-sans shrink-0"
           style={{
             fontSize: "clamp(34px, 5vw, 56px)",
             fontWeight: 300,
@@ -461,9 +450,22 @@ function FeaturesHeader() {
         >
           Our Features
         </h2>
-        <span className="hidden font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--text-muted)] sm:inline">
-          ← Scroll
-        </span>
+        <div className="flex flex-col items-start text-left">
+          <p
+            className="font-sans max-w-[42ch]"
+            style={{
+              fontSize: "clamp(15px, 1.6vw, 18px)",
+              fontWeight: 400,
+              lineHeight: 1.45,
+              color: "var(--text-muted)",
+            }}
+          >
+            Alpha & Oversight reinvents surveillance as an adversarial craft. One desk invents the manipulation; another detects it, proves the catch, and codifies a new rule live — every handoff crossing the Band, every verdict sealed in an immutable ledger.
+          </p>
+          <span className="hidden font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--text-muted)] sm:inline mt-6">
+            ← Scroll
+          </span>
+        </div>
       </div>
     </div>
   );

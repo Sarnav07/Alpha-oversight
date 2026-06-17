@@ -156,7 +156,7 @@ export default function OverviewSection() {
   const showList = reduce || listInView;
 
   return (
-    <section id="overview" aria-labelledby="overview-title" style={{ backgroundColor: "var(--bg-page)", color: "var(--text-primary)" }}>
+    <section id="overview" className="relative z-50" aria-labelledby="overview-title" style={{ backgroundColor: "var(--bg-page)", color: "var(--text-primary)" }}>
       <div className="mx-auto px-6 pb-28 pt-24 sm:px-10 lg:pb-36 lg:pt-32" style={{ maxWidth: "var(--maxw-content)" }}>
         {/* header */}
         <Reveal>
