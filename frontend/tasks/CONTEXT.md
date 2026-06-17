@@ -117,11 +117,13 @@ Every animated component needs a `useReducedMotion` fallback rendering the final
 **Stack/versions:** next `16.2.9`, react/react-dom `19.2.4`, framer-motion `^12.40.0`, gsap `^3.15.0`, @xyflow/react `^12.11.0`, recharts `^3.8.1`, zustand `^5.0.14`, @tanstack/react-query `^5.101.0`, clsx `^2.1.1`, tailwindcss v4 (`@tailwindcss/postcss`), typescript `^5`, eslint `^9`. **Dev port 4100.**
 
 **BUILT & complete:**
-- **App shell:** `layout.tsx` (Geist Sans/Mono via next/font/google, wraps `<Providers>`), `providers.tsx` (React Query only, staleTime 5s — *no queries wired anywhere yet*), `page.tsx` (full landing), `globals.css` (authoritative tokens + `[data-section="light"]` remap + keyframes `band-pulse`/`fade-up`/`codify-flash`/`scroll-cue` + reduced-motion kill-switch).
+- **App shell:** `layout.tsx` (Geist Sans/Mono via next/font/google, wraps `<Providers>`), `providers.tsx` (React Query, staleTime 5s — _now wired: `/desk` queries `/cases`,`/rules`,`/stats`,`/audit` and `useInvalidateOnMarkers` invalidates them on SSE markers (debounced on codify)_), `page.tsx` (full landing), `globals.css` (authoritative tokens + `[data-section="light"]` remap + keyframes `band-pulse`/`fade-up`/`codify-flash`/`scroll-cue` + reduced-motion kill-switch).
 - **12 landing components, all with reduced-motion fallbacks:** `Preloader`, `HeroScroll` (GSAP), `LandingNav` (luminance scroll-spy, explicit-hex), `KeyFigures`, `ManifestoSection`, `FeaturesCarousel` (GSAP), `UnlockSection` (**new/untracked** — only `page.tsx` diff is +2 lines importing/rendering it), `Logomark`, `CommandCenterArt`, `art/AuditChainArt`, `art/ThreatLeaderboardArt` (CrossModelArt inline in FeaturesCarousel).
 - **Data layer (`lib/`), fully built + swap-proof, consumed ONLY by `/desk` stub:** `config.ts` (DATA_MODE mock|live, API_BASE), `api/client.ts` (all REST + POST confirm/reject/demo, `rnd()` flagged not-on-backend), `eventsource/adapter.ts` (`MockAdapter` replays fixtures @900ms ↔ `LiveSSEAdapter`→`/stream`, `createAdapter()` by DATA_MODE), `eventsource/parseMarker.ts` (brittle regex → `Marker`), `store/useTraceStore.ts` (zustand: events/connection/latestByAgent), `types.ts` (mirrors backend verbatim), `fixtures/events-C-0187.ts` (8-event mock stream).
 
-**STUBBED — the `/desk` Phase 6 gap:** `app/desk/page.tsx` is an explicit **"FOUNDATION PROOF"** — only proves adapter→store→render: connect-on-mount, reverse-chron live activity feed (FeedRow + desk-tone + ModelBadge + waiting-on-Band tint) + ConnectionStatus pill. Its own comment says the real components — **StatsBar, TopologyGraph (@xyflow/react), RuleRegistry, VerdictTimeline — "land next per FRONTEND_BUILD_PLAN §9."** None exist. `@xyflow/react`, `recharts`, the REST `api` client, and React Query are installed/wired but **unused by any rendered component**.
+**BUILT & LIVE-VERIFIED (2026-06-17) — the `/desk` Command Center:** the desk is built and wired to live SSE/REST; E2E green; the data layer is complete. VISUAL redesign is deferred (the current desk look is rejected/slated for a presentation rebuild — the contracts and data wiring stay). StatsBar, the HITL Confirm/Reject controls, RuleRegistryPanel (dynamic `4 → 5`), AuditDrawer (a11y focus-trap + live `verify_chain`), ConnectionStatus/ErrorBanner, the CoEvolutionLadder, and the model view all render off real data. `LiveSSEAdapter` now escalates to a real "error" connection state on persistent failure; `useTraceStore.connect()` holds a single `/stream` EventSource across beats; `useInvalidateOnMarkers` debounces the codify `/rules`+`/stats` refetch. 65 vitest tests across 5 suites cover the data layer; backend `ledger.append()` is lock-guarded with a concurrency test. Mock mode (`npm run dev`, the default `NEXT_PUBLIC_DATA_MODE`) shows the Beat-B fixture immediately; many error/recovery behaviours above are LIVE-ONLY (`NEXT_PUBLIC_DATA_MODE=live` + a running backend).
+
+> _Historical (pre-2026-06-17): this section described `/desk` as a "FOUNDATION PROOF" stub — only adapter→store→render with no StatsBar/Topology/RuleRegistry/VerdictTimeline. That gap is now closed for the data layer; only the desk **visuals** remain deferred to the redesign._
 
 **Decorative-only (NOT wired to data):** `CommandCenterArt`, `AuditChainArt`, `ThreatLeaderboardArt` are static mock presentation art for the laptop screen / feature cards — explicitly decoupled from real `/desk`.
 
@@ -141,7 +143,7 @@ Every animated component needs a `useReducedMotion` fallback rendering the final
 **P1 (all locked, presentation-priority order):** C1 Live codify+regression-gate reveal (THE money moment, ≤3s) → C2 Band waiting-pulse + Delete-Band toggle → C4 Audit hash-chain verifier drawer (`verify_chain ✓`/✗ from `audit.verified`) → C5 Replay scrubber (0.5×/1×/2×/4×) → C3 Adversary⚔Surveillance split view → Beat-sheet auto-pilot "Run 90s Demo". If cut: ship 1→2→3, then 4, then 5.
 
 **Other gaps:**
-- Wire **TanStack Query** to REST (`/cases`,`/rules`,`/stats`,`/audit`), invalidated on SSE markers — currently zero callers.
+- ~~Wire **TanStack Query** to REST (`/cases`,`/rules`,`/stats`,`/audit`), invalidated on SSE markers — currently zero callers.~~ **DONE 2026-06-17** — wired via `useInvalidateOnMarkers` (codify refetch debounced); see §7 RESOLVED.
 - **Landing nav anchors** `#overview`/`#how-it-works`/`#audit` have no matching id'd sections (only Live Desk→`/desk` resolves). Either add sections or a `/how-it-works` route (P1, decision D2: Hero→text-fill thesis→6-chapter pinned carousel→count-up proof→CTA).
 - Swap Geist → licensed Aeonik via `next/font/local` (one file).
 
@@ -149,9 +151,17 @@ Every animated component needs a `useReducedMotion` fallback rendering the final
 
 ## 7. Open questions / risks (deduped)
 
+### RESOLVED 2026-06-17
+- **Q6 (case_id attribution) — RESOLVED 2026-06-17:** addressed on the frontend with a `latestCaseId()` helper (the desk derives the active case from the event stream rather than relying on a per-frame `case_id`); the concurrent-run risk is mitigated and the audit ledger is now lock-guarded backend-side (no forked `prev_hash`).
+- **Q5 (parseMarker grammar) — RESOLVED 2026-06-17:** the `parseMarker` grammar is verified by tests (31 of the 65 vitest cases) and a DEV-only `console.warn` now fires when a `pipeline` frame yields no recognised marker (guarded by `NODE_ENV !== "production"`, never alters output) — so backend marker drift is loud in dev instead of silent.
+- **TanStack Query wiring — RESOLVED 2026-06-17:** React Query is now wired via `useInvalidateOnMarkers` (no longer "zero callers"); `/desk` queries `/cases`,`/rules`,`/stats`,`/audit` and invalidates on SSE markers (codify refetch debounced ~500ms so Active Rules doesn't flicker 5→4→5).
+- **"Zero tests" — RESOLVED 2026-06-17:** the frontend now has **65 vitest tests across 5 suites** (vitest configured with node + jsdom projects): `parseMarker` (31), `useTraceStore`, `LiveSSEAdapter` (node); `useDeskModel`, `HITLControls` (jsdom). Run `npm run test`. Backend adds a ledger concurrency test (`pytest backend/tests/test_ledger.py`, 12 passed). Verification is no longer tsc/build/curl-only.
+
+> _The items below are retained as historical/open context; the four above supersede their stale "wire-later"/"zero tests" framing._
+
 **Backend gaps (mock-now, wire-later):**
-- **Q6 (flagged "most important"):** `ActivityEvent` has **NO `case_id`** → can't attribute frames under concurrent runs. `types.ts` mocks `case_id?`.
-- **Q5:** no structured `stage`/`event_type` field — UI must string-parse human-readable pipeline markers via the brittle `parseMarker` regex until backend adds structured fields.
+- **Q6 (flagged "most important"):** `ActivityEvent` has **NO `case_id`** → can't attribute frames under concurrent runs. `types.ts` mocks `case_id?`. _(RESOLVED 2026-06-17 — see above: `latestCaseId()` helper + lock-guarded ledger.)_
+- **Q5:** no structured `stage`/`event_type` field — UI must string-parse human-readable pipeline markers via the brittle `parseMarker` regex until backend adds structured fields. _(RESOLVED 2026-06-17 — see above: parseMarker verified by 31 tests + DEV-only drift warning.)_
 - **Q2:** `POST /demo/rnd` not built — Beat-B canned evasion stands in for the R&D lane.
 - **Q3:** `/stats` returns counts only — narrative tiles (FP%, analyst-hrs, alerts 847/72%/41.2h) must be hard-coded.
 - **CORS:** none configured in `app.py` — cross-origin EventSource/fetch from port 4100 may be blocked. Confirm backend adds CORS or is reverse-proxied same-origin.
@@ -163,7 +173,7 @@ Every animated component needs a `useReducedMotion` fallback rendering the final
 - **"Waiting on Band" is INFERRED** from event sequence (SSE emits no explicit "waiting" event) — confirm the blue-between-outbound-and-next-activation heuristic is what ships.
 - **StatsBar binding:** confirm hard-coding narrative tiles + live-binding only Active Rules/flagged/escalated is acceptable for the demo.
 - **Audit as drawer vs `/cases/{id}` route** — confirm drawer (preserves single-screen demo).
-- **`/desk` REST usage:** confirm whether `/desk` uses REST (cases/rules/stats) alongside the SSE store, or SSE-only (React Query provider is mounted with zero callers).
+- **`/desk` REST usage:** ~~confirm whether `/desk` uses REST (cases/rules/stats) alongside the SSE store, or SSE-only (React Query provider is mounted with zero callers).~~ **RESOLVED 2026-06-17** — `/desk` uses REST (`/cases`,`/rules`,`/stats`,`/audit`) via React Query alongside the SSE store, invalidated on markers (see §7 RESOLVED).
 - **"complete" color:** no `complete` state/verdict exists — treat `complete` = CLOSED (`#10b981`); confirm no distinct "complete" badge intended.
 - **Audit row rendering:** ledger leaves store only `content_sha256` (not content) — how the UI renders human-readable audit rows from sha-only leaves is unclear; may need a join back to replay JSONL.
 - **`Verdict.model_dump()`** in `/demo` responses uses default (not `mode="json"`) — confirm no datetime/enum surprises in `cited_metric`.
@@ -177,4 +187,4 @@ Every animated component needs a `useReducedMotion` fallback rendering the final
 - **Decorative art mapping:** if real `/desk` must visually match `CommandCenterArt`/`AuditChainArt`/`ThreatLeaderboardArt`, that mapping isn't captured in code.
 - **`frontend-design/` reference assets** (numbered PNGs, `*-fucked.png` = hallucinated, `.mov` walkthroughs) are LOCAL-only (never pushed) — compare pixel-for-pixel, don't invent drift. 3D tilt/perspective/box-shadow glow can't be weasyprint-verified — need the user's eyeball.
 
-**Process:** no tests present; verification is tsc/build/curl-based per CLAUDE.md (`npx tsc --noEmit` authoritative → `npm run build` exit 0, rebuild before `next start` → curl :4100 for 200 + grep markers → weasyprint PDF for static layout). This synthesis is from reader digests, not a fresh type-check.
+**Process:** ~~no tests present~~ **65 vitest tests across 5 suites now exist (RESOLVED 2026-06-17, run `npm run test`)** plus backend `pytest backend/tests/test_ledger.py`; tsc/build/curl verification still applies per CLAUDE.md (`npx tsc --noEmit` authoritative → `npm run build` exit 0, rebuild before `next start` → curl :4100 for 200 + grep markers → weasyprint PDF for static layout). The 2026-06-17 update was dynamically verified end-to-end (tsc clean, build exit 0, vitest 65/65, pytest 12/12, landing/how-it-works strings grepped on a fresh build). See `VERIFICATION_GUIDE.md`.

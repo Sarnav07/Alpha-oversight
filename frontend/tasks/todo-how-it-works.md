@@ -1,5 +1,7 @@
 # Plan — Landing nav fix + /how-it-works + overview/audit
 
+> ✅ COMPLETED 2026-06-16 (landing + how-it-works built). See VERIFICATION_GUIDE.md.
+
 **Approved 2026-06-16.** Fixes the 3 dead nav anchors and builds new animated surfaces.
 Holds the A&O identity (monochrome backbone + semantic accents) — NOT the OmniCurve
 reference's red/cream skin. Tokens/keyframes already in `app/globals.css`.

@@ -1,0 +1,494 @@
+{
+  "result": {
+    "steps": {
+      "1 landing": "ok",
+      "2 desk live-connect": "ok",
+      "3 Beat A -> FLAGGED": "ok",
+      "4 Beat B -> ESCALATED": "ok",
+      "5 Confirm -> codify 4->5": "ok",
+      "6 Audit drawer verify_chain": "ok",
+      "7 Run R&D (live adversary)": "ok"
+    },
+    "beatA": {
+      "case_id": "case-2a7fae43",
+      "room_id": "surveillance",
+      "state": "FLAGGED",
+      "features": {
+        "cancel_to_fill": 0,
+        "depth_levels": 4,
+        "self_match_ratio": 0,
+        "eod_print_spike": false,
+        "family": "layering"
+      },
+      "verdict": {
+        "result": "FLAG",
+        "rule_id": "FINRA-5210-layering",
+        "cited_metric": {
+          "depth_levels": 4,
+          "cancel_span_ms": 30,
+          "layer_side": "BUY",
+          "window_ms": 100,
+          "threshold": 3
+        }
+      },
+      "events": [
+        {
+          "action": "PLACE",
+          "order": {
+            "order_id": "lay-0",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.99,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "OPEN",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:42:25.418452Z",
+            "updated_at": "2026-06-17T07:42:25.418457Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00Z",
+          "trader_id": "spoofy"
+        },
+        {
+          "action": "PLACE",
+          "order": {
+            "order_id": "lay-1",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.98,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "OPEN",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:42:25.418492Z",
+            "updated_at": "2026-06-17T07:42:25.418493Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.005000Z",
+          "trader_id": "spoofy"
+        },
+        {
+          "action": "PLACE",
+          "order": {
+            "order_id": "lay-2",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.97,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "OPEN",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:42:25.418503Z",
+            "updated_at": "2026-06-17T07:42:25.418503Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.010000Z",
+          "trader_id": "spoofy"
+        },
+        {
+          "action": "PLACE",
+          "order": {
+            "order_id": "lay-3",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.96,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "OPEN",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:42:25.418509Z",
+            "updated_at": "2026-06-17T07:42:25.418510Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.015000Z",
+          "trader_id": "spoofy"
+        },
+        {
+          "action": "CANCEL",
+          "order": {
+            "order_id": "lay-0",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.99,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "CANCELLED",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:42:25.418517Z",
+            "updated_at": "2026-06-17T07:42:25.418518Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.040000Z",
+          "trader_id": "spoofy"
+        },
+        {
+          "action": "CANCEL",
+          "order": {
+            "order_id": "lay-1",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.98,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "CANCELLED",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:42:25.418525Z",
+            "updated_at": "2026-06-17T07:42:25.418526Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.050000Z",
+          "trader_id": "spoofy"
+        },
+        {
+          "action": "CANCEL",
+          "order": {
+            "order_id": "lay-2",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.97,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "CANCELLED",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:42:25.418531Z",
+            "updated_at": "2026-06-17T07:42:25.418532Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.060000Z",
+          "trader_id": "spoofy"
+        },
+        {
+          "action": "CANCEL",
+          "order": {
+            "order_id": "lay-3",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.96,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "CANCELLED",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:42:25.418544Z",
+            "updated_at": "2026-06-17T07:42:25.418544Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.070000Z",
+          "trader_id": "spoofy"
+        }
+      ],
+      "resolved_inputs": {
+        "window_ms": 0,
+        "bona_fide_ids": [
+          "O-7892",
+          "O-7895"
+        ],
+        "intent": "Legitimate order management: two resting buy orders maintained at BBO+3 while other orders were canceled due to routine risk controls, not manipulative intent."
+      },
+      "created_at": "2026-06-17T07:42:25.418605Z",
+      "updated_at": "2026-06-17T07:44:56.139890Z"
+    },
+    "beatB": {
+      "case_id": "case-fb955a65",
+      "room_id": "surveillance",
+      "state": "ESCALATED",
+      "features": {
+        "cancel_to_fill": 0,
+        "depth_levels": 4,
+        "self_match_ratio": 0,
+        "eod_print_spike": false,
+        "family": "layering"
+      },
+      "verdict": {
+        "result": "PASS",
+        "rule_id": null,
+        "cited_metric": null
+      },
+      "events": [
+        {
+          "action": "PLACE",
+          "order": {
+            "order_id": "ev-0",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.99,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "OPEN",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:44:59.807471Z",
+            "updated_at": "2026-06-17T07:44:59.807474Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00Z",
+          "trader_id": "spoofy2"
+        },
+        {
+          "action": "PLACE",
+          "order": {
+            "order_id": "ev-1",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.98,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "OPEN",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:44:59.807507Z",
+            "updated_at": "2026-06-17T07:44:59.807508Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.005000Z",
+          "trader_id": "spoofy2"
+        },
+        {
+          "action": "PLACE",
+          "order": {
+            "order_id": "ev-2",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.97,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "OPEN",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:44:59.807521Z",
+            "updated_at": "2026-06-17T07:44:59.807522Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.010000Z",
+          "trader_id": "spoofy2"
+        },
+        {
+          "action": "PLACE",
+          "order": {
+            "order_id": "ev-3",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.96,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "OPEN",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:44:59.807531Z",
+            "updated_at": "2026-06-17T07:44:59.807532Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.015000Z",
+          "trader_id": "spoofy2"
+        },
+        {
+          "action": "CANCEL",
+          "order": {
+            "order_id": "ev-0",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.99,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "CANCELLED",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:44:59.807544Z",
+            "updated_at": "2026-06-17T07:44:59.807545Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.050000Z",
+          "trader_id": "spoofy2"
+        },
+        {
+          "action": "CANCEL",
+          "order": {
+            "order_id": "ev-1",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.98,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "CANCELLED",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:44:59.807555Z",
+            "updated_at": "2026-06-17T07:44:59.807556Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.180000Z",
+          "trader_id": "spoofy2"
+        },
+        {
+          "action": "CANCEL",
+          "order": {
+            "order_id": "ev-2",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.97,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "CANCELLED",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:44:59.807566Z",
+            "updated_at": "2026-06-17T07:44:59.807567Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.310000Z",
+          "trader_id": "spoofy2"
+        },
+        {
+          "action": "CANCEL",
+          "order": {
+            "order_id": "ev-3",
+            "symbol": "ACME",
+            "side": "BUY",
+            "quantity": 500,
+            "order_type": "LIMIT",
+            "limit_price": 9.96,
+            "stop_price": null,
+            "time_in_force": "DAY",
+            "status": "CANCELLED",
+            "filled_quantity": 0,
+            "avg_fill_price": 0,
+            "fills": [],
+            "created_at": "2026-06-17T07:44:59.807576Z",
+            "updated_at": "2026-06-17T07:44:59.807576Z",
+            "reasoning": "",
+            "model_key": "",
+            "remaining_quantity": 500
+          },
+          "timestamp": "2026-06-14T14:00:00.440000Z",
+          "trader_id": "spoofy2"
+        }
+      ],
+      "resolved_inputs": {
+        "window_ms": 0,
+        "bona_fide_ids": [
+          "O-7892",
+          "O-7895"
+        ],
+        "intent": "Routine order management consistent with standard risk controls."
+      },
+      "created_at": "2026-06-17T07:44:59.807623Z",
+      "updated_at": "2026-06-17T07:47:38.405640Z"
+    },
+    "rulesAfterConfirm": 5,
+    "audit": {
+      "verifiedTick": true,
+      "leaves": 5
+    },
+    "rnd": "no-new-case (adversary may not have found an evasion — acceptable)",
+    "finalStats": {
+      "total_cases": 2,
+      "by_state": {
+        "FLAGGED": 2
+      },
+      "flagged": 2,
+      "escalated": 0,
+      "active_rules": 5
+    },
+    "diagnostics": {
+      "consoleErrors": 0,
+      "pageErrors": 0,
+      "failedRequests": [
+        "http://localhost:8077/stream",
+        "http://localhost:8077/stream",
+        "http://localhost:8077/stream"
+      ],
+      "httpErrors": []
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [
+    "http://localhost:8077/stream",
+    "http://localhost:8077/stream",
+    "http://localhost:8077/stream"
+  ],
+  "httpErrors": []
+}

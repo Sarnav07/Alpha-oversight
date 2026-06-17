@@ -1,5 +1,7 @@
 # Plan — `/desk` Command Center (mock mode)
 
+> ✅ COMPLETED 2026-06-16 (mock Command Center built). Superseded — see FRONTEND_IMPROVEMENTS.md (STATUS: COMPLETE) + VERIFICATION_GUIDE.md.
+
 **Decisions locked (2026-06-16):** build the whole `/desk` against the MOCK adapter
 now (fixtures, no backend); integrate live backend later when the frontend is done.
 One case at a time / replay-driven (sidesteps missing `case_id`). Backend edits

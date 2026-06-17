@@ -1,0 +1,51 @@
+[07:41:58] chromium: /home/pratham/.cache/puppeteer/chrome/linux-148.0.7778.97/chrome-linux64/chrome
+[07:41:58] 
+=== 1 landing ===
+[07:42:03]   📸 01-landing.png (viewport)
+[07:42:03] 
+=== 2 desk live-connect ===
+[07:42:25]   ✗ TIMEOUT demo controls present (20s)
+[07:42:25]   baseline rules=4
+[07:42:25]   📸 02-desk-connected.png
+[07:42:25] 
+=== 3 Beat A -> FLAGGED ===
+[07:42:25]   ▶ clicked "run beat a"
+[07:42:25]     [requestfailed] http://localhost:8077/stream
+[07:44:56]   ✓ Beat A backend FLAGGED (151s)
+[07:44:56]   ✓ UI shows flag (0s)
+[07:44:59]   📸 03-beatA-flagged.png
+[07:44:59]   beatA case=case-2a7fae43 state=FLAGGED rule=FINRA-5210-layering
+[07:44:59] 
+=== 4 Beat B -> ESCALATED ===
+[07:44:59]   ▶ clicked "run beat b"
+[07:44:59]     [requestfailed] http://localhost:8077/stream
+[07:47:40]   ✓ Beat B backend ESCALATED (160s)
+[07:47:40]   ✓ HITL panel visible (0s)
+[07:47:42]   📸 04-beatB-escalated.png
+[07:47:42]   beatB case=case-fb955a65 state=ESCALATED
+[07:47:42] 
+=== 5 Confirm -> codify 4->5 ===
+[07:47:42]   ▶ clicked "confirm — codify rule"
+[07:47:42]   ✓ backend rules 4->5 (0s)
+[07:47:47]   📸 05-codify-4to5.png
+[07:47:47]   rules after confirm=5 :: FINRA-5210-layering, FINRA-5210-spoofing, SEC-10b-5-marking, SEC-10b-5-wash, layering-v2-case-fb955a65
+[07:47:47] 
+=== 6 Audit drawer verify_chain ===
+[07:47:47]   ▶ clicked "audit ▦"
+[07:47:47]   ✓ audit drawer open (0s)
+[07:47:48]   📸 06-audit-verified.png (viewport)
+[07:47:48]   audit verify_chain ✓ =true leaves=5
+[07:47:49] 
+=== 7 Run R&D (live adversary) ===
+[07:47:50]   ▶ clicked "run r&d"
+[07:47:50]     [requestfailed] http://localhost:8077/stream
+[07:47:58]   📸 07-rnd-running.png
+[07:51:58]   ✗ TIMEOUT R&D produced a case (240s)
+[07:52:02]   📸 08-rnd-settled.png
+[07:52:02]   rnd="no-new-case (adversary may not have found an evasion — acceptable)"
+[07:52:02] 
+FINAL /stats = {"total_cases":2,"by_state":{"FLAGGED":2},"flagged":2,"escalated":0,"active_rules":5}
+[07:52:02] 
+=== DIAGNOSTICS === consoleErrors=0 pageErrors=0 failedRequests=3 httpErrors=0
+[07:52:02] === STEP RESULTS === {"1 landing":"ok","2 desk live-connect":"ok","3 Beat A -> FLAGGED":"ok","4 Beat B -> ESCALATED":"ok","5 Confirm -> codify 4->5":"ok","6 Audit drawer verify_chain":"ok","7 Run R&D (live adversary)":"ok"}
+[07:52:02] DONE

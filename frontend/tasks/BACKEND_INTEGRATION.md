@@ -1,5 +1,7 @@
 # Backend integration — shared reference (live wiring)
 
+> Current as of 2026-06-16 (live contract). The frontend backlog is now fully implemented — see FRONTEND_IMPROVEMENTS.md + VERIFICATION_GUIDE.md.
+
 Ground truth from a fresh backend recon (2026-06-16). The backend was updated; this
 supersedes CONTEXT.md §3/§7 where they differ. **Goal:** make `NEXT_PUBLIC_DATA_MODE=live`
 work end-to-end against the FastAPI server, one case at a time, swap-proof with mock.
@@ -72,3 +74,6 @@ Built by a 3-teammate team (RestLive / SseLive / DeskLive) against the frozen co
 - `parseMarker` returns the SAME `Marker.stage` union values (anomaly|recruit|waiting_on_band|propose|debate|verdict|escalate|codify) — only fix the regexes to the real strings above.
 - `nodeIdForAgent`, `NODE_META`, `EDGES` keep their signatures.
 - `DeskModel` / `DeskController` contracts (lib/desk/contract.ts) DO NOT change.
+
+
+

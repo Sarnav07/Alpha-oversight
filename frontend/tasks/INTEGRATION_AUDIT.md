@@ -1,5 +1,7 @@
 # Frontend ↔ Backend integration audit (2026-06-16)
 
+> ✅ COMPLETED 2026-06-16 (live backend contract verified). Still accurate.
+
 Cross-checked the frontend's backend-integration layer against the **live backend code**
 (`alpha-oversight/backend/alpha_oversight/`) and the authoritative `Report_band_agents.pdf`.
 Verdict: the contract was ~95% aligned. Endpoints, SSE frame shape, Case/Verdict/Stats/Rule/
