@@ -40,7 +40,12 @@ export const useTraceStore = create<TraceState>((set, get) => ({
   setConnection: (connection) => set({ connection }),
 
   connect: (opts) => {
-    adapter?.disconnect();
+    // Reuse the single long-lived adapter: once a live `/stream` is open, every
+    // per-beat connect() (controller.startLive does reset() then connect()) is a
+    // no-op so we keep ONE EventSource instead of abort+reopening each beat. A
+    // genuine teardown still nulls `adapter` via disconnect(), after which a
+    // later connect() opens fresh.
+    if (adapter) return;
     adapter = createAdapter(opts);
     adapter.connect({
       onEvent: (e) => get().pushEvent(e),

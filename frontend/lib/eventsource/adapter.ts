@@ -56,19 +56,46 @@ class MockAdapter implements EventSourceAdapter {
 /** Native EventSource against the FastAPI SSE endpoint. */
 class LiveSSEAdapter implements EventSourceAdapter {
   private es?: EventSource;
+  /** consecutive onerror events with no successful open/message in between. */
+  private failures = 0;
+  /** fires if the very first connect never opens within the grace window. */
+  private deadTimer?: ReturnType<typeof setTimeout>;
+  /** latched once we've ever opened, so a later drop reads as a flap, not "down". */
+  private everOpened = false;
+  /** persistent-failure thresholds (dependency-free heuristics). */
+  private static readonly MAX_FAILURES = 3;
+  private static readonly DEAD_AFTER_MS = 6000;
+
   constructor(private opts: AdapterOpts = {}) {}
 
   connect(h: StreamHandlers) {
     h.onState("connecting");
+    const liveState: ConnectionState = this.opts.replay ? "replay" : "connected";
+
+    const onUp = () => {
+      this.failures = 0;
+      this.everOpened = true;
+      this.clearDeadTimer();
+      h.onState(liveState);
+    };
+
     const url = new URL(`${API_BASE}/stream`);
     if (this.opts.replay) url.searchParams.set("replay", this.opts.replay);
     if (this.opts.desk) url.searchParams.set("desk", this.opts.desk);
     const es = new EventSource(url.toString());
     this.es = es;
-    es.onopen = () => h.onState(this.opts.replay ? "replay" : "connected");
+
+    // If the socket never opens within the grace window, the backend is down.
+    this.deadTimer = setTimeout(() => {
+      if (!this.everOpened) h.onState("error");
+    }, LiveSSEAdapter.DEAD_AFTER_MS);
+
+    es.onopen = onUp;
     // EventSource natively drops `: keep-alive` heartbeat comments, so onmessage
-    // only fires for real `data:` frames (ActivityEvent JSON).
+    // only fires for real `data:` frames (ActivityEvent JSON). A frame is also
+    // proof the connection is live, so reset the failure latch on the first one.
     es.onmessage = (ev) => {
+      if (this.failures > 0 || !this.everOpened) onUp();
       try {
         const frame = JSON.parse(ev.data) as ActivityEvent;
         // Client-side desk guard (in case the backend ignores ?desk).
@@ -78,13 +105,35 @@ class LiveSSEAdapter implements EventSourceAdapter {
         /* ignore malformed frame */
       }
     };
-    // Browser EventSource auto-reconnects on transient drops; surface the state.
-    es.onerror = () => h.onState("reconnecting");
+
+    // Browser EventSource auto-reconnects on transient drops, so the FIRST error
+    // is "reconnecting". But a dead backend never recovers — escalate to "error"
+    // once the socket is conclusively CLOSED or failures pile up past threshold.
+    es.onerror = () => {
+      this.failures += 1;
+      const closed = es.readyState === EventSource.CLOSED;
+      if (closed || this.failures >= LiveSSEAdapter.MAX_FAILURES) {
+        this.clearDeadTimer();
+        h.onState("error");
+      } else {
+        h.onState("reconnecting");
+      }
+    };
+  }
+
+  private clearDeadTimer() {
+    if (this.deadTimer) {
+      clearTimeout(this.deadTimer);
+      this.deadTimer = undefined;
+    }
   }
 
   disconnect() {
+    this.clearDeadTimer();
     this.es?.close();
     this.es = undefined;
+    this.failures = 0;
+    this.everOpened = false;
   }
 }
 

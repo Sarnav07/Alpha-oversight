@@ -168,7 +168,7 @@ export default function Preloader() {
                 </span>
                 <span
                   className="flex"
-                  style={{ color: "var(--text-faint)" }}
+                  style={{ color: "var(--frost)" }}
                 >
                   {CLAUSE_B.map((ch, i) => (
                     <motion.span

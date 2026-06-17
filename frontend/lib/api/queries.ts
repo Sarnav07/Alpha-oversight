@@ -5,7 +5,7 @@
  * DeskLive consumes these hooks; the public API is FROZEN in
  * tasks/BACKEND_INTEGRATION.md — do not rename/resign without updating both.
  */
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   useQuery,
   useQueryClient,
@@ -72,6 +72,16 @@ export function useInvalidateOnMarkers(): void {
       | (typeof s.events)[number]
       | undefined,
   );
+  /** pending codify-debounce timer; cleared on re-fire and unmount. */
+  const codifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear any pending codify invalidation on unmount.
+  useEffect(
+    () => () => {
+      if (codifyTimer.current) clearTimeout(codifyTimer.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!latest) return;
@@ -87,9 +97,26 @@ export function useInvalidateOnMarkers(): void {
 
     if (!stageChanges && !terminalTransition) return;
 
-    queryClient.invalidateQueries({ queryKey: qk.stats });
-    queryClient.invalidateQueries({ queryKey: qk.rules });
-    queryClient.invalidateQueries({ queryKey: qk.cases });
-    queryClient.invalidateQueries({ queryKey: ["audit"] });
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey: qk.stats });
+      queryClient.invalidateQueries({ queryKey: qk.rules });
+      queryClient.invalidateQueries({ queryKey: qk.cases });
+      queryClient.invalidateQueries({ queryKey: ["audit"] });
+    };
+
+    // The codify marker can outrun the server commit — an immediate /rules +
+    // /stats refetch returns the pre-commit count and flickers 5→4→5. Debounce
+    // ONLY codify ~500ms so the refetch reads the post-commit truth. Every other
+    // transition (verdict/escalate/terminal) still invalidates immediately.
+    if (marker.stage === "codify") {
+      if (codifyTimer.current) clearTimeout(codifyTimer.current);
+      codifyTimer.current = setTimeout(() => {
+        codifyTimer.current = null;
+        invalidate();
+      }, 500);
+      return;
+    }
+
+    invalidate();
   }, [latest, queryClient]);
 }

@@ -71,6 +71,22 @@ function parsePyReprDict(body: string): Record<string, number | boolean | string
   return out;
 }
 
+/**
+ * The latest case id carried by the event stream. Live `/stream` frames have no
+ * `case_id` field — the id lives only inside the `content` markers — so we fall
+ * back to parsing it. Mock fixtures set `case_id` directly, so the `??` short-
+ * circuits. Single source of truth for "which case is on screen", shared by the
+ * desk controller (confirm/reject target) and the audit drawer (live fetch key).
+ */
+export function latestCaseId(events: ActivityEvent[]): string | null {
+  for (let i = events.length - 1; i >= 0; i--) {
+    const e = events[i];
+    const cid = e.case_id ?? parseMarker(e).caseId;
+    if (cid) return cid;
+  }
+  return null;
+}
+
 export function parseMarker(e: ActivityEvent): Marker {
   const raw = e.content ?? "";
   const c = raw.toLowerCase();
@@ -134,5 +150,36 @@ export function parseMarker(e: ActivityEvent): Marker {
     m.eventType = "rule_codified";
   }
 
+  // DEV-ONLY: a `pipeline` frame is the canonical marker carrier — if one yields
+  // nothing recognised the grammar has drifted from the backend. Warn (never in
+  // production, never alters the return) so a silent parser regression is loud
+  // in dev. Other agents' chatter frames legitimately carry no marker, so we
+  // only flag the pipeline carrier.
+  if (
+    process.env.NODE_ENV !== "production" &&
+    e.agent_name === "pipeline" &&
+    raw.trim() !== "" &&
+    isEmptyMarker(m)
+  ) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[parseMarker] pipeline frame produced no recognised marker: ${JSON.stringify(raw)}`,
+    );
+  }
+
   return m;
+}
+
+/** True when a parsed Marker carries no recognised signal at all. */
+function isEmptyMarker(m: Marker): boolean {
+  return (
+    m.stage === undefined &&
+    m.eventType === undefined &&
+    m.result === undefined &&
+    m.ruleId === undefined &&
+    m.finalState === undefined &&
+    m.family === undefined &&
+    m.caseId === undefined &&
+    m.features === undefined
+  );
 }

@@ -11,8 +11,11 @@ No LLMs / no network here — pure stdlib + filesystem.
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
+
+import pytest
 
 from alpha_oversight.audit.canonical import canonical_json
 from alpha_oversight.audit.ledger import Ledger
@@ -144,6 +147,56 @@ def test_verify_chain_false_when_link_reordered(ledger_jsonl, rules_db) -> None:
     _write_lines(ledger_jsonl, lines)
 
     assert Ledger.verify_chain(ledger_jsonl) is False
+
+
+# ── concurrency: overlapping cases must not corrupt the chain ────────────────
+
+
+@pytest.mark.asyncio
+async def test_concurrent_appends_keep_chain_verifiable(ledger_jsonl, rules_db) -> None:
+    """Interleaved cases sharing one ledger must keep ``verify_chain() is True``.
+
+    Every real call site appends ``led.append(entry, led.head())``. Without a
+    lock around the head-read → write, two coroutines that yield between reading
+    ``head()`` and appending fork two leaves off the *same* ``prev_hash`` and
+    ``verify_chain`` falsely reports tamper. We reproduce exactly that interleave
+    (an ``await`` between ``head()`` and ``append()``) across several cases and
+    assert the chain stays unbroken, every leaf is present, and ordering is sane.
+    """
+    led = Ledger(ledger_jsonl, rules_db)
+    cases = ("alpha", "beta", "gamma", "delta")
+    per_case = 25
+
+    async def run_case(cid: str) -> None:
+        for i in range(per_case):
+            prev = led.head()         # sample the tail (as the real sites do)
+            await asyncio.sleep(0)     # yield: another case can append right here
+            led.append({"case": cid, "i": i, "bmid": f"{cid}-{i}"}, prev_hash=prev)
+
+    await asyncio.gather(*(run_case(c) for c in cases))
+
+    # 1) the marquee invariant: the chain still verifies despite the race
+    assert Ledger.verify_chain(ledger_jsonl) is True
+
+    rows = [json.loads(ln) for ln in _read_lines(ledger_jsonl)]
+
+    # 2) no leaf lost or duplicated — every (case, i) appears exactly once
+    assert len(rows) == len(cases) * per_case
+    seen = {(r["case"], r["i"]) for r in rows}
+    assert seen == {(c, i) for c in cases for i in range(per_case)}
+
+    # 3) ordering is a single unbroken chain: genesis "" then each prev == prior hash
+    assert rows[0]["prev_hash"] == ""
+    for prior, nxt in zip(rows, rows[1:]):
+        assert nxt["prev_hash"] == prior["hash"]
+
+    # 4) per-case the appends preserve their own emission order (FIFO within a case)
+    for c in cases:
+        order = [r["i"] for r in rows if r["case"] == c]
+        assert order == sorted(order) == list(range(per_case))
+
+    # 5) a fresh Ledger over the same file recovers the same head (crash-safe)
+    assert Ledger(ledger_jsonl, rules_db).head() == rows[-1]["hash"]
 
 
 # ── small file helpers (kept out of Bash per tooling rules) ──────────────────

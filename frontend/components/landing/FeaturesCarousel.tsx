@@ -2,15 +2,11 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import CommandCenterArt from "./CommandCenterArt";
 import AuditChainArt from "./art/AuditChainArt";
 import ThreatLeaderboardArt from "./art/ThreatLeaderboardArt";
 import Logomark from "@/components/landing/Logomark";
 import { useIsMobile } from "./useIsMobile";
-
-gsap.registerPlugin(ScrollTrigger);
 
 /**
  * FeaturesCarousel — the pinned "Our Features" horizontal-scroll carousel
@@ -491,46 +487,62 @@ export default function FeaturesCarousel() {
     // all (the native horizontal scroller renders instead).
     if (mq.matches || window.matchMedia("(max-width: 767px)").matches) return;
 
-    const ctx = gsap.context((self) => {
-      const q = self.selector!;
-      const stage = q(".feat-stage")[0] as HTMLElement;
-      const track = trackRef.current;
-      if (!stage || !track) return;
+    // Lazy-load gsap off the landing critical path: dynamically import it (+the
+    // ScrollTrigger plugin) inside the effect, then build the SAME pinned
+    // context a tick later — fine for a scroll-triggered animation.
+    let cancelled = false;
+    let ctx: gsap.Context | undefined;
 
-      // The distance the track must travel = its overflow beyond the viewport.
-      const distance = () =>
-        Math.max(0, track.scrollWidth - window.innerWidth);
+    (async () => {
+      const gsap = (await import("gsap")).default;
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+      gsap.registerPlugin(ScrollTrigger);
+      if (cancelled) return;
 
-      // Size the runway so 1px vertical ≈ 1px horizontal travel (+1 viewport so
-      // the last card holds on-screen before the pin releases).
-      const setRunwayHeight = () =>
-        setRunway(distance() + window.innerHeight);
-      setRunwayHeight();
+      ctx = gsap.context((self) => {
+        const q = self.selector!;
+        const stage = q(".feat-stage")[0] as HTMLElement;
+        const track = trackRef.current;
+        if (!stage || !track) return;
 
-      gsap.to(track, {
-        x: () => -distance(),
-        ease: "none",
-        scrollTrigger: {
-          trigger: rootRef.current,
-          start: "top top",
-          end: () => `+=${distance()}`,
-          scrub: true,
-          pin: stage,
-          pinSpacing: false,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
-      });
+        // The distance the track must travel = its overflow beyond the viewport.
+        const distance = () =>
+          Math.max(0, track.scrollWidth - window.innerWidth);
 
-      const onResize = () => setRunwayHeight();
-      window.addEventListener("resize", onResize);
-      ScrollTrigger.refresh();
+        // Size the runway so 1px vertical ≈ 1px horizontal travel (+1 viewport so
+        // the last card holds on-screen before the pin releases).
+        const setRunwayHeight = () =>
+          setRunway(distance() + window.innerHeight);
+        setRunwayHeight();
 
-      // Clean up the resize listener alongside ctx.revert().
-      self.add(() => window.removeEventListener("resize", onResize));
-    }, rootRef);
+        gsap.to(track, {
+          x: () => -distance(),
+          ease: "none",
+          scrollTrigger: {
+            trigger: rootRef.current,
+            start: "top top",
+            end: () => `+=${distance()}`,
+            scrub: true,
+            pin: stage,
+            pinSpacing: false,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
+        });
 
-    return () => ctx.revert();
+        const onResize = () => setRunwayHeight();
+        window.addEventListener("resize", onResize);
+        ScrollTrigger.refresh();
+
+        // Clean up the resize listener alongside ctx.revert().
+        self.add(() => window.removeEventListener("resize", onResize));
+      }, rootRef);
+    })();
+
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
     // Re-run when the mobile boundary is crossed so the pin builds/tears down.
   }, [isMobile]);
 

@@ -1,11 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useIsMobile } from "./useIsMobile";
-
-gsap.registerPlugin(ScrollTrigger);
 
 /**
  * PoweredBySection — the "Powered by…" scroll-pinned reveal (AlphaLedger clone,
@@ -36,53 +32,69 @@ export default function PoweredBySection() {
     // Reduced motion OR a small viewport: do not build the pinned timeline.
     if (mq.matches || window.matchMedia("(max-width: 767px)").matches) return;
 
-    const ctx = gsap.context((self) => {
-      const q = self.selector!;
-      const stage = q(".pb-stage")[0] as HTMLElement | undefined;
-      const head = q(".pb-head")[0] as HTMLElement | undefined;
-      const board = q(".pb-board");
-      const labels = q(".pb-label");
-      if (!stage || !head) return; // defensive: never let a selector miss crash render
+    // Lazy-load gsap off the landing critical path: dynamically import it (+the
+    // ScrollTrigger plugin) inside the effect, then build the SAME pinned
+    // timeline a tick later — fine for a scroll-triggered animation.
+    let cancelled = false;
+    let ctx: gsap.Context | undefined;
 
-      // Measure the exact offset that visually centers the (left-column) headline
-      // over the whole viewport, so it starts dead-center then settles left.
-      const r = head.getBoundingClientRect();
-      const centerOffset = window.innerWidth / 2 - (r.left + r.width / 2);
+    (async () => {
+      const gsap = (await import("gsap")).default;
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+      gsap.registerPlugin(ScrollTrigger);
+      if (cancelled) return;
 
-      gsap.set(head, { x: centerOffset });
-      gsap.set(board, { xPercent: 120, opacity: 0 });
-      gsap.set(labels, { opacity: 0, x: 22 });
+      ctx = gsap.context((self) => {
+        const q = self.selector!;
+        const stage = q(".pb-stage")[0] as HTMLElement | undefined;
+        const head = q(".pb-head")[0] as HTMLElement | undefined;
+        const board = q(".pb-board");
+        const labels = q(".pb-label");
+        if (!stage || !head) return; // defensive: never let a selector miss crash render
 
-      const tl = gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          trigger: rootRef.current,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: true,
-          pin: stage,
-          pinSpacing: false,
-          anticipatePin: 1,
-        },
-      });
+        // Measure the exact offset that visually centers the (left-column) headline
+        // over the whole viewport, so it starts dead-center then settles left.
+        const r = head.getBoundingClientRect();
+        const centerOffset = window.innerWidth / 2 - (r.left + r.width / 2);
 
-      // 0.00–0.15 — hold: headline centered, board offscreen.
-      tl.to({}, { duration: 0.15 });
+        gsap.set(head, { x: centerOffset });
+        gsap.set(board, { xPercent: 120, opacity: 0 });
+        gsap.set(labels, { opacity: 0, x: 22 });
 
-      // 0.15–0.55 — headline slides to its left rest; board slides in from right.
-      tl.to(head, { x: 0, duration: 0.4, ease: "power2.out" }, 0.15);
-      tl.to(board, { xPercent: 0, opacity: 1, duration: 0.42, ease: "power2.out" }, 0.17);
+        const tl = gsap.timeline({
+          defaults: { ease: "none" },
+          scrollTrigger: {
+            trigger: rootRef.current,
+            start: "top top",
+            end: "bottom bottom",
+            scrub: true,
+            pin: stage,
+            pinSpacing: false,
+            anticipatePin: 1,
+          },
+        });
 
-      // 0.55–0.84 — the four callout cards stagger in over the board.
-      tl.to(labels, { opacity: 1, x: 0, duration: 0.1, stagger: 0.07, ease: "power1.out" }, 0.56);
+        // 0.00–0.15 — hold: headline centered, board offscreen.
+        tl.to({}, { duration: 0.15 });
 
-      // 0.84–1.00 — gentle continued drift so the pin releases with life.
-      tl.to(board, { xPercent: -2, duration: 0.16 }, 0.84);
+        // 0.15–0.55 — headline slides to its left rest; board slides in from right.
+        tl.to(head, { x: 0, duration: 0.4, ease: "power2.out" }, 0.15);
+        tl.to(board, { xPercent: 0, opacity: 1, duration: 0.42, ease: "power2.out" }, 0.17);
 
-      ScrollTrigger.refresh();
-    }, rootRef);
+        // 0.55–0.84 — the four callout cards stagger in over the board.
+        tl.to(labels, { opacity: 1, x: 0, duration: 0.1, stagger: 0.07, ease: "power1.out" }, 0.56);
 
-    return () => ctx.revert();
+        // 0.84–1.00 — gentle continued drift so the pin releases with life.
+        tl.to(board, { xPercent: -2, duration: 0.16 }, 0.84);
+
+        ScrollTrigger.refresh();
+      }, rootRef);
+    })();
+
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
     // rebuild on the mobile boundary cross (matches the active render path).
   }, [isMobile]);
 
@@ -213,7 +225,7 @@ function DifferencePanel({
             className="shrink-0 rounded-full border px-2.5 py-1 font-mono text-[10px] text-[var(--text-muted)]"
             style={{ borderColor: "rgba(255,255,255,0.12)" }}
           >
-            8 agents · 2 tiers
+            8 agents · 1 rule engine · 2 tiers
           </span>
         </div>
 

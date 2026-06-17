@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Reveal } from "@/components/anim/Reveal";
 import { MaskLines } from "@/components/anim/MaskLines";
 
@@ -167,6 +167,7 @@ function Row({ k, v }: { k: string; v: string }) {
 
 /* ════════════════════════ 3 · CO-EVOLUTION LADDER ════════════════════════ */
 function CoEvolutionLadder() {
+  const reduce = useReducedMotion() ?? false;
   const [round, setRound] = useState(1); // each round adds a rule
   const rules = 4 + (round - 1);
   const rungs = Array.from({ length: round }, (_, i) => i); // 0..round-1
@@ -185,9 +186,10 @@ function CoEvolutionLadder() {
           {rungs.map((r) => (
             <motion.div
               key={r}
-              initial={{ opacity: 0, x: -16 }}
+              initial={reduce ? false : { opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4 }}
+              exit={reduce ? { opacity: 0 } : { opacity: 0, x: -16 }}
+              transition={reduce ? { duration: 0 } : { duration: 0.4 }}
               className="flex items-center gap-2.5"
               style={{ paddingLeft: `${r * 16}px` }}
             >

@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { AuditView } from "@/lib/desk/contract";
 import type { LedgerEntry } from "@/lib/types";
 import { fixtureAuditC0187 } from "@/lib/fixtures/audit-C-0187";
 import { useAudit } from "@/lib/api/queries";
 import { useTraceStore } from "@/lib/store/useTraceStore";
+import { latestCaseId } from "@/lib/eventsource/parseMarker";
 import { IS_MOCK } from "@/lib/config";
 
 /**
@@ -37,14 +39,10 @@ type AuditDrawerProps = {
 
 const short = (h: string) => (h ? `${h.slice(0, 8)}…${h.slice(-4)}` : "∅");
 
-/** Live case id from the trace store — the latest frame carrying a case_id. */
+/** Live case id from the trace store — parsed from markers (live frames omit the
+ *  `case_id` field), so GET /cases/{id}/audit actually fires in live mode. */
 function useLiveCaseId(): string | null {
-  return useTraceStore((s) => {
-    for (let i = s.events.length - 1; i >= 0; i--) {
-      if (s.events[i].case_id) return s.events[i].case_id!;
-    }
-    return null;
-  });
+  return useTraceStore((s) => latestCaseId(s.events));
 }
 
 function LedgerRow({ entry, index }: { entry: LedgerEntry; index: number }) {
@@ -84,11 +82,17 @@ function LedgerRow({ entry, index }: { entry: LedgerEntry; index: number }) {
 
 export default function AuditDrawer({ open, onClose, audit }: AuditDrawerProps) {
   const reduce = useReducedMotion() ?? false;
+  const panelRef = useRef<HTMLElement | null>(null);
 
   // LIVE: follow the active case via GET /cases/{id}/audit. MOCK: use the prop /
   // fixture. useAudit is gated on caseId, so it stays inert (no fetch) in mock.
   const liveCaseId = useLiveCaseId();
   const liveAudit = useAudit(IS_MOCK ? null : liveCaseId);
+
+  // In live mode, hold the loading state distinct from data: while the ledger is
+  // in flight with nothing fetched yet, we render a skeleton rather than falling
+  // through to the C-0187 fixture (which would flash the wrong case mid-load).
+  const liveLoading = !IS_MOCK && liveAudit.isLoading && !liveAudit.data;
 
   let view: AuditView;
   if (!IS_MOCK && liveAudit.data) {
@@ -101,6 +105,65 @@ export default function AuditDrawer({ open, onClose, audit }: AuditDrawerProps) 
     view = audit ?? FIXTURE_AUDIT;
   }
   const verified = view.verified;
+
+  // Modal a11y: focus trap + restore + ESCAPE-to-close, active only while open.
+  useEffect(() => {
+    if (!open) return;
+
+    const saved = document.activeElement as HTMLElement | null;
+    const panel = panelRef.current;
+
+    const focusables = () =>
+      panel
+        ? Array.from(
+            panel.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+            ),
+          )
+        : [];
+
+    // Move focus into the panel on open (the close button if present, else the
+    // panel itself via its tabIndex={-1}).
+    const initial = focusables()[0] ?? panel;
+    initial?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+
+      const items = focusables();
+      if (items.length === 0) {
+        // Nothing focusable but the panel — keep focus pinned inside it.
+        e.preventDefault();
+        panel?.focus();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const current = document.activeElement;
+
+      if (e.shiftKey) {
+        if (current === first || !panel?.contains(current)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (current === last || !panel?.contains(current)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      // Restore focus to whatever was focused before the drawer opened.
+      saved?.focus?.();
+    };
+  }, [open, onClose]);
 
   return (
     <AnimatePresence>
@@ -118,13 +181,16 @@ export default function AuditDrawer({ open, onClose, audit }: AuditDrawerProps) 
           />
           <motion.aside
             key="audit-panel"
+            ref={panelRef}
             role="dialog"
+            aria-modal="true"
             aria-label="Case audit — hash chain"
+            tabIndex={-1}
             initial={reduce ? false : { x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.32, ease: EASE }}
-            className="fixed top-0 right-0 z-50 h-full w-full max-w-[440px] border-l border-[var(--border-default)] bg-[var(--bg-card)] flex flex-col"
+            className="fixed top-0 right-0 z-50 h-full w-full max-w-[440px] border-l border-[var(--border-default)] bg-[var(--bg-card)] flex flex-col outline-none"
           >
             <header className="flex items-center justify-between gap-3 px-5 py-4 border-b border-[var(--border-subtle)]">
               <div className="min-w-0">
@@ -132,22 +198,30 @@ export default function AuditDrawer({ open, onClose, audit }: AuditDrawerProps) 
                   Audit ledger
                 </p>
                 <p className="font-mono text-[11px] text-[var(--text-faint)] mt-0.5 truncate">
-                  {view.caseId ?? "no case"} · {view.entries.length} leaves
+                  {liveLoading
+                    ? "loading…"
+                    : `${view.caseId ?? "no case"} · ${view.entries.length} leaves`}
                 </p>
               </div>
-              <span
-                className="font-mono text-[11px] rounded-[var(--r-chip)] border px-2 py-1 shrink-0"
-                style={{
-                  color: verified
-                    ? "var(--verdict-complete)"
-                    : "var(--verdict-flag)",
-                  borderColor: verified
-                    ? "var(--verdict-complete)"
-                    : "var(--verdict-flag)",
-                }}
-              >
-                verify_chain {verified ? "✓" : "✗"}
-              </span>
+              {liveLoading ? (
+                <span className="font-mono text-[11px] rounded-[var(--r-chip)] border border-[var(--border-subtle)] px-2 py-1 shrink-0 text-[var(--text-faint)]">
+                  verify_chain …
+                </span>
+              ) : (
+                <span
+                  className="font-mono text-[11px] rounded-[var(--r-chip)] border px-2 py-1 shrink-0"
+                  style={{
+                    color: verified
+                      ? "var(--verdict-complete)"
+                      : "var(--verdict-flag)",
+                    borderColor: verified
+                      ? "var(--verdict-complete)"
+                      : "var(--verdict-flag)",
+                  }}
+                >
+                  verify_chain {verified ? "✓" : "✗"}
+                </span>
+              )}
               <button
                 type="button"
                 onClick={onClose}
@@ -159,7 +233,29 @@ export default function AuditDrawer({ open, onClose, audit }: AuditDrawerProps) 
             </header>
 
             <div className="flex-1 overflow-y-auto px-5 py-2">
-              {view.entries.length === 0 ? (
+              {liveLoading ? (
+                <div
+                  className="flex flex-col items-center justify-center gap-3 py-12"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <span
+                    aria-hidden
+                    className="inline-block h-4 w-4 rounded-full border-2 border-[var(--border-subtle)] border-t-[var(--text-muted)] animate-spin"
+                  />
+                  <p className="font-mono text-[11px] text-[var(--text-faint)] lowercase tracking-wider">
+                    loading ledger…
+                  </p>
+                  <ul aria-hidden className="mt-2 w-full flex flex-col gap-2">
+                    {[0, 1, 2].map((i) => (
+                      <li
+                        key={i}
+                        className="h-10 w-full rounded-[8px] border border-[var(--hairline)] bg-[var(--bg-card-2)] animate-pulse"
+                      />
+                    ))}
+                  </ul>
+                </div>
+              ) : view.entries.length === 0 ? (
                 <p className="text-[12px] text-[var(--text-muted)] py-8 text-center">
                   no audit entries yet.
                 </p>

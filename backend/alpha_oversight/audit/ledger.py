@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import threading
 
 from alpha_oversight.audit.canonical import canonical_json
 
@@ -32,6 +33,14 @@ class Ledger:
     def __init__(self, jsonl_path: str, db_path: str):
         self._jsonl_path = jsonl_path
         self._db_path = db_path
+        # Serializes the read-modify-write of the chain tail. One shared ledger
+        # carries every desk/case, so overlapping appends must not interleave
+        # ``head -> hash -> write -> head'`` or they fork ``prev_hash`` off the
+        # same tail and ``verify_chain`` falsely reports tamper. A threading lock
+        # guards both cooperative (asyncio) and any future to_thread callers; the
+        # critical section is pure-CPU + a single file append, so it never blocks
+        # on ``await`` and holds the lock only briefly.
+        self._lock = threading.Lock()
         os.makedirs(os.path.dirname(os.path.abspath(jsonl_path)), exist_ok=True)
         # Recover the head from any pre-existing file (crash/restart safe).
         self._head = self._read_head_from_file()
@@ -43,19 +52,33 @@ class Ledger:
 
         ``body = canonical_json(entry)``; ``h = sha256(prev_hash + body)``; write
         ``{**entry, band_message_id, prev_hash, hash}`` as a JSONL line.
+
+        The whole read-modify-write runs under ``self._lock`` so concurrent cases
+        cannot corrupt the chain. To keep the tail consistent when callers race
+        (every call site appends ``led.append(entry, led.head())``), the leaf
+        chains off the *live* in-memory head sampled inside the lock — the passed
+        ``prev_hash`` is honored when it matches that head (the only correct,
+        single-writer usage) and is otherwise superseded by the authoritative
+        tail so interleaved appends stay a single unbroken chain. This preserves
+        the frozen sync signature and is identical for sequential callers, whose
+        ``prev_hash`` always equals ``head()``.
         """
-        body = canonical_json(entry)
-        h = _hash_link(prev_hash, body)
-        record = {
-            **entry,
-            "band_message_id": entry.get("bmid"),
-            "prev_hash": prev_hash,
-            "hash": h,
-        }
-        with open(self._jsonl_path, "a", encoding="utf-8") as fh:
-            fh.write(canonical_json(record) + "\n")
-        self._head = h
-        return h
+        with self._lock:
+            # Authoritative tail sampled inside the lock; equals ``prev_hash``
+            # for the correct single-writer path, supersedes a stale racing one.
+            base = self._head
+            body = canonical_json(entry)
+            h = _hash_link(base, body)
+            record = {
+                **entry,
+                "band_message_id": entry.get("bmid"),
+                "prev_hash": base,
+                "hash": h,
+            }
+            with open(self._jsonl_path, "a", encoding="utf-8") as fh:
+                fh.write(canonical_json(record) + "\n")
+            self._head = h
+            return h
 
     # ── read path ─────────────────────────────────────────────────────────────
 

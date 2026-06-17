@@ -59,16 +59,33 @@ function ActiveRulesNumber({
 
 type Tile = {
   label: string;
+  /** when true, this tile is sourced from a failed REST query — show "—". */
+  errored: boolean;
   render: (reduce: boolean) => React.ReactNode;
 };
+
+/** A dimmed em-dash placeholder for a tile whose REST source is unavailable. */
+function Unavailable() {
+  return (
+    <span style={{ color: "var(--verdict-flag)" }} title="Unavailable — backend unreachable">
+      —
+    </span>
+  );
+}
 
 export default function StatsBar() {
   const model = useDeskModel();
   const reduce = useReducedMotion() ?? false;
 
+  // Active Rules is folded from the rules list (GET /rules); the count + by-state
+  // tiles come from GET /stats. Surface each query's failure on its own tiles so
+  // a dead backend reads as "—"/unavailable instead of silent seed/zero numbers.
+  const { statsError, rulesError } = model;
+
   const tiles: Tile[] = [
     {
       label: "Active Rules",
+      errored: rulesError,
       render: (r) => (
         <ActiveRulesNumber
           count={model.stats.active_rules}
@@ -79,22 +96,27 @@ export default function StatsBar() {
     },
     {
       label: "Flagged",
+      errored: statsError,
       render: () => <span>{model.stats.flagged}</span>,
     },
     {
       label: "Escalated",
+      errored: statsError,
       render: () => <span>{model.stats.escalated}</span>,
     },
     {
       label: "Total cases",
+      errored: statsError,
       render: () => <span>{model.stats.total_cases}</span>,
     },
     {
       label: "Under review",
+      errored: statsError,
       render: () => <span>{model.stats.by_state["UNDER_REVIEW"] ?? 0}</span>,
     },
     {
       label: "Closed",
+      errored: statsError,
       render: () => <span>{model.stats.by_state["CLOSED"] ?? 0}</span>,
     },
   ];
@@ -132,7 +154,7 @@ export default function StatsBar() {
               color: "var(--text-primary)",
             }}
           >
-            {tile.render(reduce)}
+            {tile.errored ? <Unavailable /> : tile.render(reduce)}
           </span>
           <span
             className="font-sans"
@@ -141,10 +163,10 @@ export default function StatsBar() {
               fontWeight: 500,
               textTransform: "uppercase",
               letterSpacing: "0.15em",
-              color: "var(--text-muted)",
+              color: tile.errored ? "var(--verdict-flag)" : "var(--text-muted)",
             }}
           >
-            {tile.label}
+            {tile.errored ? "unavailable" : tile.label}
           </span>
         </div>
       ))}

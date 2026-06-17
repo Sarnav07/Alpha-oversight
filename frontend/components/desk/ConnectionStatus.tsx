@@ -20,7 +20,7 @@ const MAP: Record<ConnectionState, { c: string; label: string; live: boolean }> 
   connected: { c: "var(--verdict-complete)", label: "Band: connected", live: false },
   reconnecting: { c: "var(--verdict-escalate)", label: "reconnecting", live: true },
   replay: { c: "var(--verdict-escalate)", label: "replay", live: false },
-  error: { c: "var(--verdict-flag)", label: "error", live: false },
+  error: { c: "var(--verdict-flag)", label: "backend down", live: false },
 };
 
 export default function ConnectionStatus({ state, className }: ConnectionStatusProps) {

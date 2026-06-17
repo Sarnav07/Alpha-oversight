@@ -288,15 +288,9 @@ export default function OverviewSection() {
               transition={{ duration: 0.6, delay: 0.9, ease: EASE }}
             >
               <circle cx={CX} cy={CY} r={104} fill="none" stroke="var(--band-blue)" strokeWidth={1} opacity={0.3} />
-              <circle cx={CX} cy={CY - 44} r={4} fill="var(--band-blue)" />
-              <text x={CX} y={CY - 6} textAnchor="middle" className="font-mono" fontSize={17} letterSpacing="0.12em" fill="var(--band-blue)">
-                EVERY HAND-OFF
-              </text>
-              <text x={CX} y={CY + 20} textAnchor="middle" className="font-mono" fontSize={17} letterSpacing="0.12em" fill="var(--text-faint)">
-                THROUGH BAND
-              </text>
-              <text x={CX} y={CY + 50} textAnchor="middle" className="font-mono" fontSize={10} letterSpacing="0.14em" fill="var(--text-muted)">
-                9 roles · 1 medium · hash-chained
+              <circle cx={CX} cy={CY - 36} r={4} fill="var(--band-blue)" />
+              <text aria-hidden="true" x={CX} y={CY + 18} textAnchor="middle" className="font-mono" fontSize={34} letterSpacing="0.16em" fill="var(--band-blue)">
+                BAND
               </text>
             </motion.g>
 
@@ -307,7 +301,13 @@ export default function OverviewSection() {
           </svg>
 
           <Reveal delay={0.1}>
-            <p className="mx-auto mt-6 text-center font-mono" style={{ fontSize: 11.5, lineHeight: 1.6, color: "var(--text-faint)", maxWidth: 760 }}>
+            <p className="mx-auto mt-6 text-center font-mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: "var(--text-muted)" }}>
+              9 roles · 1 medium · hash-chained
+            </p>
+            <p className="mx-auto mt-2 text-center font-mono" style={{ fontSize: 10.5, color: "var(--text-faint)" }}>
+              9 roles = 8 agents + the rule engine; the human confirms.
+            </p>
+            <p className="mx-auto mt-3 text-center font-mono" style={{ fontSize: 11.5, lineHeight: 1.6, color: "var(--text-faint)", maxWidth: 760 }}>
               Every side is a real Band message (handoff.send → POST /agent/chats/&#123;room&#125;/messages), bound into the hash-chained
               ledger — handoff layer, structured-context channel, sole cross-wall bridge, and audit anchor. Not a wrapper, not a
               notification.

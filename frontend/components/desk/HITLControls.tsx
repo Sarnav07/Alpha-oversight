@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useDeskModel } from "@/lib/desk/model";
-import { useDeskController } from "@/lib/desk/controller";
+import { useDeskController, DeskActionError } from "@/lib/desk/controller";
 
 /**
  * HITLControls — the human-in-the-loop verdict. Visible ONLY while the case is
@@ -11,27 +11,44 @@ import { useDeskController } from "@/lib/desk/controller";
  * codifies the 5th rule (ESCALATED → FLAGGED). Reject closes the case, codifies
  * nothing (ESCALATED → CLOSED).
  *
- * OPTIMISTIC: the click flips the local button state to pending → success
- * immediately while the controller mutates the model (case + rules). The model
- * re-renders ESCALATED → false, so this whole panel unmounts once the codify
- * tail lands — the success flash is the bridge.
- *
- * Live error map (for the eventual POST /cases/{id}/confirm|reject):
- *   422 → regression gate failed (rule NOT codified) — roll back, surface "gate failed"
- *   409 → case not ESCALATED (race) — refetch case, hide controls
- *   404 → unknown case id — surface "case not found", reset
+ * OPTIMISTIC-ON-SUCCESS: the click flips to a pending state while the controller
+ * awaits the POST. On success we flash success and the model re-renders
+ * ESCALATED → false, unmounting this panel once the codify tail lands. On
+ * failure we hold the panel and surface an inline reason mapped from the HTTP
+ * status (see reasonForStatus) — the button no longer claims success on a reject.
  */
 
 const SPRING = { type: "spring" as const, stiffness: 520, damping: 24 };
 const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number];
 
-type Phase = "idle" | "confirming" | "rejecting" | "confirmed" | "rejected";
+type Phase =
+  | "idle"
+  | "confirming"
+  | "rejecting"
+  | "confirmed"
+  | "rejected"
+  | "error";
+
+/** Map a failed POST /cases/{id}/confirm|reject status to an inline reason. */
+function reasonForStatus(status: number | null): string {
+  switch (status) {
+    case 422:
+      return "regression gate failed — rule not codified";
+    case 409:
+      return "case no longer awaiting review";
+    case 404:
+      return "case not found";
+    default:
+      return "action failed — try again";
+  }
+}
 
 export default function HITLControls() {
   const reduce = useReducedMotion() ?? false;
   const state = useDeskModel().case.state;
   const controller = useDeskController();
   const [phase, setPhase] = useState<Phase>("idle");
+  const [error, setError] = useState<string | null>(null);
 
   // Only the human decides on an ESCALATED case. Hidden in every other state.
   // Note: once confirm/reject resolves, the model leaves ESCALATED and this
@@ -40,19 +57,35 @@ export default function HITLControls() {
 
   const busy = phase === "confirming" || phase === "rejecting";
 
-  const onConfirm = () => {
-    if (busy) return;
-    setPhase("confirming");
-    // optimistic success flash before the model flips ESCALATED → FLAGGED.
-    void controller.confirm();
-    setTimeout(() => setPhase("confirmed"), reduce ? 0 : 220);
+  const onError = (err: unknown) => {
+    const status = err instanceof DeskActionError ? err.status : null;
+    setError(reasonForStatus(status));
+    setPhase("error");
   };
 
-  const onReject = () => {
+  const onConfirm = async () => {
     if (busy) return;
+    setError(null);
+    setPhase("confirming");
+    try {
+      await controller.confirm();
+      // Only on success — the model flips ESCALATED → FLAGGED and unmounts us.
+      setPhase("confirmed");
+    } catch (err) {
+      onError(err);
+    }
+  };
+
+  const onReject = async () => {
+    if (busy) return;
+    setError(null);
     setPhase("rejecting");
-    void controller.reject();
-    setTimeout(() => setPhase("rejected"), reduce ? 0 : 220);
+    try {
+      await controller.reject();
+      setPhase("rejected");
+    } catch (err) {
+      onError(err);
+    }
   };
 
   return (
@@ -87,6 +120,7 @@ export default function HITLControls() {
           type="button"
           onClick={onConfirm}
           disabled={busy}
+          aria-busy={busy}
           whileTap={reduce ? undefined : { scale: 0.95 }}
           animate={
             phase === "confirmed" && !reduce
@@ -116,6 +150,7 @@ export default function HITLControls() {
           type="button"
           onClick={onReject}
           disabled={busy}
+          aria-busy={busy}
           whileTap={reduce ? undefined : { scale: 0.95 }}
           transition={{ duration: 0.18, ease: EASE }}
           className="flex-1 rounded-[var(--r-chip)] px-4 py-2.5 text-[13px] font-medium border transition-colors disabled:cursor-default"
@@ -141,6 +176,19 @@ export default function HITLControls() {
               : "Reject — close case"}
         </motion.button>
       </div>
+
+      {phase === "error" && error && (
+        <motion.p
+          role="alert"
+          initial={reduce ? false : { opacity: 0, y: -2 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.18, ease: EASE }}
+          className="mt-3 font-mono text-[11px]"
+          style={{ color: "var(--verdict-flag)" }}
+        >
+          {error}
+        </motion.p>
+      )}
     </section>
   );
 }

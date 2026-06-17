@@ -182,7 +182,7 @@ export default function RuleRegistryPanel() {
             transition: reduce ? undefined : "color 0.45s var(--ease-out)",
           }}
         >
-          4 {"→"} 5
+          {allRules.length - 1} {"→"} {allRules.length}
         </span>
       </div>
 

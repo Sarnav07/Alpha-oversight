@@ -1,13 +1,10 @@
 /**
- * Desk controller + mock rule registry. WORKING STUB (teammate A owns + enriches):
- * drives the demo by playing fixture event sequences into useTraceStore and
- * mutating the mock rule registry on confirm (the 4→5 codify reveal). When the
- * live backend lands, A swaps the players for POST /demo/* + POST /confirm and the
- * DeskController surface stays identical, so components never change.
- *
- * A's TODO: replace the single C-0187 fixture with distinct Beat-A (instant flag)
- * and Beat-B (escalate→confirm→codify) fixtures + an audit hash-chain fixture, and
- * route runBeatA/runBeatB through the MockAdapter rather than the inline player.
+ * Desk controller + mock rule registry. Implements the frozen DeskController
+ * contract for both data modes: in mock mode the demo beats and the human
+ * Confirm/Reject drive the scrubbable ReplayClock and mutate the in-memory rule
+ * registry (the 4→5 codify reveal); in live mode the same actions fire the
+ * backend POSTs and let the real SSE `/stream` drive the fold. The DeskController
+ * surface is identical across modes, so components never branch on it.
  */
 "use client";
 
@@ -17,8 +14,33 @@ import { useClockStore } from "./clock";
 import { fixtureAuditC0187 } from "../fixtures/audit-C-0187";
 import { api } from "../api/client";
 import { IS_MOCK } from "../config";
+import { latestCaseId } from "../eventsource/parseMarker";
 import type { AuditView, DeskController } from "./contract";
 import type { ActivityEvent, Rule } from "../types";
+
+/**
+ * Typed error for a failed Confirm/Reject POST. The api client throws a plain
+ * Error whose message embeds the HTTP status (`POST <path> -> <status>`); we
+ * re-throw as this so the caller (HITLControls) can map `.status` to an inline
+ * reason without re-parsing strings. `.status` is null when no code is present.
+ */
+export class DeskActionError extends Error {
+  readonly status: number | null;
+  constructor(status: number | null, message: string) {
+    super(message);
+    this.name = "DeskActionError";
+    this.status = status;
+  }
+}
+
+/** Pull the trailing HTTP status off the api client's `... -> <status>` message. */
+function toDeskActionError(err: unknown): DeskActionError {
+  if (err instanceof DeskActionError) return err;
+  const message = err instanceof Error ? err.message : String(err);
+  const match = message.match(/->\s*(\d{3})\b/);
+  const status = match ? Number(match[1]) : null;
+  return new DeskActionError(status, message);
+}
 
 /** Seed registry — the 4 ACTIVE rules at boot (rule_contracts seed_rules). */
 export const SEED_RULES: Rule[] = [
@@ -148,6 +170,7 @@ const liveController: DeskController = {
       );
     } catch (err) {
       console.error("[desk] confirm failed:", err);
+      throw toDeskActionError(err);
     }
   },
   reject: async () => {
@@ -175,6 +198,7 @@ const liveController: DeskController = {
       );
     } catch (err) {
       console.error("[desk] reject failed:", err);
+      throw toDeskActionError(err);
     }
   },
   resetDesk: () => {
@@ -255,9 +279,7 @@ export function useDeskController(): DeskController {
 /** non-hook read of the current case id from the event stream (NOT a React hook,
  *  despite being called from controller actions — reads the store imperatively). */
 function currentCaseId(): string | null {
-  const events = useTraceStore.getState().events;
-  for (let i = events.length - 1; i >= 0; i--) {
-    if (events[i].case_id) return events[i].case_id!;
-  }
-  return null;
+  // Live `/stream` frames carry no `case_id` field — latestCaseId() parses it from
+  // the `content` markers (the same source lib/desk/model.ts + the audit drawer use).
+  return latestCaseId(useTraceStore.getState().events);
 }

@@ -62,7 +62,7 @@ const SURVEILLANCE: Agent[] = [
   {
     name: "Defense",
     tier: "open",
-    model: "Qwen3.6-35B",
+    model: "Qwen3.6-35B-A3B",
     role: "Argues the innocent reading — legitimate, bona-fide trading.",
     io: "debates locally — off Band",
   },

@@ -31,7 +31,11 @@ type Figure = {
 
 const FIGURES: Figure[] = [
   { to: 8, suffix: "", decimals: 0, label: "Agents · two desks" },
-  { to: 4, suffix: "", decimals: 0, label: "Seed rules · codifying live" },
+  {
+    to: null,
+    staticValue: "4 → 5",
+    label: "Seed rules · codifying live",
+  },
   {
     to: 100,
     suffix: "%",
@@ -110,10 +114,10 @@ function FigureCell({
       <span
         className="mt-3 font-sans"
         style={{
-          fontSize: 11,
+          fontSize: "clamp(12px, 1vw, 14px)",
           fontWeight: 500,
           textTransform: "uppercase",
-          letterSpacing: "0.18em",
+          letterSpacing: "0.08em",
           color: "var(--text-muted)",
         }}
       >

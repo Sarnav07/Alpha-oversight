@@ -1,15 +1,11 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import LandingNav from "./LandingNav";
 import CommandCenterArt from "./CommandCenterArt";
 import Logomark from "@/components/landing/Logomark";
 import { useIsMobile } from "./useIsMobile";
-
-gsap.registerPlugin(ScrollTrigger);
 
 /**
  * HeroScroll — the pinned "device-zoom" scrollytelling hero (AlphaLedger clone,
@@ -47,7 +43,19 @@ export default function HeroScroll() {
     // all (the static stacked hero renders instead).
     if (mq.matches || window.matchMedia("(max-width: 767px)").matches) return;
 
-    const ctx = gsap.context((self) => {
+    // Lazy-load gsap off the landing critical path: dynamically import it (+the
+    // ScrollTrigger plugin) inside the effect, then build the SAME pinned
+    // context a tick later — fine for a scroll-triggered animation.
+    let cancelled = false;
+    let ctx: gsap.Context | undefined;
+
+    (async () => {
+      const gsap = (await import("gsap")).default;
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+      gsap.registerPlugin(ScrollTrigger);
+      if (cancelled) return;
+
+      ctx = gsap.context((self) => {
       const q = self.selector!;
       const stage = q(".hero-stage")[0] as HTMLElement;
       const device = q(".hero-device")[0] as HTMLElement;
@@ -128,9 +136,13 @@ export default function HeroScroll() {
       tl.to(device, { scale: 1.42, duration: 0.44, ease: "none" }, 0.56);
 
       ScrollTrigger.refresh();
-    }, rootRef);
+      }, rootRef);
+    })();
 
-    return () => ctx.revert();
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
     // Re-run when the mobile boundary is crossed so the pin builds/tears down
     // to match the active render path.
   }, [isMobile]);
@@ -241,8 +253,11 @@ export default function HeroScroll() {
 
             {/* cookie consent card (FRAME 1) — dark, overlaid low-left on the
                 screen, matching the AlphaLedger reference. Dismisses on the
-                0.16–0.30 beat. */}
-            <div className="hero-cookie absolute bottom-[8%] left-[5%] z-30 w-[min(460px,64%)]">
+                0.16–0.30 beat. `inert` keeps this decorative/satirical card (its
+                "Accept all" / "Reject all" buttons are non-functional parody)
+                out of the focus order and a11y tree without touching the scroll
+                animation, layout, or copy. */}
+            <div inert className="hero-cookie absolute bottom-[8%] left-[5%] z-30 w-[min(460px,64%)]">
               <div
                 className="rounded-[16px] border p-5 shadow-2xl backdrop-blur"
                 style={{
@@ -335,19 +350,21 @@ function HeroCopy() {
         style={{
           fontWeight: 420,
           letterSpacing: "-0.012em",
-          lineHeight: 1.04,
-          // Sized so the longest variant ("Your adversarial Adversary.") stays on
-          // ONE line at desktop widths; shrinks on narrow viewports. Wrapping is
-          // allowed (the headline breaks before the rotating word on phones); the
-          // pinned-hero CSS reinstates nowrap above the sm breakpoint.
-          fontSize: "clamp(26px, 5.4vw, 72px)",
+          lineHeight: 1.06,
+          // STORY variant: "Your adversary" sits on its own line and the
+          // rotating CLAUSE ("catches the evasion." / "invents the attack." /
+          // "codifies the rule.") drops to a second line below it — the phrases
+          // are far longer than the old single words, so a single nowrap line
+          // would blow past the viewport. Font-size eased down from 72→60px so
+          // the longest clause stays clean and centered at desktop widths;
+          // shrinks on narrow viewports.
+          fontSize: "clamp(26px, 4.6vw, 60px)",
           color: "var(--text-primary)",
         }}
       >
-        Your adversarial{" "}
-        <span className="whitespace-nowrap">
-          <RotatingWord />
-        </span>
+        Your adversary
+        <br />
+        <RotatingWord />
       </h1>
       <p
         className="mx-auto mt-6 max-w-xl font-sans"
@@ -365,12 +382,18 @@ function HeroCopy() {
 }
 
 /**
- * RotatingWord — the headline's trailing clause, cycling through A&O's roles on
- * a ~2s timer (AlphaLedger rotates "Companion" → "Audit" → …). Rendered in the
- * muted two-tone gray. Under prefers-reduced-motion the word stays fixed on
- * "Sentinel." with no animation. AnimatePresence cross-fades each swap.
+ * RotatingWord — the headline's trailing CLAUSE, cycling through A&O's three
+ * acts on a ~2s timer: catches the evasion (Beat-A) → invents the attack (R&D)
+ * → codifies the rule (Beat-B). Rendered in the muted two-tone gray on its own
+ * centered line under "Your adversary". Under prefers-reduced-motion the clause
+ * stays fixed on the first phrase with no animation. AnimatePresence cross-fades
+ * each swap.
  */
-const ROTATING_WORDS = ["Sentinel.", "Adversary.", "Auditor."] as const;
+const ROTATING_WORDS = [
+  "catches the evasion.",
+  "invents the attack.",
+  "codifies the rule.",
+] as const;
 
 function RotatingWord() {
   const reduceMotion = useReducedMotion();
@@ -384,7 +407,8 @@ function RotatingWord() {
     return () => window.clearInterval(id);
   }, [reduceMotion]);
 
-  // Reserve horizontal space so the headline doesn't reflow on swap.
+  // Reserve horizontal space (from the LONGEST phrase, not a single word) so the
+  // line doesn't reflow on swap; centered on its own line under "Your adversary".
   const ch = Math.max(...ROTATING_WORDS.map((w) => w.length));
 
   if (reduceMotion) {
@@ -397,7 +421,7 @@ function RotatingWord() {
         position: "relative",
         display: "inline-block",
         minWidth: `${ch}ch`,
-        textAlign: "left",
+        textAlign: "center",
         verticalAlign: "bottom",
       }}
     >

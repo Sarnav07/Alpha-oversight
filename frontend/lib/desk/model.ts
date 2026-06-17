@@ -1,10 +1,9 @@
 /**
  * useDeskModel — folds the raw ActivityEvent stream (useTraceStore) into the
- * view-models in contract.ts. THIS IS A WORKING STUB (teammate A owns + enriches):
- * it already derives node status, case state, verdict, debate and timeline from
- * markers so components render immediately. A's job: harden the folding, wire the
- * codify 4→5 reveal, and add the rule/stats derivation from the controller's mock
- * registry. Components must depend ONLY on the DeskModel shape, never on internals.
+ * view-models in contract.ts: node status, case state, verdict, debate, timeline,
+ * plus the rule/stats derivation (incl. the codify 4→5 reveal) sourced from the
+ * mock registry in mock mode and GET /rules + /stats when live. Components must
+ * depend ONLY on the DeskModel shape, never on these internals.
  */
 "use client";
 
@@ -26,6 +25,19 @@ import type {
   DebateView,
 } from "./contract";
 import type { ActivityEvent, Verdict, Stats, Rule } from "../types";
+
+/**
+ * DeskModel + the live REST-health flags. contract.ts is the FROZEN seam (lead-
+ * owned, not edited here), so the backend-down REST affordance rides as an
+ * additive extension off useDeskModel's return type. statsError/rulesError are
+ * meaningful only in live mode; mock mode reports them false.
+ */
+export interface DeskModelView extends DeskModel {
+  /** GET /stats failed (live mode) — tiles should show "—", not silent zeros. */
+  statsError: boolean;
+  /** GET /rules failed (live mode) — Active Rules count is unavailable. */
+  rulesError: boolean;
+}
 
 const EMPTY_STATS: Stats = {
   total_cases: 0,
@@ -170,7 +182,7 @@ function deriveTimeline(events: ActivityEvent[]): TimelineDot[] {
   return dots;
 }
 
-export function useDeskModel(): DeskModel {
+export function useDeskModel(): DeskModelView {
   const events = useTraceStore((s) => s.events);
   const latestByAgent = useTraceStore((s) => s.latestByAgent);
 
@@ -190,7 +202,12 @@ export function useDeskModel(): DeskModel {
   const rules: Rule[] = IS_MOCK ? mockRules : liveRulesQ.data ?? SEED_RULES;
   const liveStats = liveStatsQ.data;
 
-  return useMemo<DeskModel>(() => {
+  // REST health — live-only. Surfaced so StatsBar can show "—"/"unavailable"
+  // instead of silently rendering seed/zero data when the backend is down.
+  const statsError = !IS_MOCK && liveStatsQ.isError;
+  const rulesError = !IS_MOCK && liveRulesQ.isError;
+
+  return useMemo<DeskModelView>(() => {
     const caseView = deriveCase(events);
     const { nodes, activeNode, bandWaiting } = deriveNodes(events, latestByAgent);
 
@@ -229,6 +246,8 @@ export function useDeskModel(): DeskModel {
       activeNode,
       bandWaiting,
       codified,
+      statsError,
+      rulesError,
     };
-  }, [events, latestByAgent, rules, mockCodified, liveStats]);
+  }, [events, latestByAgent, rules, mockCodified, liveStats, statsError, rulesError]);
 }

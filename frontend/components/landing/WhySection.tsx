@@ -33,7 +33,7 @@ type Stat = {
 };
 
 const STATS: Stat[] = [
-  { label: "Catch the evasion", to: 94, suffix: "%", Chart: BarSignal },
+  { label: "LLMs decide the verdict", to: 0, suffix: "", Chart: BarSignal },
   { label: "Codify the defense", to: 5, prefix: "+", Chart: AreaRamp },
   { label: "Prove every verdict", to: 100, suffix: "%", Chart: AreaProof },
 ];
