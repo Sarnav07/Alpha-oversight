@@ -39,48 +39,9 @@ a regulator can replay line by line.
 
 Two desks, one wall, one rule engine.
 
-```
-                    +------------------------------------------+
-                    |              R&D DESK                    |
-                    |                                          |
-                    |   Adversary --------- Backtest Oracle   |
-                    |   (red team)          (profit + evade)  |
-                    +------------------+--+--------------------+
-                                       |
-                               SanitizedBridge
-                            (strips reasoning +
-                             model identity;
-                             bare orders only)
-                                       |
-                    +------------------v---------------------+
-                    |           SURVEILLANCE DESK            |
-                    |                                        |
-                    |  Anomaly Detector                      |
-                    |       |                                |
-                    |  Investigator --(Band handoff)-->      |
-                    |       |          Specialist            |
-                    |       |               | (evidence)     |
-                    |       +---------------v                |
-                    |           Prosecution vs Defense       |
-                    |           (local debate, off-Band)     |
-                    |                  |                     |
-                    |            Adjudicator                 |
-                    |                  | (resolved inputs)   |
-                    |           +------v------+              |
-                    |           | Rule Engine | <-- sole     |
-                    |           |  PASS/FLAG  |    verdict   |
-                    |           +------+------+   authority  |
-                    |                  |                     |
-                    |   if PASS + suspicious:                |
-                    |           Escalation Manager           |
-                    +----------------------------------------+
-                                       |
-                              human confirm/reject
-                                       |
-                         derive_rule -> regression_gate
-                                       |
-                               codify (4 -> 5)
-```
+<div align="center">
+  <img src="assets/architecture.png" alt="Alpha & Oversight architecture: two desks across a one-way Chinese wall, coordinating over Band, with the deterministic rule engine as sole PASS/FLAG authority" width="100%" />
+</div>
 
 The rule engine is not an agent. It is plain Python that walks the active rulebook, runs each
 family's math over the order events and resolved inputs, and returns PASS or FLAG. Same inputs
@@ -91,6 +52,67 @@ and strips everything else — the Adversary's reasoning, which model produced t
 which round it came from. The Surveillance desk judges trades on their own merits. The only
 channel in the other direction is the active rulebook, which the red team may read but never
 write.
+
+---
+
+## Core workflows
+
+The five flows below trace a case through the system in the order it meets each piece: one case
+end to end, a brand-new evasion invented and proven, the deterministic verdict, the loop closing
+when the rulebook teaches itself, and the two mechanisms that make the whole thing trustworthy.
+
+### Following one case, end to end (Beat A)
+
+<div align="center">
+  <img src="assets/beat-a.png" alt="Following one case end to end: sanitized Band handoff → Anomaly Detector → Investigator recruits a Specialist → Prosecution vs Defense debate off Band → Adjudicator resolves → deterministic Rule Engine verdict (FLAG or escalate)" width="100%" />
+</div>
+
+**Key Insight:** the agents only shape the contested inputs. The engine alone turns them into
+PASS or FLAG, and the Prosecution–Defense debate never touches Band.
+
+---
+
+### Inventing a new evasion (R&D loop)
+
+<div align="center">
+  <img src="assets/rnd-loop.png" alt="R&D loop: the Adversary proposes an order sequence; Oracle 1 (rule engine) must miss it and Oracle 2 (backtest) must show profit and price impact before it is a confirmed novel evasion that crosses the SanitizedBridge" width="100%" />
+</div>
+
+**Key Insight:** a tactic is never used until it proves itself twice — it must evade the real
+engine *and* profit in a backtest. Neither gate is a language model.
+
+---
+
+### Who decides the verdict
+
+<div align="center">
+  <img src="assets/verdict.png" alt="The deterministic verdict: order events, resolved inputs from the debate, and the active rules registry feed the engine, which runs each family metric in order; the first rule that trips returns FLAG with a cited metric, otherwise PASS" width="100%" />
+</div>
+
+**Key Insight:** only the highlighted resolved inputs come from the LLM debate. The first rule
+that trips wins, and the engine renders the same answer every time.
+
+---
+
+### Closing the loop (co-evolution, 4 → 5)
+
+<div align="center">
+  <img src="assets/coevolution.png" alt="Co-evolution: a confirmed novel evasion the seed rules miss escalates to a human; on confirm, derive_rule writes a new parameterized rule, regression_gate proves it now FLAGs, the registry grows from four to five rules, and the case flips PASS to FLAGGED" width="100%" />
+</div>
+
+**Key Insight:** a confirmed miss becomes a regression-tested rule in a single step. The active
+count goes from four to five and the case flips — the Adversary now has to invent something new.
+
+---
+
+### Why you can trust it (the wall + the hash chain)
+
+<div align="center">
+  <img src="assets/trust.png" alt="The trust layer: the SanitizedBridge strips reasoning and model identity so only the bare order crosses the Chinese wall, and every Band message is sealed into a hash chain (hash = sha256(prev_hash + canonical body)) bound to the real band_message_id, so any tampered byte makes verify_chain return false" width="100%" />
+</div>
+
+**Key Insight:** the wall isolates by construction, not policy. The ledger is tamper-evident —
+change a single byte and `verify_chain` returns false.
 
 ---
 
@@ -128,7 +150,7 @@ family so no blind spot in one can quietly pass to the next:
 ```
 Adversary           claude-opus-4-8              Anthropic   (via AI/ML API)
 Prosecution         Kimi-K2.7-Code               Moonshot    (Featherless)
-Defense             Mistral-Small-3.2-24B         Mistral     (Featherless)
+Defense             DeepSeek-V4-Pro              DeepSeek     (Featherless)
 Adjudicator         GLM-5.2                      Zhipu       (Featherless)
 Escalation          Qwen3.5-397B-A17B            Qwen        (Featherless)
 Triage (x3)         Qwen3-Next-80B-A3B           Qwen        (Featherless)

@@ -90,12 +90,12 @@ export default function SiteFooter() {
               tamper-evident ledger.
             </p>
             <div className="mt-5 flex items-center gap-3">
-              <SocialCircle label="GitHub" href="https://github.com/Sarnav07/Alpha-oversight">
+              <SocialCircle label="GitHub" href="https://github.com/PrathamSingla15/alpha-oversight">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49v-1.7c-2.78.62-3.37-1.22-3.37-1.22-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.57 2.34 1.12 2.91.85.09-.66.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.3 9.3 0 0 1 12 6.84c.85 0 1.71.12 2.51.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9v2.82c0 .27.18.59.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z" />
                 </svg>
               </SocialCircle>
-              <SocialCircle label="X" href="https://x.com">
+              <SocialCircle label="X" href="https://x.com/Chainer_Rio">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M18.9 2H22l-7.3 8.34L23 22h-6.56l-5.14-6.72L5.4 22H2.3l7.8-8.92L1.6 2h6.72l4.65 6.15L18.9 2Zm-1.15 18h1.7L7.3 3.9H5.5L17.75 20Z" />
                 </svg>
