@@ -1,254 +1,344 @@
 # Alpha & Oversight
 
-**An adversarial trade-surveillance system where AI agents argue and deterministic code decides.**
+A self-improving market-surveillance system built for the lablab.ai Band of Agents hackathon.
 
-A red-team adversary invents new market-manipulation tricks; a blue-team surveillance desk
-hunts them down; a small, deterministic rule engine — *not* a language model — renders every
-PASS/FLAG verdict. When the rulebook misses a brand-new evasion, a human confirms it and the
-system **writes a new rule on the spot**, then proves the rule catches it. Every message that
-coordinates the agents is sealed into a hash-chained audit ledger you can re-verify live.
+The system runs two AI desks against each other. A red-team Adversary invents order sequences
+designed to beat the active rulebook. A blue-team Surveillance desk investigates, debates, and
+adjudicates the flow. A small deterministic rule engine — not a language model — renders every
+PASS/FLAG verdict. When the Adversary finds an evasion the rules genuinely miss, a human
+confirms it, and the system derives a new rule, proves it works, and codifies it. The rulebook
+grows by one, the loop resets one level harder, and the cycle continues.
 
-Built for the lablab.ai **Band of Agents** hackathon. This repository is a monorepo:
+Live deployment:
+- Frontend: https://alpha-oversight.vercel.app
+- Backend: https://alpha-oversight-backend.onrender.com/stats
+
+---
+
+## Motivation
+
+Markets can be rigged in ways that rules struggle to keep up with. A trader can post orders they
+never plan to fill to fake demand, stack fake depth across price levels, trade with themselves to
+invent volume, or push the closing print to mark their own book. Regulators write rules against
+each pattern — FINRA Rule 5210, SEC Rule 10b-5 — but the rules are fixed while the tactics keep
+moving. A small change to a known trick can slip a rule written for last year's version of it.
+
+Two obvious responses both fall short. Writing new rules by hand is slow and always behind.
+Letting a language model decide the verdict is worse: the decision becomes a black box a
+regulator cannot audit, that an opponent can try to argue around, and that nobody can fully
+trust.
+
+This system takes a third path. The verdict stays deterministic and fully auditable. The system
+writes its own new rules the moment an old one is beaten. Every flag traces back to a cited
+metric and a named regulation. Every handoff between agents is sealed into a hash-chained ledger
+a regulator can replay line by line.
+
+---
+
+## Architecture
+
+Two desks, one wall, one rule engine.
 
 ```
-alpha-oversight/
-├── backend/     FastAPI service — agents, Band, rule engine, audit ledger, state machine
-└── frontend/    Next.js 16 Command Center — landing site, scroll-story, live trace viewer
+                    +------------------------------------------+
+                    |              R&D DESK                    |
+                    |                                          |
+                    |   Adversary --------- Backtest Oracle   |
+                    |   (red team)          (profit + evade)  |
+                    +------------------+--+--------------------+
+                                       |
+                               SanitizedBridge
+                            (strips reasoning +
+                             model identity;
+                             bare orders only)
+                                       |
+                    +------------------v---------------------+
+                    |           SURVEILLANCE DESK            |
+                    |                                        |
+                    |  Anomaly Detector                      |
+                    |       |                                |
+                    |  Investigator --(Band handoff)-->      |
+                    |       |          Specialist            |
+                    |       |               | (evidence)     |
+                    |       +---------------v                |
+                    |           Prosecution vs Defense       |
+                    |           (local debate, off-Band)     |
+                    |                  |                     |
+                    |            Adjudicator                 |
+                    |                  | (resolved inputs)   |
+                    |           +------v------+              |
+                    |           | Rule Engine | <-- sole     |
+                    |           |  PASS/FLAG  |    verdict   |
+                    |           +------+------+   authority  |
+                    |                  |                     |
+                    |   if PASS + suspicious:                |
+                    |           Escalation Manager           |
+                    +----------------------------------------+
+                                       |
+                              human confirm/reject
+                                       |
+                         derive_rule -> regression_gate
+                                       |
+                               codify (4 -> 5)
 ```
 
-> The two halves are decoupled by a single environment flag. The frontend runs entirely on
-> bundled fixtures (`mock` mode, no backend needed) or against the live backend (`live` mode)
-> with no code change in between.
+The rule engine is not an agent. It is plain Python that walks the active rulebook, runs each
+family's math over the order events and resolved inputs, and returns PASS or FLAG. Same inputs
+produce the same answer every time.
+
+The SanitizedBridge is the only path from R&D to Surveillance. It copies the raw order events
+and strips everything else — the Adversary's reasoning, which model produced the sequence, even
+which round it came from. The Surveillance desk judges trades on their own merits. The only
+channel in the other direction is the active rulebook, which the red team may read but never
+write.
 
 ---
 
-## 1. The big idea
+## Agents
 
-Traditional trade surveillance is a static rulebook: it only catches tricks someone already
-wrote a rule for. Alpha & Oversight closes that loop. It runs **two desks separated by a
-Chinese wall**:
+Eight LLM agents across two desks. The rule engine is listed for completeness but is not an
+agent — it is the sole authority on the verdict.
 
-- **R&D desk (red team)** — a single **Adversary** agent designs order sequences engineered to
-  *evade every active rule while still making money*.
-- **Surveillance desk (blue team)** — seven agents triage, investigate, debate, and adjudicate
-  suspicious order flow, feeding a deterministic engine that returns the verdict.
+**R&D desk**
 
-When the adversary finds an evasion the rulebook genuinely misses, the case is **escalated to a
-human**. If the human confirms it is manipulation, the system derives a new rule, **regression-
-gates** it (proves it now flags the evasion), and **codifies** it — the rulebook grows from four
-rules to five, and the cat-and-mouse resets one level harder.
+- `Adversary` — proposes order sequences engineered to evade every active rule while making
+  money. Gated by two deterministic oracles before anything crosses the wall.
 
-**The cardinal rule: LLMs argue; code decides.** Agents only set the *contested inputs* the
-engine cannot derive on its own (the time window, which orders were bona-fide, the likely
-intent). The engine renders PASS/FLAG deterministically. No LLM can overrule it. Same inputs,
-same verdict, every time.
+**Surveillance desk**
 
----
+- `Anomaly Detector` — first pass over the order window; computes hard features (cancel ratios,
+  book depth, self-match rate) and decides whether to open a case.
+- `Investigator` — opens the case and recruits the right Specialist over Band. The only
+  tool-using agent in the pipeline (ReAct loop).
+- `Specialist` — domain expert for one manipulation family; proposes the contested inputs the
+  engine cannot derive on its own (time window, bona-fide order set, likely intent).
+- `Prosecution` — argues the reading that makes the order flow look most like manipulation.
+- `Defense` — argues the innocent reading. The debate with Prosecution runs locally and never
+  touches Band.
+- `Adjudicator` — reads both arguments and resolves them into one conservative set of
+  engine-ready inputs.
+- `Escalation Manager` — when the rulebook misses, packages a clear brief for the human and
+  recommends an action.
 
-## 2. The cast — 8 LLM agents + 1 deterministic rule engine
+**Rule Engine** — deterministic Python; sole authority over PASS/FLAG.
 
-Seven agents work the Surveillance desk; one is the lone Adversary on R&D. **The rule engine is
-not an agent** — it is plain Python that owns the final verdict.
+**Model assignment.** The four seats on an adversarial boundary each run a distinct model
+family so no blind spot in one can quietly pass to the next:
 
-| Agent | Desk | Role | Model (logical key → model) | Tier |
-|---|---|---|---|---|
-| **Adversary** | R&D | Red team. Proposes order sequences engineered to slip past every active rule while still making money. | `open-triage` → Qwen3-Next-80B | open |
-| **Anomaly Detector** | Surveillance | First glance at a window of orders; flags "this smells off" and computes hard features (cancel ratios, depth, self-match). | `open-triage` → Qwen3-Next-80B | open |
-| **Investigator** | Surveillance | Opens the case and recruits the right specialist over Band. The only tool-using agent (ReAct loop). | `open-triage` → Qwen3-Next-80B | open |
-| **Specialist** | Surveillance | Domain expert for one manipulation family; proposes the contested inputs the engine cannot derive alone. | `open-triage` → Qwen3-Next-80B | open |
-| **Prosecution** | Surveillance | Argues the reading that makes the order flow look *most* like manipulation. | `prosecution-frontier` → claude-sonnet-4-6 | **frontier** |
-| **Defense** | Surveillance | Argues the innocent reading — legitimate, bona-fide trading. | `defense-open` → Qwen3.6-35B | open |
-| **Adjudicator** | Surveillance | Reads both arguments and resolves them into one set of engine-ready inputs. | `open-triage` → Qwen3-Next-80B | open |
-| **Escalation Manager** | Surveillance | When the rulebook misses, packages a clear brief for the human and recommends an action. | `escalation-frontier` → gpt-5-mini | **frontier** |
-| **Rule Engine** | — | *Not an agent.* Deterministic code; the single authority that returns PASS or FLAG. | — | — |
+```
+Adversary           claude-opus-4-8              Anthropic   (via AI/ML API)
+Prosecution         Kimi-K2.7-Code               Moonshot    (Featherless)
+Defense             Mistral-Small-3.2-24B         Mistral     (Featherless)
+Adjudicator         GLM-5.2                      Zhipu       (Featherless)
+Escalation          Qwen3.5-397B-A17B            Qwen        (Featherless)
+Triage (x3)         Qwen3-Next-80B-A3B           Qwen        (Featherless)
+```
 
-**Two frontier roles, not a frontier desk.** Only the two roles that must be most persuasive —
-**Prosecution** and the human-facing **Escalation Manager** — run frontier models. Everyone else
-runs a strong, cheaper open-weight model. Which model sits behind each role is just configuration
-(env-driven provider routing in `backend/.../providers.py`), so the mix can change without
-touching the pipeline. Model providers: **AI/ML API** (frontier) and **Featherless** (open).
+The triage roles (Anomaly Detector, Investigator, Specialist) share one fast open model because
+they do not sit on an adversarial pivot. Every model behind a role is pure configuration — an
+env var in `providers.py` — so the mix can change without touching pipeline code.
 
 ---
 
-## 3. Band — the transport of record
+## Band — transport of record
 
-Band is the message bus the agents coordinate over. The single most important thing to
-understand: **Band is the transport of record, not a notification channel.** Every cross-agent
-handoff is an envelope sealed into the audit ledger.
+Band is not a notification channel. Every cross-agent handoff is a sealed envelope carried over
+Band, and every envelope becomes a leaf in the audit ledger. The frontend's verified badge is
+recomputed live from real Band message hashes — not read from a stored flag.
 
-Every envelope has a `kind`, a `from`, a `to`, a `case_id`, and a `payload`. There are **five
-kinds** (exact wire values are lowercase):
+Five message kinds travel over Band (wire values are lowercase):
 
-| Kind (`kind`) | Carries | Sent when |
-|---|---|---|
-| `handoff` | Order-flow events; a recruit request | R&D crosses the wall; Investigator recruits a Specialist |
-| `evidence` | The Specialist's proposed contested inputs | After the Specialist studies the flow |
-| `verdict` | The engine's PASS/FLAG + the resolved inputs | After the engine scores the case |
-| `escalation` | The human briefing packet | When the rulebook misses and a human is needed |
-| `rule_codified` | The brand-new rule + proof it works | The moment a human confirms a novel pattern |
+- `handoff` — order-flow events crossing the wall from R&D, or the Investigator recruiting a
+  Specialist.
+- `evidence` — the Specialist's proposed contested inputs.
+- `verdict` — the engine's PASS/FLAG result plus the resolved inputs.
+- `escalation` — the human briefing packet when the rulebook misses.
+- `rule_codified` — the new rule and its regression proof, emitted when a human confirms.
 
-> The **Prosecution ⚔ Defense debate runs locally** within the Surveillance desk — it does **not**
-> travel over Band. Only the steps that are genuine cross-agent handoffs become Band messages.
+The Prosecution/Defense debate is the one part of the pipeline that does not ride Band. It runs
+locally within the Surveillance desk; only the Adjudicator's resolved output travels onward.
 
-**Two Band implementations, one Protocol interface:**
-- **MockBand** — in-process loopback for development and the keyless demo. Same message
-  semantics, no network.
-- **PhoenixBand** — the real Band, spoken over REST polling (`POST /chats/{room}/messages` to
-  send, `GET .../messages/next` to pull, then ack `processing → processed`).
-
-### The Chinese wall (`SanitizedBridge`)
-
-The wall is two things:
-1. **Two separate Band identities.** R&D and Surveillance log in as different agents and cannot
-   read each other's private rooms.
-2. **One narrow, one-way bridge.** The `SanitizedBridge` is the *only* path from R&D to
-   Surveillance. It copies the raw order events and **strips the adversary's reasoning and even
-   which model produced it**. What crosses is raw market behaviour — nothing about *why* it was
-   produced.
-
-The only channel in the other direction is the **rulebook itself**, which the Adversary may
-**read but never write** (so it knows what to beat). Surveillance can never peek at the R&D
-playbook.
+Two implementations share one interface. `MockBand` is an in-process loopback for development
+and the keyless demo. `PhoenixBand` is the real Band client: POST to send, GET
+`.../messages/next` to pull, ack `processing -> processed`.
 
 ---
 
-## 4. The deterministic rule engine
+## Rule engine
 
-The verdict is not an opinion from a language model — it is the output of a small, deterministic
-rule engine (`backend/.../rules/engine.py`). The engine walks the list of active rules; for each
-it runs that rule's maths over the order events. If any rule trips, it returns **FLAG** plus
-exactly which rule fired and which number crossed the line. If none trip, **PASS**. Same inputs,
-same answer, every single time.
+The verdict comes from a deterministic engine in `backend/alpha_oversight/rules/`. It walks the
+active rulebook; for each rule it runs that family's math over the order events. If any rule
+trips, it returns FLAG, the rule id, and the exact metric that crossed the threshold. If none
+trip, PASS.
 
-**Contested inputs** (what the LLMs supply; the engine cannot derive these alone):
-- **The time window** — which orders count as part of "the same burst"?
-- **Bona-fide orders** — which orders were honest trades that should be excluded?
-- **Intent** — what does the surrounding behaviour suggest the trader was trying to do?
+Agents supply the three inputs the engine cannot derive alone:
 
-### The four seed rules
+- **Time window** — which orders belong to the same burst.
+- **Bona-fide orders** — which orders were legitimate and should be excluded.
+- **Intent** — what the surrounding pattern suggests the trader was doing.
 
-Out of the box there are four seed rules — **layering** + **spoofing** (FINRA 5210) and **wash
-trading** + **marking-the-close** (SEC 10b-5). Each is a family of maths plus a threshold. Exact
-params and trip conditions as implemented in code:
+The four seed rules:
 
-| Rule id | Family | Params | Trips when |
-|---|---|---|---|
-| `FINRA-5210-layering` | `layering` | `window_ms: 100`, `min_depth_levels: 3` | `depth_levels ≥ 3` **and** `cancel_span_ms ≤ window_ms` |
-| `FINRA-5210-spoofing` | `spoofing` | `window_ms: 100`, `min_cancel_ratio: 0.8` | `near_fill_cancel_ratio ≥ 0.8` |
-| `SEC-10b-5-wash` | `wash_trade` | `min_self_match_ratio: 0.5` | `self_match_ratio ≥ 0.5` |
-| `SEC-10b-5-marking` | `marking` | `min_print_move_bps: 100.0` | `eod_print_move_bps ≥ 100` |
+```
+FINRA-5210-layering   window_ms: 100, min_depth_levels: 3
+                      trips when depth_levels >= 3 AND cancel_span_ms <= window_ms
 
-> Note: spoofing trips on **`near_fill_cancel_ratio`** (cancels placed near opposite-side fills),
-> not the raw cancel-to-fill ratio. The wash and marking thresholds are inclusive (`≥`).
+FINRA-5210-spoofing   window_ms: 100, min_cancel_ratio: 0.8
+                      trips when near_fill_cancel_ratio >= 0.8
 
-### Codification (rules 4 → 5)
+SEC-10b-5-wash        min_self_match_ratio: 0.5
+                      trips when self_match_ratio >= 0.5
 
-When a human confirms a novel evasion, four things happen automatically:
-1. **Derive** a new rule shaped to catch this exact variant. Derived id: `{family}-v2-{case_id}`;
+SEC-10b-5-marking     min_print_move_bps: 100.0
+                      trips when eod_print_move_bps >= 100
+```
+
+Spoofing trips on `near_fill_cancel_ratio` — cancels placed near opposite-side fills — not the
+raw cancel-to-fill ratio.
+
+**Codification (4 -> 5).** When a human confirms a novel evasion:
+
+1. `derive_rule` writes a new parameterized rule from the case. Id: `{family}-v2-{case_id}`;
    provenance `human:compliance/{case_id}`.
-2. **Regression-gate** it — re-run the engine with the new rule and prove it now FLAGs the
-   evasion. If the proof fails, the rule is **rejected** (HTTP 422), nothing is written.
-3. **Codify** it — the rulebook grows from four to five and a `rule_codified` Band message goes
-   out (and into the audit ledger).
-4. **Flag** the case — it moves from `ESCALATED` to `FLAGGED`.
+2. `regression_gate` replays the evasion through the new rule and verifies it now FLAGs. If the
+   proof fails, the rule is rejected (HTTP 422) and nothing is written.
+3. The registry grows from four to five and a `rule_codified` Band message is emitted.
+4. The case transitions from ESCALATED to FLAGGED.
 
 ---
 
-## 5. Case lifecycle — five states
+## Case lifecycle
 
-A case is always in exactly one of five states:
+```
+OPEN           created; not yet triaged
+UNDER_REVIEW   detector flagged it; pipeline is working it
+FLAGGED        confirmed manipulation -- directly (Beat A) or after human confirm (Beat B)
+ESCALATED      rulebook missed it; waiting on a human
+CLOSED         finished: clean, timed out, or dismissed
+```
 
-| State | Meaning |
-|---|---|
-| `OPEN` | Just created, not yet triaged. |
-| `UNDER_REVIEW` | The detector found something; the pipeline is working it. |
-| `FLAGGED` | Judged to be manipulation (directly in Beat A, or after a human confirms in Beat B). |
-| `ESCALATED` | The rulebook missed it; waiting on a human. |
-| `CLOSED` | Finished: clean, dismissed, or archived. |
-
-**Every non-final state has a timeout that sends the case to `CLOSED`** — a case can never get
-stuck waiting forever. The two human-driven transitions from `ESCALATED` are: *confirm* →
-`FLAGGED`, *reject* → `CLOSED`.
+Every non-final state has a timeout that advances the case to CLOSED. Human transitions from
+ESCALATED: `confirm` -> FLAGGED (rule written); `reject` -> CLOSED (no rule written).
 
 ---
 
-## 6. The two beats (the demo)
+## The two demo beats
 
-### Beat A — catching a known trick
+**Beat A — catching a known trick.**
 
-`OPEN` → detector smells it → `UNDER_REVIEW` → Investigator recruits a Specialist (`handoff`) →
-Specialist proposes contested inputs (`evidence`) → Prosecution ⚔ Defense debate (local) →
-Adjudicator resolves → **engine FLAGs** (`verdict`) → `FLAGGED`. (If the detector finds nothing,
-the case closes immediately.)
+Order flow arrives -> Anomaly Detector flags it -> UNDER_REVIEW -> Investigator recruits a
+Specialist via Band handoff -> Specialist proposes contested inputs -> Prosecution and Defense
+debate locally -> Adjudicator resolves -> engine FLAGs -> verdict Band message -> FLAGGED.
+If the detector finds nothing, the case closes immediately.
 
-### Beat B — learning a brand-new trick
+**Beat B — learning a brand-new trick.**
 
-The R&D loop runs first: the **Adversary** proposes sequences in bounded rounds (K rounds). Two
-deterministic referees judge each: *(1) did it evade?* — run the real engine; if it returns PASS
-the rulebook missed it. *(2) was it real?* — backtest it; the sequence must actually make money
-and move price. A sequence that **evades and profits** is a confirmed novel evasion — the only
-thing allowed across the wall.
+The R&D loop runs first. The Adversary proposes sequences in bounded rounds. Two deterministic
+oracles gate each one: the real rule engine must return PASS (the rules genuinely miss it), and
+a backtest must show the sequence makes money and moves price (economically real). Only a
+sequence that satisfies both crosses the wall.
 
-The confirmed evasion runs through the Surveillance pipeline; the engine returns **PASS** (the
-rules genuinely miss it), so the case is **`ESCALATED`**. The human reads the Prosecution/Defense
-dossiers and the audit trail and decides: **confirm** → derive + regression-gate + codify (rules
-**4 → 5**, emit `rule_codified`) → `FLAGGED`; or **reject** → `CLOSED`, no rule written.
+The confirmed evasion runs through the Surveillance pipeline. The engine returns PASS — seed
+rules miss it — so the case escalates. A human reviews both dossiers and the audit trail and
+either confirms (4 -> 5 rules, case flips to FLAGGED) or rejects (case closes, no rule written).
 
 ---
 
-## 7. Audit — tamper-evident memory
+## Audit
 
-Every message that crosses Band is sealed into a **hash-chained ledger**. Each leaf records one
-Band message: which case, which kind, who sent it, who received it, the direction, a **SHA-256
-fingerprint of the exact content**, and the real Band message id. Each leaf's hash folds in the
-previous leaf's hash, so changing anything — a payload, an order, even one character — makes the
-recomputed chain disagree with the stored one.
+Every message that crosses Band is sealed into a hash-chained ledger
+(`backend/alpha_oversight/audit/ledger.py`). Each leaf records the case id, message kind,
+sender, receiver, direction, a SHA-256 fingerprint of the exact content, and the real Band
+message id. Each leaf's hash is computed from the previous leaf's hash plus the canonicalized
+message body, so altering any byte makes `verify_chain` return false.
 
-`verify_chain()` walks every link (canonical JSON, `sort_keys`, SHA-256) and returns `true` only
-if the whole history is intact. The Command Center's audit view shows a **live `verified` badge
-recomputed on the spot** — not a stored boolean — over the real Band message hashes.
+The Command Center's audit panel recomputes the chain live on every render. There is no stored
+"verified" boolean; the check runs from scratch each time.
 
 ---
 
-## 8. API surface
+## Running locally
 
-The backend is a small FastAPI service on **port 8000**.
+```bash
+# backend (port 8000)
+cp .env.example .env
+# fill AIML_API_KEY, FEATHERLESS_AI_API_KEY[_2/_3], and the model vars
+# leave USE_REAL_BAND=false for MockBand (no Band keys needed)
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt && pip install -e . --no-deps
+make run-backend
 
-| Method | Path | What it's for |
-|---|---|---|
-| `GET` | `/stream` | SSE: live trace of every agent action, desk-tagged. Filters: `?desk=rnd\|surveillance`, `?replay=<case_id>` for recorded playback. |
-| `GET` | `/cases` · `/cases/{id}` | List cases / one case in full (state, verdict, features, events, resolved_inputs). |
-| `GET` | `/cases/{id}/audit` | Hash-chain ledger rows for the case + a freshly recomputed `verified` flag. |
-| `GET` | `/rules` | The current active rulebook. |
-| `GET` | `/stats` | Headline counts: `total_cases`, `by_state`, `flagged`, `escalated`, `active_rules`. |
-| `POST` | `/cases/{id}/confirm` | Human confirms an escalation → derive + prove + codify → `FLAGGED`. 409 if not ESCALATED; 422 if the regression gate fails. |
-| `POST` | `/cases/{id}/reject` | Human dismisses an escalation → `CLOSED`, no rule written. |
-| `POST` | `/demo/beat-a` · `/demo/beat-b` · `/demo/rnd` | One-click triggers for the two beats and a live adversary run. |
+# frontend (port 4100)
+cd frontend
+# create .env.local:
+#   NEXT_PUBLIC_DATA_MODE=live
+#   NEXT_PUBLIC_API_BASE=http://localhost:8000
+npm install && npm run dev
+```
 
-### SSE `/stream` frame shape
+Open http://localhost:4100/desk, trigger Beat A or Beat B from the controls, and watch the
+topology, trace timeline, dossiers, and audit chain update live.
 
-The stream emits one small JSON frame per agent action, all the same shape:
+The frontend also runs with no backend. Set `NEXT_PUBLIC_DATA_MODE=mock` (the default) and the
+full Beat A / Beat B story plays from bundled fixtures. This is what the public deployment uses.
+
+**Before a live demo.** Featherless evicts idle models after roughly five minutes. Warm them
+first, then run the beats back-to-back with no gaps:
+
+```bash
+python scripts/warm_models.py
+python scripts/live_e2e.py      # Beat A, ~70s warm
+python scripts/live_beat_b.py   # Beat B, ~70s warm
+```
+
+---
+
+## API
+
+FastAPI on port 8000.
+
+```
+GET  /stream                SSE: live trace of every agent action
+                            ?desk=rnd|surveillance
+                            ?replay=<case_id> for recorded playback
+
+GET  /cases                 list all cases
+GET  /cases/{id}            one case in full (state, verdict, features, events, resolved_inputs)
+GET  /cases/{id}/audit      ledger rows + freshly recomputed verified flag
+
+GET  /rules                 current active rulebook
+GET  /stats                 total_cases, by_state, flagged, escalated, active_rules
+
+POST /cases/{id}/confirm    human confirms escalation -> codify -> FLAGGED
+                            409 if not ESCALATED; 422 if regression gate fails
+POST /cases/{id}/reject     human dismisses -> CLOSED, no rule written
+
+POST /demo/beat-a           trigger Beat A
+POST /demo/beat-b           trigger Beat B
+POST /demo/rnd              trigger a live adversary run
+```
+
+SSE frame shape:
 
 ```jsonc
 {
-  "agent_name": "Investigator",          // who acted ("pipeline" for stage markers)
-  "model_id":   "prosecution-frontier",  // logical model key ("" for pipeline markers)
-  "desk":       "surveillance",          // "surveillance" | "rnd"
-  "content":    "recruited @layer-spec (layering)",  // human-readable marker / @mention
-  "reasoning":  null,                     // model reasoning if any (not stripped from the feed)
-  "tool_calls": [],                       // [{ name, id, arguments, result }]
-  "created_at": "2026-06-16T18:33:00Z"
+  "agent_name": "Investigator",
+  "model_id":   "prosecution-frontier",   // logical key, not the raw provider model name
+  "desk":       "surveillance",           // "surveillance" | "rnd"
+  "content":    "recruited @layer-spec (layering)",
+  "reasoning":  null,
+  "tool_calls": [],
+  "created_at": "2026-06-18T13:00:00Z"
 }
 ```
 
-Stage progress is carried by `agent_name: "pipeline"` frames whose `content` is a marker string.
-The frontend parses these markers (the case id lives **only** inside `content` — frames carry no
-`case_id` field):
+Stage markers arrive as `agent_name: "pipeline"` frames. The case id lives only inside `content`;
+frames carry no `case_id` field:
 
 ```
 opened case <case_id>
 detector clean -> CLOSED
-suspicious -> UNDER_REVIEW; features={...python repr...}
+suspicious -> UNDER_REVIEW; features={...}
 recruited <handle> (<family>)
 debate complete
 verdict=<PASS|FLAG> rule=<rule_id|None>
@@ -257,76 +347,52 @@ case <case_id> -> <FINAL_STATE>
 
 ---
 
-## 9. Running it live
+## Repository layout
 
-Three moving parts: the browser, the backend, and the outside services it calls. For a quick
-demo you can skip the outside services entirely — mock Band + recorded fixtures look identical to
-a live replay.
-
-```bash
-# 1) Backend — serves :8000
-cd backend
-#   set LLM + Band keys in ../.env for a full live run,
-#   or leave USE_REAL_BAND=false for the keyless demo (MockBand + fixtures)
-make run-backend            # uvicorn ...app:create_app --factory --port 8000
-
-# 2) Frontend — serves :4100
-cd ../frontend
-#   .env.local:
-#     NEXT_PUBLIC_DATA_MODE=live          # or "mock" (default) for no backend
-#     NEXT_PUBLIC_API_BASE=http://localhost:8000
-npm install && npm run dev
+```
+alpha-oversight/
+├── backend/
+│   └── alpha_oversight/
+│       ├── agents/           eight agent roles
+│       ├── audit/            hash-chained ledger, canonical JSON
+│       ├── band/             MockBand, PhoenixBand, BandHandoff, SanitizedBridge
+│       ├── contracts/        Pydantic models: orders, Band envelopes, rules, cases
+│       ├── generators/       labeled scenarios, backtest oracle
+│       ├── memory/           per-case scratchpad and context store
+│       ├── orchestration/    Beat-A choreography, bounded R&D adversary loop
+│       ├── providers.py      env-driven model routing (AI/ML API + Featherless)
+│       ├── reused/           agent loop, gateway, quant helpers
+│       ├── rules/            deterministic engine, per-family math, registry
+│       ├── server/           FastAPI app, SSE stream, demo triggers
+│       └── state/            case state machine, SQLite store
+├── frontend/
+│   ├── app/                  Next.js App Router pages (/, /how-it-works, /desk)
+│   ├── components/           landing, how-it-works, desk panels
+│   └── lib/                  config seam, API client, SSE adapter, zustand store
+├── scripts/
+│   ├── live_e2e.py           Beat A end-to-end verification
+│   ├── live_beat_b.py        Beat B end-to-end verification
+│   ├── probe_models.py       verify all six model seats respond
+│   └── warm_models.py        pre-warm Featherless models before a demo
+├── render.yaml               Render deploy blueprint (backend)
+├── pyproject.toml
+└── requirements.txt
 ```
 
-Then open `http://localhost:4100`, go to the **Live Command Center** (`/desk`), trigger a beat
-from the controls (`/demo/beat-a` or `/demo/beat-b`), and watch the topology, timeline, dossiers,
-and audit update live.
-
-**Runtime layout:** Browser (Command Center) → Next.js `:4100` → REST + live SSE → FastAPI
-`:8000` → Band (mock or real) + model providers (AI/ML API · Featherless).
-
 ---
 
-## 10. The frontend (Command Center)
+## Deployment
 
-A Next.js 16 (App Router) / React 19 / Tailwind v4 site cloning the AlphaLedger visual identity,
-themed for adversarial surveillance:
+Frontend and backend are decoupled by `NEXT_PUBLIC_DATA_MODE`.
 
-- **`/`** — the landing story (pinned hero, system-fact figures, feature carousel, the Band
-  nonagon, the hash-chain staircase, FAQ, CTA).
-- **`/how-it-works`** — a scroll-story: the pipeline end-to-end, the two desks, the agent roster,
-  "The Evasion" beat-by-beat, the four detectors, the deterministic close.
-- **`/desk`** — the **Live Command Center**: a scroll-story (server surface, the data-flow scrub,
-  interactive high-impact demos — tamper test, Band envelope, co-evolution ladder) ending in the
-  **real, functional trace viewer** that runs Beat B against the backend (or fixtures in mock
-  mode).
+**Frontend only (default / public link).** Deploy `frontend/` to Vercel with no env vars. The
+demo runs on bundled fixtures — instant, no API keys, no cold-start wait.
 
-The data seam (`frontend/lib/`): `config.ts` (the mock/live flag), `api/` (REST client +
-TanStack Query), `eventsource/` (the SSE adapter + marker parser), `desk/` (the `useDeskModel`
-fold that turns raw events into one tidy shape every panel reads), `fixtures/` (the bundled
-recorded beats). Live events feed a zustand `traceStore`; a single fold derives the topology,
-timeline, dossiers, verdict, and case state; REST data (rules, stats, audit) is cached separately
-and refetched when a meaningful marker (verdict, escalation, codify) comes down the stream.
+**Full live stack.** The backend needs a long-lived host — not a serverless platform — because
+`/stream` is a persistent SSE connection. Deploy to Render using the `render.yaml` blueprint in
+the repo root. Set the LLM key env vars in the Render dashboard, then point the Vercel frontend
+at it: `NEXT_PUBLIC_DATA_MODE=live` and `NEXT_PUBLIC_API_BASE=https://<backend>.onrender.com`.
 
----
-
-## 11. Accuracy notes (frontend ↔ backend ↔ spec)
-
-The frontend's contract was audited against the live backend code. A few things to keep straight:
-
-- **Band kinds are lowercase on the wire** (`handoff`, `evidence`, `verdict`, `escalation`,
-  `rule_codified`). Uppercase forms (`HANDOFF`, …) are display labels only.
-- **SSE frames carry no `case_id` field** — the case id is parsed from the `opened case <id>` and
-  `case <id> -> <state>` markers in `content`.
-- **`direction`** on an audit leaf is `"sent"` or `"recv"` (not `"received"`).
-- **`model_id` on the stream is a logical key** (`open-triage`, `prosecution-frontier`,
-  `escalation-frontier`, `defense-open`), not the raw provider model name. The UI maps it to a
-  tier badge (anything containing `frontier` → frontier, else open).
-- Never fabricate marketing stats (alert counts, false-positive %, analyst-hours, latency SLAs).
-  The only system-true numbers are structural: **8 agents + 1 rule engine, 4 seed rules, 5 Band
-  kinds, 5 case states, 100% deterministic verdicts.**
-
----
-
-*This README was generated from the project's own backend and frontend source, so the names,
-flows, and contracts above match the code.*
+CORS already allows any `*.vercel.app` origin. For a custom domain, add it to `ALLOWED_ORIGINS`
+(comma-separated) in the backend environment. The Render free tier suspends after inactivity,
+giving a ~50s cold start on the first request.
