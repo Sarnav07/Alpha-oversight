@@ -26,6 +26,17 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
 
+
+def _strip_fences(text: str) -> str:
+    """Strip markdown code fences some models wrap JSON in (e.g. ```json ... ```)."""
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[-1]  # drop opening fence line
+        if text.endswith("```"):
+            text = text[: text.rfind("```")]
+    return text.strip()
+
+
 # Transient API failures worth retrying with backoff (vs. a permanent 400/auth
 # error, which we let propagate untouched). RateLimitError is the important one:
 # Featherless caps model-SWITCHING at 4/minute on the $25 plan and the courtroom
@@ -97,7 +108,7 @@ async def _call_with_backoff(
     for attempt in range(retries + 1):
         try:
             if featherless:
-                async with providers.FEATHERLESS_SEMAPHORE:
+                async with providers.featherless_semaphore(spec):
                     return await _call_once(spec, convo, call_kwargs)
             return await _call_once(spec, convo, call_kwargs)
         except _TRANSIENT as e:  # type: ignore[misc]
@@ -146,7 +157,7 @@ async def structured_completion(
         raw_text = await _call_with_backoff(spec, convo, call_kwargs, featherless)
 
         try:
-            return schema.model_validate_json(raw_text)
+            return schema.model_validate_json(_strip_fences(raw_text))
         except ValidationError as err:
             last_err = err
             convo = [*convo, {"role": "assistant", "content": raw_text},

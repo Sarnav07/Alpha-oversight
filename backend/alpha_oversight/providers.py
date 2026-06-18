@@ -29,15 +29,32 @@ PROVIDERS: dict[str, dict] = {
         "api_base": "https://api.aimlapi.com/v2",
         "key_env": "AIML_API_KEY",
     },
+    "aimlapi2": {
+        "prefix": "aiml",
+        "api_base": "https://api.aimlapi.com/v2",
+        "key_env": "AIML_API_KEY_2",
+    },
     "featherless": {
         "prefix": "featherless_ai",
         "api_base": None,
         "key_env": "FEATHERLESS_AI_API_KEY",
     },
+    "featherless2": {
+        "prefix": "featherless_ai",
+        "api_base": None,
+        "key_env": "FEATHERLESS_AI_API_KEY_2",
+    },
+    "featherless3": {
+        "prefix": "featherless_ai",
+        "api_base": None,
+        "key_env": "FEATHERLESS_AI_API_KEY_3",
+    },
 }
 
-# Shared by ALL featherless calls process-wide (4-slot concurrency cap).
-FEATHERLESS_SEMAPHORE: asyncio.Semaphore = asyncio.Semaphore(4)
+# One semaphore per Featherless account (each has its own 4-unit cap).
+FEATHERLESS_SEMAPHORE: asyncio.Semaphore = asyncio.Semaphore(4)   # account 1
+FEATHERLESS_SEMAPHORE_2: asyncio.Semaphore = asyncio.Semaphore(4)  # account 2
+FEATHERLESS_SEMAPHORE_3: asyncio.Semaphore = asyncio.Semaphore(4)  # account 3
 
 _FEATHERLESS_PREFIX = PROVIDERS["featherless"]["prefix"]  # "featherless_ai"
 
@@ -45,13 +62,12 @@ _FEATHERLESS_PREFIX = PROVIDERS["featherless"]["prefix"]  # "featherless_ai"
 def _provider_of(spec: ModelSpec) -> str | None:
     """Return the PROVIDERS key whose ``prefix`` matches ``spec.litellm_model``.
 
-    litellm routes on the leading ``<prefix>/...`` segment of the model string,
-    so that is the authoritative signal (not ``spec.provider``, a free-text
-    label). Returns ``None`` for OpenRouter / any unmatched (default) route.
+    For the two Featherless accounts we disambiguate by ``key_env``.
+    Returns ``None`` for OpenRouter / any unmatched (default) route.
     """
     head = spec.litellm_model.split("/", 1)[0]
     for name, cfg in PROVIDERS.items():
-        if head == cfg["prefix"]:
+        if head == cfg["prefix"] and cfg["key_env"] == spec.key_env:
             return name
     return None
 
@@ -74,8 +90,17 @@ def resolve_call_kwargs(spec: ModelSpec) -> dict:
 
 
 def is_featherless(spec: ModelSpec) -> bool:
-    """True iff ``spec`` routes to Featherless (its calls must take a semaphore slot)."""
+    """True iff ``spec`` routes to either Featherless account."""
     return spec.litellm_model.split("/", 1)[0] == _FEATHERLESS_PREFIX
+
+
+def featherless_semaphore(spec: ModelSpec) -> asyncio.Semaphore:
+    """Return the semaphore for the Featherless account this spec uses."""
+    if spec.key_env == PROVIDERS["featherless3"]["key_env"]:
+        return FEATHERLESS_SEMAPHORE_3
+    if spec.key_env == PROVIDERS["featherless2"]["key_env"]:
+        return FEATHERLESS_SEMAPHORE_2
+    return FEATHERLESS_SEMAPHORE
 
 
 def register_models() -> None:
@@ -99,25 +124,36 @@ def register_models() -> None:
     # case stays within Featherless's $25-plan cap of 4 model-switches/minute. Each
     # per-role open key falls back to ``featherless_open_model`` when unset.
     _open = s.featherless_open_model
+    # Featherless account routing — each account is an independent 4-unit pool:
+    #   acct 1 (key1): triage ×3 — fast Qwen MoE, never contends
+    #   acct 2 (key2): prosecution + defense — debate pair isolated
+    #   acct 3 (key3): adjudicator + escalation — post-debate, never overlaps acct 2
+    # Falls back to key1 for any unset key (single-account safe mode).
+    _key1 = "FEATHERLESS_AI_API_KEY"
+    _key2 = "FEATHERLESS_AI_API_KEY_2" if s.featherless_ai_api_key_2 else _key1
+    _key3 = "FEATHERLESS_AI_API_KEY_3" if s.featherless_ai_api_key_3 else _key1
+    _aiml1 = "AIML_API_KEY"
+    _aiml2 = "AIML_API_KEY_2" if s.aiml_api_key_2 else _aiml1
     specs = [
-        # ── AIML (paid frontier) ──
-        ("adversary-frontier", s.adversary_model, "aimlapi", "aiml", aiml_base),
-        # Kept registered for back-compat / an optional paid flip of a seat via env.
-        ("prosecution-frontier", s.aiml_frontier_model, "aimlapi", "aiml", aiml_base),
+        # ── AIML account 1 — adversary (R&D, Anthropic family) ──
+        ("adversary-frontier", s.adversary_model, "aimlapi", "aiml", aiml_base, _aiml1),
+        # ── AIML account 2 (or 1 fallback) — frontier back-compat keys ──
+        ("prosecution-frontier", s.aiml_frontier_model, "aimlapi", "aiml", aiml_base, _aiml2),
         ("escalation-frontier", s.aiml_frontier_model_alt or s.aiml_frontier_model,
-         "aimlapi", "aiml", aiml_base),
-        ("aiml-free", s.aiml_free_model, "aimlapi", "aiml", aiml_base),
-        # ── Featherless (open, flat-rate) — one model family per critical seat ──
-        ("open-triage", _open, "featherless", "featherless_ai", None),
-        ("prosecution-open", s.featherless_prosecution_model or _open, "featherless", "featherless_ai", None),
-        ("defense-open", s.featherless_defense_model or _open, "featherless", "featherless_ai", None),
-        ("adjudicator-open", s.featherless_adjudicator_model or _open, "featherless", "featherless_ai", None),
-        ("escalation-open", s.featherless_escalation_model or _open, "featherless", "featherless_ai", None),
+         "aimlapi", "aiml", aiml_base, _aiml2),
+        ("aiml-free", s.aiml_free_model, "aimlapi", "aiml", aiml_base, _aiml1),
+        # ── Featherless acct 1 — triage (fast Qwen MoE) ──
+        ("open-triage", _open, "featherless", "featherless_ai", None, _key1),
+        # ── Featherless acct 2 — prosecution + defense (debate pair) ──
+        ("prosecution-open", s.featherless_prosecution_model or _open, "featherless", "featherless_ai", None, _key2),
+        ("defense-open", s.featherless_defense_model or _open, "featherless", "featherless_ai", None, _key2),
+        # ── Featherless acct 3 — adjudicator + escalation (post-debate) ──
+        ("adjudicator-open", s.featherless_adjudicator_model or _open, "featherless", "featherless_ai", None, _key3),
+        ("escalation-open", s.featherless_escalation_model or _open, "featherless", "featherless_ai", None, _key3),
     ]
-    for key, raw_id, provider, prefix, api_base in specs:
+    for key, raw_id, provider, prefix, api_base, key_env in specs:
         if not raw_id:
             continue  # not configured this round — skip (do NOT hardcode unverified ids)
-        key_env = PROVIDERS[provider]["key_env"]
         MODELS[key] = ModelSpec(
             key=key,
             display_name=key,

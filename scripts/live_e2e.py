@@ -41,8 +41,8 @@ async def main() -> int:
 
     register_models()
     print("Registered real models:")
-    for k in ("open-triage", "defense-open", "prosecution-frontier",
-              "escalation-frontier", "aiml-free"):
+    for k in ("open-triage", "prosecution-open", "defense-open",
+              "adjudicator-open", "escalation-open", "adversary-frontier"):
         spec = gw.MODELS.get(k)
         print(f"   {k:22} -> {spec.litellm_model if spec else '(missing)'}")
 

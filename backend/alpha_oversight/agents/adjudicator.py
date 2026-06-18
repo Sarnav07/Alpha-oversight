@@ -24,6 +24,8 @@ evaluate:
   pattern trip — broadening a rule to catch a slower pattern is a HUMAN
   codification decision, not yours. When the timing is contested or ambiguous,
   resolve conservatively (narrower / 0), giving the trader the benefit of the doubt.
+  CRITICAL: if Prosecution argues a window wider than 200ms, default to window_ms=0
+  unless Defense concedes the burst is tight. A wide window is not your call to make.
 - bona_fide_ids: the order ids you judge genuinely bona-fide,
 - intent: a one-line characterization of the most defensible intent.
 

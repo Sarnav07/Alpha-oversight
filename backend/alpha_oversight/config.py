@@ -27,6 +27,7 @@ def _bool(name: str, default: bool = False) -> bool:
 class Settings(BaseModel):
     # ── AI/ML API (frontier) ──
     aiml_api_key: str = ""
+    aiml_api_key_2: str = ""                    # second AIML account
     aiml_api_base: str = "https://api.aimlapi.com/v2"
     aiml_frontier_model: str = ""
     aiml_frontier_model_alt: str = ""
@@ -39,6 +40,8 @@ class Settings(BaseModel):
     #    can run a DISTINCT family (bias isolation). Each falls back to
     #    ``featherless_open_model`` in providers.register_models if left blank. ──
     featherless_ai_api_key: str = ""
+    featherless_ai_api_key_2: str = ""          # second account — prosecution + defense
+    featherless_ai_api_key_3: str = ""          # third account — adjudicator + escalation
     featherless_open_model: str = ""          # anomaly + investigator + specialist (fast triage MoE)
     featherless_prosecution_model: str = ""   # prosecution (debate: argue manipulation)
     featherless_defense_model: str = ""       # defense (debate: argue exoneration)
@@ -74,12 +77,15 @@ class Settings(BaseModel):
         """Build Settings from the current environment (§3 schema)."""
         return cls(
             aiml_api_key=os.environ.get("AIML_API_KEY", ""),
+            aiml_api_key_2=os.environ.get("AIML_API_KEY_2", ""),
             aiml_api_base=os.environ.get("AIML_API_BASE", "https://api.aimlapi.com/v2"),
             aiml_frontier_model=os.environ.get("AIML_FRONTIER_MODEL", ""),
             aiml_frontier_model_alt=os.environ.get("AIML_FRONTIER_MODEL_ALT", ""),
             aiml_free_model=os.environ.get("AIML_FREE_MODEL", ""),
             adversary_model=os.environ.get("ADVERSARY_MODEL", ""),
             featherless_ai_api_key=os.environ.get("FEATHERLESS_AI_API_KEY", ""),
+            featherless_ai_api_key_2=os.environ.get("FEATHERLESS_AI_API_KEY_2", ""),
+            featherless_ai_api_key_3=os.environ.get("FEATHERLESS_AI_API_KEY_3", ""),
             featherless_open_model=os.environ.get("FEATHERLESS_OPEN_MODEL", ""),
             featherless_prosecution_model=os.environ.get("FEATHERLESS_PROSECUTION_MODEL", ""),
             featherless_defense_model=os.environ.get("FEATHERLESS_DEFENSE_MODEL", ""),

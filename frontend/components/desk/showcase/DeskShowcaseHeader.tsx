@@ -11,18 +11,18 @@ import Logomark from "@/components/landing/Logomark";
  * font-sans links. The pinned `top-[72px]` stages tuck below it.
  *
  * TOKEN GOTCHA (the invisible-navbar bug): this bar is `sticky` and is NOT
- * nested in a `[data-section="light"]` scope, so `var(--text-*)` would resolve to
- * the ROOT (dark) palette and render near-white on the light bar. So it uses
- * EXPLICIT HEX (ink on light), mirroring HiwHeader / the landing nav identity.
+ * nested in a `[data-section]` scope, so `var(--text-*)` would resolve to the
+ * ROOT palette unpredictably. So it uses EXPLICIT HEX. The /desk hero is now
+ * DARK, so the bar is obsidian with frost text + a light CTA pill to match.
  *
  * Auto-hides once the live Command Center (#live-desk) scrolls into the top of
  * the viewport, so the dashboard gets the full screen height. Slides back in on
  * scroll-up. Reduced-motion toggles instantly (no slide).
  */
-const INK = "#14161c";
-const MUTED = "#646464";
-const BORDER = "#ececec";
-const BG = "#fefefe";
+const INK = "#fefefe";
+const MUTED = "#9a9a9a";
+const BORDER = "#1c1d1f";
+const BG = "#020202";
 
 export function DeskShowcaseHeader() {
   const reduce = useReducedMotion() ?? false;
@@ -66,12 +66,12 @@ export function DeskShowcaseHeader() {
         style={{ color: INK }}
       >
         <Logomark size={22} className="transition-opacity duration-300 group-hover:opacity-80" />
-        <span className="font-sans text-[13px] font-semibold uppercase tracking-[0.16em]">Alpha &amp; Oversight</span>
+        <span className="font-sans text-[13px] font-bold uppercase tracking-[0.16em]">Alpha &amp; Oversight</span>
       </Link>
       <nav className="flex items-center gap-6">
         <Link
           href="/how-it-works"
-          className="font-sans text-[12.5px] tracking-wide transition-colors"
+          className="font-sans text-[12.5px] font-semibold tracking-wide transition-colors"
           style={{ color: MUTED }}
           onMouseEnter={(e) => (e.currentTarget.style.color = INK)}
           onMouseLeave={(e) => (e.currentTarget.style.color = MUTED)}
@@ -80,8 +80,8 @@ export function DeskShowcaseHeader() {
         </Link>
         <a
           href="#live-desk"
-          className="rounded-[var(--r-pill)] px-4 py-2 font-sans text-[12px] font-medium tracking-wide"
-          style={{ backgroundColor: "#020202", color: "#fefefe" }}
+          className="rounded-[var(--r-pill)] px-4 py-2 font-sans text-[12px] font-bold tracking-wide"
+          style={{ backgroundColor: "#fefefe", color: "#020202" }}
         >
           Live demo
         </a>

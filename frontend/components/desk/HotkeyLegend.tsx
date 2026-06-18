@@ -47,8 +47,8 @@ export default function HotkeyLegend() {
       aria-label="Keyboard shortcuts"
     >
       <span
-        className="font-mono uppercase tracking-wider"
-        style={{ fontSize: 9, color: "var(--text-faint)" }}
+        className="font-mono font-semibold uppercase tracking-wider"
+        style={{ fontSize: 9, color: "var(--text-muted)" }}
       >
         keys
       </span>
@@ -56,8 +56,8 @@ export default function HotkeyLegend() {
         <span key={k.key} className="inline-flex items-center gap-1.5">
           <Key k={k.key} />
           <span
-            className="font-mono"
-            style={{ fontSize: 10, color: "var(--text-faint)" }}
+            className="font-mono font-semibold"
+            style={{ fontSize: 10, color: "var(--text-muted)" }}
           >
             {k.label}
           </span>

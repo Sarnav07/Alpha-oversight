@@ -14,17 +14,26 @@ load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env
 import litellm
 litellm.drop_params = True  # silently drop unsupported params (gpt-5 temperature, etc.)
 
-AIML = os.environ["AIML_API_KEY"]
-FEAT = os.environ["FEATHERLESS_AI_API_KEY"]
+AIML  = os.environ["AIML_API_KEY"]
+FEAT1 = os.environ["FEATHERLESS_AI_API_KEY"]
+FEAT2 = os.environ.get("FEATHERLESS_AI_API_KEY_2", FEAT1)
+FEAT3 = os.environ.get("FEATHERLESS_AI_API_KEY_3", FEAT1)
 AIML_BASE = "https://api.aimlapi.com/v1"
 
-# (label, litellm_model, api_base, api_key)
+# (label, litellm_model, api_base, api_key) — driven by .env, matches report lineup
+_adv  = os.environ.get("ADVERSARY_MODEL", "claude-opus-4-8")
+_pros = os.environ.get("FEATHERLESS_PROSECUTION_MODEL", "")
+_def  = os.environ.get("FEATHERLESS_DEFENSE_MODEL", "")
+_adj  = os.environ.get("FEATHERLESS_ADJUDICATOR_MODEL", "")
+_esc  = os.environ.get("FEATHERLESS_ESCALATION_MODEL", "")
+_tri  = os.environ.get("FEATHERLESS_OPEN_MODEL", "")
 TARGETS = [
-    ("PROSECUTION  claude-sonnet-4-6", "aiml/claude-sonnet-4-6", AIML_BASE, AIML),
-    ("ESCALATION   gpt-5-mini",        "aiml/gpt-5-mini",        AIML_BASE, AIML),
-    ("DEFENSE      Qwen3.6-35B-A3B",   "featherless_ai/Qwen/Qwen3.6-35B-A3B", None, FEAT),
-    ("PLUMBING-A   Qwen3-Next-80B-A3B","featherless_ai/Qwen/Qwen3-Next-80B-A3B-Instruct", None, FEAT),
-    ("PLUMBING-B   Qwen3-30B-A3B-2507","featherless_ai/Qwen/Qwen3-30B-A3B-Instruct-2507", None, FEAT),
+    (f"ADVERSARY    {_adv}",          f"aiml/{_adv}",           AIML_BASE, AIML),
+    (f"PROSECUTION  {_pros.split('/')[-1]}", f"featherless_ai/{_pros}", None, FEAT2),
+    (f"DEFENSE      {_def.split('/')[-1]}",  f"featherless_ai/{_def}",  None, FEAT2),
+    (f"ADJUDICATOR  {_adj.split('/')[-1]}", f"featherless_ai/{_adj}",  None, FEAT3),
+    (f"ESCALATION   {_esc.split('/')[-1]}", f"featherless_ai/{_esc}",  None, FEAT3),
+    (f"TRIAGE       {_tri.split('/')[-1]}", f"featherless_ai/{_tri}",  None, FEAT1),
 ]
 
 PROMPT = [
@@ -81,8 +90,7 @@ async def main():
     print("\n=== gpt-5-mini with reasoning_effort=minimal (faster escalation?) ===")
     await one("ESCALATION   gpt-5-mini/min", "aiml/gpt-5-mini", AIML_BASE, AIML, effort="minimal")
     print("\n=== Featherless tool-calling passthrough (Investigator) ===")
-    await tool_check("featherless_ai/Qwen/Qwen3-Next-80B-A3B-Instruct", FEAT)
-    await tool_check("featherless_ai/Qwen/Qwen3-30B-A3B-Instruct-2507", FEAT)
+    await tool_check(f"featherless_ai/{_tri}", FEAT1)
 
 
 if __name__ == "__main__":

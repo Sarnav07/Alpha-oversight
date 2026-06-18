@@ -8,7 +8,7 @@
  */
 
 import { motion } from "framer-motion";
-import { DiagramFrame, Node, EngineNode, Edge, Chip, Tag, EASE } from "./kit";
+import { DiagramFrame, Node, EngineNode, Edge, Chip, Tag, TracePath, EASE } from "./kit";
 
 function DeskFrame({
   x,
@@ -199,8 +199,19 @@ export function ArchitectureDiagram({
           <Edge from={{ x: 984, y: 270 }} to={{ x: 808, y: 384 }} mode="mid-h" tone="neutral" dashed delay={1.2} show={show} reduce={reduce} />
           <Tag x={900} y={344} text="confirm → codify 4→5" tone="neutral" anchor="middle" delay={1.26} show={show} reduce={reduce} />
 
-          {/* reverse rulebook (read-only) */}
-          <Edge from={{ x: 556, y: 400 }} to={{ x: 308, y: 372 }} mode="mid-v" tone="neutral" dashed label="active rulebook → R&D (read-only)" delay={1.25} show={show} reduce={reduce} />
+          {/* reverse rulebook (read-only) — routed down the chip-gap and along
+              the BOTTOM gutter (matches report Fig 1), clear of the
+              SanitizedBridge box + the HANDOFF label that it used to overlap. */}
+          <TracePath
+            d="M 682 420 H 634 V 528 H 185 V 394"
+            tone="neutral"
+            dashed
+            arrow
+            delay={1.25}
+            show={show}
+            reduce={reduce}
+          />
+          <Tag x={410} y={521} text="active rulebook → R&D (read-only)" tone="neutral" anchor="middle" delay={1.35} show={show} reduce={reduce} />
         </>
       )}
     </DiagramFrame>

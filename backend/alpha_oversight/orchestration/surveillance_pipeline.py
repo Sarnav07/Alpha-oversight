@@ -279,6 +279,11 @@ async def run_surveillance(
     resolved: ResolvedInputs = await adjudicator.run(
         briefs.adjudication_brief(pro_dossier, def_dossier), ResolvedInputs
     )
+    # Invariant: the adjudicator must never widen a window beyond the seed rules'
+    # own threshold (100ms). Widening is a HUMAN codification decision (Beat-B).
+    # If the LLM returns a wide window, clamp it to 0 (defer to standing rule).
+    if resolved.window_ms and resolved.window_ms > 200:
+        resolved = resolved.model_copy(update={"window_ms": 0})
 
     # ── 7. deterministic rule engine renders the authoritative verdict ───────
     verdict = engine.evaluate(events, resolved, registry.active())

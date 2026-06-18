@@ -37,7 +37,7 @@ async def _acompletion(model_spec: ModelSpec, **kwargs):
     # Tolerate callers that prebuild `model` in kwargs (e.g. agent_loop); else inject from the spec.
     model = call_kwargs.pop("model", None) or model_spec.litellm_model
     if providers.is_featherless(model_spec):
-        async with providers.FEATHERLESS_SEMAPHORE:
+        async with providers.featherless_semaphore(model_spec):
             return await litellm.acompletion(model=model, **call_kwargs)
     return await litellm.acompletion(model=model, **call_kwargs)
 

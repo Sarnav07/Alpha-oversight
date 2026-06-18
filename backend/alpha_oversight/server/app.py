@@ -101,11 +101,24 @@ def create_app() -> FastAPI:
         yield
 
     app = FastAPI(title="Alpha & Oversight", lifespan=lifespan)
-    # CORS — the Next.js frontend (dev on :4100, plus any local port) talks to this
-    # API directly via fetch + EventSource. Allow local origins; no credentials needed.
+    # CORS — the Next.js frontend talks to this API directly via fetch +
+    # EventSource (no cookies/credentials). Allow:
+    #   • any localhost / 127.0.0.1 port (local dev), and
+    #   • any *.vercel.app deployment (the hosted frontend), and
+    #   • explicit origins from ALLOWED_ORIGINS (comma-separated) for a custom
+    #     domain, e.g. ALLOWED_ORIGINS="https://demo.alpha-oversight.com".
+    import os
+
+    extra_origins = [
+        o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()
+    ]
     app.add_middleware(
         CORSMiddleware,
-        allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
+        allow_origins=extra_origins,
+        allow_origin_regex=(
+            r"https://([a-z0-9-]+\.)*vercel\.app|"
+            r"http://(localhost|127\.0\.0\.1):\d+"
+        ),
         allow_methods=["*"],
         allow_headers=["*"],
     )

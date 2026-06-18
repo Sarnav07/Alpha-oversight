@@ -169,6 +169,7 @@ function PipelineNodeImpl({ data }: NodeProps<PipelineFlowNode>) {
               flexShrink: 0,
               fontFamily: "var(--font-mono)",
               fontSize: 9,
+              fontWeight: 600,
               letterSpacing: "0.06em",
               textTransform: "uppercase",
               color: "var(--text-faint)",
@@ -195,6 +196,7 @@ function PipelineNodeImpl({ data }: NodeProps<PipelineFlowNode>) {
           gap: 6,
           fontFamily: "var(--font-mono)",
           fontSize: 9.5,
+          fontWeight: 600,
           letterSpacing: "0.05em",
           textTransform: "uppercase",
         }}

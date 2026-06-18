@@ -39,8 +39,8 @@
   /* type colors */
   --text-primary: #fefefe;
   --text-body: #c7ccd1;
-  --text-muted: #888888;
-  --text-faint: #5f5f5f;
+  --text-muted: #a6a6a6;
+  --text-faint: #858585;
   --text-on-light: #14161c;
 
   /* semantic accents - the ONLY chroma */
@@ -104,11 +104,20 @@
   --bg-card-2: #16181c;
   --text-primary: #fefefe;
   --text-body: #c7ccd1;
-  --text-muted: #888888;
-  --text-faint: #5f5f5f;
+  --text-muted: #a6a6a6;
+  --text-faint: #858585;
   --border-default: #3a3a3a;
   --border-subtle: #2a2a2a;
   --hairline: #1c1d1f;
+  --bg-inset: #0a0b0d;
+  --bg-nav: #060606;
+  --bg-section-alt: #070707;
+  --bg-card-hover: #1b1e23;
+  --border-strong: #4a4a4a;
+  --band-blue-glow: #3b82f655;
+  --status-idle: #4a4f57;
+  --ambient-glow: rgba(255, 255, 255, 0.06);
+  --ambient-glow-2: rgba(255, 255, 255, 0.045);
 }
 
 /* expose a core token subset to Tailwind utilities (bg-obsidian, text-frost, ...) */
@@ -240,6 +249,7 @@ body {
 }
 [data-surface="ops"] .font-display {
   font-family: var(--font-display);
+  font-weight: 700;
   letter-spacing: -0.012em;
 }
 

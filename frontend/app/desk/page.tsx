@@ -29,9 +29,9 @@ export default function DeskPage() {
     <div className="min-h-screen" style={{ backgroundColor: "var(--obsidian)", color: "var(--frost)" }}>
       <DeskShowcaseHeader />
       <main>
-        {/* White editorial opener — a faint bottom hairline closes the white
-            panel, then it hard-cuts into the dark Command Center below. */}
-        <div data-section="light" style={{ borderBottom: "1px solid var(--border-strong)" }}>
+        {/* Dark Command-Center hero — obsidian backbone, frost text, blue/slate
+            accents, consistent with the live desk below it. */}
+        <div data-section="dark" style={{ borderBottom: "1px solid var(--border-strong)" }}>
           <DeskShowcaseHero />
         </div>
         <LiveCommandCenter />

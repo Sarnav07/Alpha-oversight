@@ -18,7 +18,7 @@ function HeroHeading({ reduce }: { reduce: boolean }) {
     return (
       <h1 className="mx-auto mt-6 max-w-4xl font-sans">
         {lines.map((l) => (
-          <span key={l.t} className="block text-[clamp(34px,6vw,68px)] font-light leading-[1.04] tracking-[-0.02em]" style={{ color: l.color }}>
+          <span key={l.t} className="block text-[clamp(34px,6vw,68px)] font-bold leading-[1.04] tracking-[-0.02em]" style={{ color: l.color }}>
             {l.t}
           </span>
         ))}
@@ -36,7 +36,7 @@ function HeroHeading({ reduce }: { reduce: boolean }) {
       {lines.map((l) => (
         <span key={l.t} className="block overflow-hidden">
           <motion.span
-            className="block text-[clamp(34px,6vw,68px)] font-light leading-[1.04] tracking-[-0.02em]"
+            className="block text-[clamp(34px,6vw,68px)] font-bold leading-[1.04] tracking-[-0.02em]"
             style={{ color: l.color }}
             variants={{ hidden: { y: "115%" }, show: { y: "0%", transition: { duration: 0.85, ease: EASE } } }}
           >
@@ -126,7 +126,7 @@ export function DeskShowcaseHero() {
             </span>
             <h2
               className="mx-auto mt-4 max-w-2xl font-sans"
-              style={{ fontSize: "clamp(24px,3.4vw,38px)", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1.1 }}
+              style={{ fontSize: "clamp(24px,3.4vw,38px)", fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1.1 }}
             >
               <span style={{ color: "var(--text-primary)" }}>The real thing.</span>{" "}
               <span style={{ color: "var(--text-faint)" }}>A novel evasion is already waiting on your Confirm.</span>

@@ -1,112 +1,81 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
 import { useIsMobile } from "./useIsMobile";
 
 /**
  * PoweredBySection - the "Powered by…" scroll-pinned reveal (AlphaLedger clone,
- * themed for A&O). One PINNED dark stage drives a scrubbed GSAP timeline:
+ * themed for A&O). A tall runway + a CSS `position: sticky` stage drives a
+ * scrubbed framer-motion timeline (the SAME robust pattern as EvasionStory):
  *
  *   start  - the headline sits DEAD-CENTER on obsidian; the board is offscreen-right.
  *   reveal - the headline translates to its LEFT rest position while the compute
- *            board slides in from the right (xPercent 120 → 0, fades up).
- *   labels - four frosted callout cards stagger in over the board.
- *   hold   - the composed state holds, then scrolls on to <UnlockSection/>.
+ *            board slides in from the right (x 120% → 0, fades up).
+ *   hold   - the composed state holds, then scrolls on to <FaqSection/>.
  *
- * Reduced-motion OR mobile (<768px): the pin/scrub is skipped entirely and a
- * static stacked layout (headline, then the panel with its rows shown) renders
- * instead - the same gate HeroScroll uses.
+ * WHY NOT GSAP PIN: the previous GSAP `ScrollTrigger` pin was built via an async
+ * `import()`, so its start position was measured against a STALE document height
+ * (before the earlier pinned sections inserted their pin-spacers). The pin fired
+ * at the wrong scroll position and SNAPPED the section back - the headline
+ * appeared to play twice (once scrolling past, once snapped-back with the board).
+ * `position: sticky` has no pin-spacer and no measurement race, so the section
+ * pins exactly where it should and the FAQ section never overlaps.
  *
- * The right column is a "why we're different" panel (DifferencePanel) stating the
- * A&O differentiators. Prop-less, self-contained, default export.
+ * Reduced-motion OR mobile (<768px): the sticky scrub is skipped entirely and a
+ * static stacked layout (headline, then the panel) renders instead.
  */
 export default function PoweredBySection() {
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const [reduced, setReduced] = useState<boolean | null>(null);
+  const runwayRef = useRef<HTMLDivElement | null>(null);
+  const headRef = useRef<HTMLDivElement | null>(null);
+  const reduce = useReducedMotion();
   const isMobile = useIsMobile();
+  const [centerOffset, setCenterOffset] = useState(0);
 
+  // Measure the px offset that visually centers the (left-column) headline over
+  // the whole viewport, so it starts dead-center then settles left. Re-measured
+  // on resize. No GSAP/ScrollTrigger involvement → no stale-height race.
   useLayoutEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-
-    // Reduced motion OR a small viewport: do not build the pinned timeline.
-    if (mq.matches || window.matchMedia("(max-width: 767px)").matches) return;
-
-    // Lazy-load gsap off the landing critical path: dynamically import it (+the
-    // ScrollTrigger plugin) inside the effect, then build the SAME pinned
-    // timeline a tick later - fine for a scroll-triggered animation.
-    let cancelled = false;
-    let ctx: gsap.Context | undefined;
-
-    (async () => {
-      const gsap = (await import("gsap")).default;
-      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
-      gsap.registerPlugin(ScrollTrigger);
-      if (cancelled) return;
-
-      ctx = gsap.context((self) => {
-        const q = self.selector!;
-        const stage = q(".pb-stage")[0] as HTMLElement | undefined;
-        const head = q(".pb-head")[0] as HTMLElement | undefined;
-        const board = q(".pb-board");
-        const labels = q(".pb-label");
-        if (!stage || !head) return; // defensive: never let a selector miss crash render
-
-        // Measure the exact offset that visually centers the (left-column) headline
-        // over the whole viewport, so it starts dead-center then settles left.
-        const r = head.getBoundingClientRect();
-        const centerOffset = window.innerWidth / 2 - (r.left + r.width / 2);
-
-        gsap.set(head, { x: centerOffset });
-        gsap.set(board, { xPercent: 120, opacity: 0 });
-        gsap.set(labels, { opacity: 0, x: 22 });
-
-        const tl = gsap.timeline({
-          defaults: { ease: "none" },
-          scrollTrigger: {
-            trigger: rootRef.current,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: true,
-            // Pin via GSAP (position:fixed pin-spacer), NOT CSS `position:sticky`.
-            // The sticky pin was silently failing here, so the stage scrolled away
-            // while the board slid in - i.e. the panel only appeared as you left
-            // for the next section. GSAP pin (same as HeroScroll/FeaturesCarousel)
-            // holds the stage reliably for the scrub. pinSpacing:false → the 150vh
-            // runway supplies the scroll distance.
-            pin: stage,
-            pinSpacing: false,
-            anticipatePin: 1,
-          },
-        });
-
-        // 0.00-0.50 - headline settles to its left rest position while the
-        // "why we're different" board slides in from the right. The reveal is
-        // spread across half the (now-halved) scroll so it reads as a deliberate
-        // reveal, not a snap-then-stall.
-        tl.to(head, { x: 0, duration: 0.5, ease: "power2.out" }, 0.00);
-        tl.to(board, { xPercent: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.00);
-
-        // 0.35-0.60 - the four callout cards stagger in over the board.
-        tl.to(labels, { opacity: 1, x: 0, duration: 0.25, stagger: 0.05, ease: "none" }, 0.35);
-
-        // 0.65-1.00 - a small settle so the pin releases with a beat (no long
-        // dead hold; the runway was cut 260vh → 150vh to keep this section short).
-        tl.to(board, { xPercent: -2, duration: 0.35 }, 0.65);
-
-        ScrollTrigger.refresh();
-      }, rootRef);
-    })();
-
-    return () => {
-      cancelled = true;
-      ctx?.revert();
+    if (isMobile !== false) return;
+    const measure = () => {
+      const el = headRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      // r.left already reflects the headline's rest (left) position because the
+      // transform is 0 at the top of the runway (t=0 maps to centerOffset, but
+      // we measure with the element un-transformed on the first layout pass).
+      setCenterOffset(window.innerWidth / 2 - (r.left + r.width / 2));
     };
-    // rebuild on the mobile boundary cross (matches the active render path).
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
   }, [isMobile]);
 
+  const { scrollYProgress } = useScroll({
+    target: runwayRef,
+    offset: ["start start", "end end"],
+  });
+  const t = useSpring(scrollYProgress, {
+    stiffness: 110,
+    damping: 28,
+    restDelta: 0.0001,
+  });
+
+  // 0.00→0.50: headline slides from viewport-center to its left rest position;
+  // the board slides in from the right and fades up. 0.50→1.00: holds.
+  const headX = useTransform(t, [0, 0.5], [centerOffset, 0]);
+  const boardX = useTransform(t, [0, 0.5], ["120%", "0%"]);
+  const boardOpacity = useTransform(t, [0, 0.3, 0.5], [0, 0.35, 1]);
+
   // ── Static fallback (reduced-motion OR mobile) ──────────────────────────
-  if (reduced === true || isMobile === true) {
+  if (reduce === true || isMobile === true) {
     return (
       <section className="relative w-full overflow-hidden bg-[var(--obsidian)] px-6 py-24">
         <div className="mx-auto flex max-w-[var(--maxw-content)] flex-col items-start gap-12">
@@ -117,21 +86,23 @@ export default function PoweredBySection() {
     );
   }
 
-  // ── Motion (and pre-measure) render ─────────────────────────────────────
+  // ── Motion render: tall runway + sticky stage (framer scrub) ────────────
   return (
-    <div ref={rootRef} className="relative h-[150vh] bg-[var(--obsidian)]">
-      <div className="pb-stage flex h-screen w-full items-center overflow-hidden bg-[var(--obsidian)]">
+    <section ref={runwayRef} className="relative h-[200vh] bg-[var(--obsidian)]">
+      <div className="sticky top-0 flex h-screen w-full items-center overflow-hidden bg-[var(--obsidian)]">
         <div className="mx-auto grid w-full max-w-[var(--maxw-content)] grid-cols-1 items-center gap-10 px-6 lg:grid-cols-2">
           {/* left - headline (starts viewport-centered via measured x offset) */}
-          <div className="pb-head">
+          <motion.div ref={headRef} style={{ x: headX }}>
             <Headline />
-          </div>
+          </motion.div>
 
-          {/* right - the "why we're different" panel (slides in; rows stagger) */}
-          <DifferencePanel boardClass="pb-board" labelClass="pb-label" />
+          {/* right - the "why we're different" panel (slides in + fades up) */}
+          <motion.div style={{ x: boardX, opacity: boardOpacity }}>
+            <DifferencePanel />
+          </motion.div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
