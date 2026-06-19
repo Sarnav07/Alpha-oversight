@@ -1,0 +1,44 @@
+# Railway deploy config for the Alpha & Oversight backend (FastAPI + SSE).
+#
+# Why Railway (not a serverless platform): /stream is a long-lived Server-Sent-
+# Events connection, and the demo runs the full pipeline synchronously — both
+# need a persistent, adequately-resourced host. Railway gives real RAM and no idle
+# spin-down, so the OOM-recycle that killed the run on Render's free tier does not
+# happen. (Featherless model cold-loads are a separate, provider-side concern —
+# see the warm-up note below.)
+#
+# Build: Nixpacks auto-detects Python from requirements.txt and installs it into
+# a venv. We do NOT pip-install the package; instead the start command sets
+# PYTHONPATH=backend so `alpha_oversight` (which lives under backend/, per
+# pyproject's package-dir) imports directly. Python is pinned via .python-version.
+#
+# Env vars (set in the Railway dashboard → Variables; there is no .env on Railway):
+#   FEATHERLESS_AI_API_KEY    required — triage seat (anomaly/investigator/specialist).
+#   FEATHERLESS_AI_API_KEY_2  prosecution + defense; falls back to key 1 if unset.
+#   FEATHERLESS_AI_API_KEY_3  adjudicator + escalation; falls back to key 1 if unset.
+#   FEATHERLESS_OPEN_MODEL          required — Qwen/Qwen3-Next-80B-A3B-Instruct (triage).
+#                                   Every *_MODEL below falls back to this if left blank.
+#   FEATHERLESS_PROSECUTION_MODEL   moonshotai/Kimi-K2.7-Code
+#   FEATHERLESS_DEFENSE_MODEL       mistralai/Mistral-Small-3.2-24B-Instruct-2506
+#   FEATHERLESS_ADJUDICATOR_MODEL   Qwen/Qwen3-Next-80B-A3B-Instruct  (fast MoE; replaced GLM-5.2)
+#   FEATHERLESS_ESCALATION_MODEL    Qwen/Qwen3.5-397B-A17B
+#   AIML_API_KEY + ADVERSARY_MODEL  claude-opus-4-8 — only POST /demo/rnd needs these;
+#                                   Beat A / Beat B do not call the adversary.
+#   USE_REAL_BAND             false (default) — keyless MockBand spine.
+#
+# NOTE: Featherless lazy-loads models on first call and evicts after ~5 min idle,
+# so the FIRST request after a deploy/idle cold-loads every seat (slow). Warm them
+# before a demo by running scripts/warm_models.py locally against the SAME
+# FEATHERLESS_AI_API_KEY (Featherless warmth is server-side, per key), then run the
+# beats within ~5 minutes. Model ids are NOT baked into code — they must be set as
+# Railway variables above (unset FEATHERLESS_OPEN_MODEL means seats fail to register).
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "PYTHONPATH=backend uvicorn alpha_oversight.server.app:create_app --factory --host 0.0.0.0 --port $PORT"
+healthcheckPath = "/stats"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
