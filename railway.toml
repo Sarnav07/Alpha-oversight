@@ -1,5 +1,9 @@
 # Railway deploy config for the Alpha & Oversight backend (FastAPI + SSE).
 #
+# This deploy runs the FULL REAL STACK: real Band (PhoenixBand identities posting
+# to a live shared room) and the real LLM seats. USE_REAL_BAND=true is baked into
+# the start command below so it always takes effect regardless of the dashboard.
+#
 # Why Railway (not a serverless platform): /stream is a long-lived Server-Sent-
 # Events connection, and the demo runs the full pipeline synchronously — both
 # need a persistent, adequately-resourced host. Railway gives real RAM and no idle
@@ -12,7 +16,27 @@
 # PYTHONPATH=backend so `alpha_oversight` (which lives under backend/, per
 # pyproject's package-dir) imports directly. Python is pinned via .python-version.
 #
-# Env vars (set in the Railway dashboard → Variables; there is no .env on Railway):
+# ─────────────────────────────────────────────────────────────────────────────
+# Variables — set ALL of these in the Railway dashboard → Variables.
+# There is no .env on Railway. SECRETS (API keys) MUST be set in the dashboard;
+# do NOT commit them into this file (it is in version control).
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Band (REAL — required because USE_REAL_BAND=true) ──────────────────────────
+#   BAND_SURV_API_KEY     required — surveillance identity key (band_a_...).
+#   BAND_SURV_AGENT_ID    required — surveillance Band agent UUID.
+#   BAND_RND_API_KEY      required — R&D identity key (band_a_...).
+#   BAND_RND_AGENT_ID     required — R&D Band agent UUID.
+#   BAND_SHARED_ROOM      required — the ONE room both desks + human share
+#                                    (falls back to BAND_RND_ROOM if unset).
+#   BAND_RND_ROOM         the R&D room UUID (also the shared-room fallback).
+#   BAND_SURV_ROOM        the surveillance room UUID.
+#   BAND_HUMAN_PEER       required — human reviewer's Band peer UUID (escalation
+#                                    @mentions + default mention target).
+#   BAND_API_BASE         optional — defaults to https://app.band.ai/api/v1.
+#   BAND_WS_URL           optional — defaults to wss://app.band.ai/api/v1/socket/websocket.
+#
+# Featherless (open seats — the live Beat A/B mix) ──────────────────────────
 #   FEATHERLESS_AI_API_KEY    required — triage seat (anomaly/investigator/specialist).
 #   FEATHERLESS_AI_API_KEY_2  prosecution + defense; falls back to key 1 if unset.
 #   FEATHERLESS_AI_API_KEY_3  adjudicator + escalation; falls back to key 1 if unset.
@@ -22,9 +46,14 @@
 #   FEATHERLESS_DEFENSE_MODEL       mistralai/Mistral-Small-3.2-24B-Instruct-2506
 #   FEATHERLESS_ADJUDICATOR_MODEL   Qwen/Qwen3-Next-80B-A3B-Instruct  (fast MoE; replaced GLM-5.2)
 #   FEATHERLESS_ESCALATION_MODEL    Qwen/Qwen3.5-397B-A17B
-#   AIML_API_KEY + ADVERSARY_MODEL  claude-opus-4-8 — only POST /demo/rnd needs these;
-#                                   Beat A / Beat B do not call the adversary.
-#   USE_REAL_BAND             false (default) — keyless MockBand spine.
+#
+# AI/ML API (adversary + frontier back-compat seats) ────────────────────────
+#   AIML_API_KEY + ADVERSARY_MODEL  claude-opus-4-8 — POST /demo/rnd needs these.
+#   AIML_API_KEY_2            second AIML account — backs the prosecution-frontier
+#                             and escalation-frontier seats; falls back to AIML_API_KEY.
+#   AIML_FRONTIER_MODEL       set to register the prosecution-frontier seat (blank → skipped).
+#   AIML_FRONTIER_MODEL_ALT   set to register the escalation-frontier seat (blank → skipped).
+#   AIML_API_BASE             optional — defaults to https://api.aimlapi.com/v1.
 #
 # NOTE: Featherless lazy-loads models on first call and evicts after ~5 min idle,
 # so the FIRST request after a deploy/idle cold-loads every seat (slow). Warm them
@@ -37,7 +66,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "PYTHONPATH=backend uvicorn alpha_oversight.server.app:create_app --factory --host 0.0.0.0 --port $PORT"
+startCommand = "USE_REAL_BAND=true PYTHONPATH=backend uvicorn alpha_oversight.server.app:create_app --factory --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/stats"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
